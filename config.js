@@ -1,14 +1,14 @@
 // ============================================================================
 // ARCHIVO: config.js
-// Configuración Oficial OPTACORE.QUANT — Soporte WhatsApp Directo
+// Configuración Oficial OPTACORE.QUANT — API Football Activa + NBA
 // ============================================================================
 
 export const CONFIG = {
   BRAND: {
     NAME: "OPTACORE.QUANT",
-    TAGLINE: "TERMINAL DE PRONÓSTICOS DE ALTA PROBABILIDAD & ANÁLISIS BIOCLIMÁTICO",
+    TAGLINE: "TERMINAL DE PRONÓSTICOS DE ALTA PROBABILIDAD (FÚTBOL & NBA)",
     TIMEZONE: "America/Bogota",
-    FREE_DAILY_LIMIT: 4, // 2 de 5 estrellas + 2 de 4 estrellas 100% abiertos
+    FREE_DAILY_LIMIT: 4, // 2 de 5★ + 2 de 4★ abiertos al público
     TRIAL_HOURS: 24,
   },
 
@@ -23,12 +23,14 @@ export const CONFIG = {
   KEYS: {
     SUPABASE_URL: "https://gmcurxhlxryrffcchfvo.supabase.co",
     SUPABASE_ANON_KEY: "sb_publishable_XMYlOCNnVN8GblF78uvvEg_Elaw62TX",
+    SPORTS_API_HOST: "v3.football.api-sports.io",
+    SPORTS_API_KEY: "0d242e4cfb0ebf2bca5b089f6bfe2b92", // Tu API Key oficial
     ADMIN_EMAIL: "admin@optacore.com",
   },
 
   NOTIFICATIONS: {
     WHATSAPP_NUMBER: "573332861551",
-    WHATSAPP_LINK: "https://wa.me/573332861551?text=Hola%20OptaCore,%20quiero%20informaci%C3%B3n%20para%20activar%20mi%20membres%C3%ADa%20VIP",
+    WHATSAPP_LINK: "https://wa.me/573332861551?text=Hola%20OptaCore,%20quiero%20activar%20mi%20membres%C3%ADa%20VIP",
   },
 
   PAYMENT_ACCOUNTS: {
@@ -38,14 +40,14 @@ export const CONFIG = {
         method: "Nequi (Transferencia Directa)",
         accountNumber: "333 286 1551",
         holderName: "OptaCore Quant Desk",
-        instructions: "Transfiere el valor del plan elegido y envía la captura aquí o al WhatsApp +57 3332861551.",
+        instructions: "Transfiere el monto del plan y reporta tu comprobante al WhatsApp +57 333 286 1551.",
       },
       {
         id: "bancolombia",
         method: "Bancolombia — Ahorros",
         accountNumber: "000-000000-00",
         holderName: "OptaCore Quant Desk",
-        instructions: "Consigna vía App o corresponsal y reporta tu comprobante para activación inmediata.",
+        instructions: "Consigna vía App o corresponsal y sube el recibo para activación inmediata.",
       },
     ],
     INTERNACIONAL: [
@@ -54,7 +56,7 @@ export const CONFIG = {
         method: "Binance Pay / USDT",
         accountNumber: "ID: 884920114",
         holderName: "OptaCore_Quant",
-        instructions: "Envía el valor en USDT y adjunta la captura de transacción exitosa.",
+        instructions: "Envía el equivalente en USDT y adjunta la captura con el número de orden.",
       },
     ],
   },
@@ -69,9 +71,9 @@ export const CONFIG = {
   ],
 
   LEGAL_TEXTS: {
-    DISCLAIMER: "AVISO: OPTACORE.QUANT provee análisis cuantitativo y probabilidades. No somos operadores de apuestas. Las estadísticas no garantizan rendimientos futuros.",
+    DISCLAIMER: "AVISO: OPTACORE.QUANT es una herramienta de análisis probabilístico. No somos operadores de apuestas. Los pronósticos no garantizan rendimientos futuros.",
     AGE_WARNING: "EXCLUSIVO PARA MAYORES DE 18 AÑOS (+18).",
-    TERMS: "Licencia de uso personal con control de sesión única por dispositivo.",
-    PRIVACY: "Tus datos se manejan de forma confidencial para el control de acceso a tu suscripción.",
+    TERMS: "Licencia personal con control de sesión única por dispositivo.",
+    PRIVACY: "Tus datos se gestionan con absoluta confidencialidad.",
   },
 };
