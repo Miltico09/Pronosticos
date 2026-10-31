@@ -8,7 +8,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="stylesheet" href="./estilos.css" />
   <script>
-    // Navegación nativa directa para evitar cualquier bloqueo en dispositivos móviles
     function switchTab(tabId) {
       document.querySelectorAll('.tab-panel').forEach(function(panel) {
         panel.classList.add('hidden');
@@ -89,17 +88,24 @@
         </button>
       </nav>
 
-      <!-- BOTONES DE ACCESO RÁPIDO -->
+      <!-- BOTONES DE ACCESO RÁPIDO SEPARADOS -->
       <div class="flex items-center gap-1.5">
         <button id="btn-open-redeem-key" class="px-2.5 py-1.5 text-xs font-mono font-bold uppercase border border-amber-500/60 bg-amber-500/10 text-amber-300 hover:bg-amber-500 hover:text-black transition">
           🔑 Canjear Llave
         </button>
+        <!-- Botón Prueba 24h Protegido -->
         <button id="btn-trial-24h" class="px-2.5 py-1.5 text-xs font-mono font-bold uppercase bg-[#06b6d4] text-slate-950 hover:bg-cyan-300">
           Prueba 24h
         </button>
+        <!-- Botón Registro Nuevo -->
+        <button id="btn-open-register" class="px-2.5 py-1.5 text-xs font-mono font-bold uppercase bg-[#10b981] text-slate-950 hover:bg-emerald-400 font-black transition">
+          Registrarse
+        </button>
+        <!-- Botón Iniciar Sesión -->
         <button id="btn-open-auth" class="px-2.5 py-1.5 text-xs font-mono font-bold uppercase border border-[#1b2432] bg-[#0f151f] text-white hover:border-slate-500">
           Entrar
         </button>
+        <!-- Botón Cerrar Sesión -->
         <button id="btn-logout" class="hidden px-2.5 py-1.5 text-xs font-mono font-bold uppercase border border-[#ef4444] text-[#ef4444]">
           Salir
         </button>
@@ -139,7 +145,7 @@
       <div id="today-results-container" class="space-y-3"></div>
     </section>
 
-    <!-- TAB 3: HISTORIAL & MULTIPLICADOR AUDITADO -->
+    <!-- TAB 3: HISTORIAL -->
     <section id="tab-historial" class="tab-panel hidden space-y-5">
       <div id="history-financial-summary" class="grid grid-cols-1 sm:grid-cols-3 gap-3 font-mono"></div>
       <div id="history-kpi-cards" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
@@ -177,14 +183,13 @@
       </div>
     </section>
 
-    <!-- TAB 4: PLANES VIP & DESCUENTO PROMOTOR -->
+    <!-- TAB 4: PLANES VIP & CUPÓN -->
     <section id="tab-planes" class="tab-panel hidden space-y-6">
       <div class="text-center max-w-xl mx-auto space-y-1">
         <h2 class="text-xl font-black uppercase text-white font-mono">Planes de Membresía VIP</h2>
         <p class="text-xs text-slate-400">Precios en COP y USDT.</p>
       </div>
 
-      <!-- Cupón Promotor 20% -->
       <div class="max-w-md mx-auto quant-card p-3.5 border-cyan-500/40 bg-[#070e17] font-mono text-xs space-y-2">
         <div class="flex items-center justify-between">
           <span class="font-bold text-cyan-300 uppercase">🎟️ ¿Tienes código de promotor (-20%)?</span>
@@ -205,7 +210,6 @@
 
       <div id="vip-plans-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
 
-      <!-- Cuentas Oficiales -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 pt-2">
         <div class="lg:col-span-7 quant-card p-5 space-y-4">
           <div class="flex items-center justify-between border-b border-[#1b2432] pb-3">
@@ -245,10 +249,9 @@
       </div>
     </section>
 
-    <!-- TAB 5: MI LICENCIA & REFERIDOS DINÁMICO -->
+    <!-- TAB 5: MI LICENCIA & REFERIDOS -->
     <section id="tab-cuenta" class="tab-panel hidden space-y-4 font-mono text-xs">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <!-- Estado de la Licencia -->
         <div class="quant-card p-4 space-y-2">
           <h3 class="text-xs font-bold uppercase text-white border-b border-[#1b2432] pb-2">Estado de tu Licencia</h3>
           <div id="account-license-details" class="space-y-1.5 text-slate-300">
@@ -258,7 +261,6 @@
           </div>
         </div>
 
-        <!-- Contenedor Dinámico de Referidos (Generado por auth.js) -->
         <div id="referral-card-container"></div>
       </div>
     </section>
@@ -287,15 +289,15 @@
     </div>
   </div>
 
-  <!-- MODAL AUTENTICACIÓN / PRUEBA 24H -->
+  <!-- MODAL DE AUTENTICACIÓN (INICIAR SESIÓN / REGISTRO) -->
   <div id="auth-modal" class="fixed inset-0 z-50 hidden bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 font-mono text-xs">
     <div class="quant-card max-w-sm w-full p-5 space-y-3 border-cyan-500/50 shadow-[0_0_25px_rgba(6,182,212,0.2)]">
       <div class="flex items-center justify-between border-b border-[#1b2432] pb-2">
-        <h3 id="auth-modal-title" class="text-xs font-bold uppercase text-white">REGISTRO PRUEBA VIP 24 HORAS</h3>
+        <h3 id="auth-modal-title" class="text-xs font-bold uppercase text-white">REGISTRO DE USUARIO</h3>
         <button id="btn-close-auth" class="text-slate-400 hover:text-white font-bold">✕</button>
       </div>
       <p id="auth-modal-subtitle" class="text-[11px] text-slate-400 leading-relaxed">
-        Ingresa tu correo para activar tus 24 horas de prueba gratuita. Válido una sola vez.
+        Ingresa tu correo y define tu contraseña segura para crear tu cuenta.
       </p>
       <form id="auth-form" class="space-y-3 pt-1">
         <div>
@@ -303,13 +305,18 @@
           <input id="auth-email" type="email" required placeholder="tu@correo.com" class="w-full bg-[#05070a] border border-[#1b2432] p-2 text-white text-xs focus:border-cyan-400 focus:outline-none" />
         </div>
         <div>
-          <label class="text-[10px] text-slate-400 block mb-1">CONTRASEÑA</label>
-          <input id="auth-pass" type="password" required placeholder="Crea o ingresa tu clave" class="w-full bg-[#05070a] border border-[#1b2432] p-2 text-white text-xs focus:border-cyan-400 focus:outline-none" />
+          <label class="text-[10px] text-slate-400 block mb-1">CONTRASEÑA (MÍNIMO 6 CARACTERES)</label>
+          <input id="auth-pass" type="password" required minlength="6" placeholder="••••••••" class="w-full bg-[#05070a] border border-[#1b2432] p-2 text-white text-xs focus:border-cyan-400 focus:outline-none" />
         </div>
         <button id="auth-submit-btn" type="submit" class="w-full py-2.5 bg-[#10b981] hover:bg-emerald-400 text-slate-950 font-black uppercase transition text-xs">
-          ACTIVAR MIS 24 HORAS GRATIS
+          CREAR CUENTA
         </button>
       </form>
+      <div class="pt-2 text-center border-t border-[#1b2432]">
+        <button id="btn-toggle-auth-mode" type="button" class="text-[10px] text-cyan-400 hover:underline">
+          ¿Ya tienes cuenta? Inicia sesión aquí
+        </button>
+      </div>
     </div>
   </div>
 
