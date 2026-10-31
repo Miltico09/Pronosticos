@@ -1,12 +1,36 @@
 // ============================================================================
 // ARCHIVO: pronosticos.js
-// Cálculo Oficial Corregido: Multiplicadores Reales de Cuota y Balance
+// Navegación Blindada entre Menús + Curva Gráfica + Balance Multiplicador
 // ============================================================================
 
 import { CONFIG } from "./config.js";
-import { isUserVipOrAdmin, switchTab } from "./auth.js";
+import { isUserVipOrAdmin } from "./auth.js";
 
-const DB_KEY = "optacore_master_feed_v10";
+const DB_KEY = "optacore_master_feed_v11";
+
+// Función Global de Navegación Garantizada
+window.switchTab = function(tabId) {
+  document.querySelectorAll(".tab-panel").forEach((panel) => {
+    panel.classList.add("hidden");
+  });
+
+  const target = document.getElementById(tabId);
+  if (target) {
+    target.classList.remove("hidden");
+  }
+
+  document.querySelectorAll(".nav-btn").forEach((btn) => {
+    if (btn.dataset.tab === tabId) {
+      btn.className = "nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#06b6d4] bg-[#06b6d4]/15 text-white";
+    } else {
+      btn.className = "nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#1b2432] bg-[#0a0e14] text-[#8b9bb4] hover:text-white";
+    }
+  });
+
+  if (tabId === "tab-historial") {
+    setTimeout(renderPerformanceChart, 50);
+  }
+};
 
 export function getColombiaDateString(d = new Date()) {
   return new Intl.DateTimeFormat("en-CA", {
@@ -720,7 +744,7 @@ function injectWhatsAppFloatingButton() {
   document.body.appendChild(btn);
 }
 
-// Curva acumulada
+// Curva de Rendimiento
 export function renderPerformanceChart() {
   const chartBox = document.getElementById("performance-chart-box");
   if (!chartBox) return;
@@ -775,16 +799,14 @@ export function renderPerformanceChart() {
   `;
 }
 
+// Vinculación Única y Blindada de los Menús
 function setupTabNavigation() {
   document.querySelectorAll(".nav-btn").forEach((btn) => {
     btn.onclick = (e) => {
       e.preventDefault();
       const tabId = btn.dataset.tab;
-      if (tabId) {
-        switchTab(tabId);
-        if (tabId === "tab-historial") {
-          setTimeout(renderPerformanceChart, 50);
-        }
+      if (tabId && window.switchTab) {
+        window.switchTab(tabId);
       }
     };
   });
@@ -881,7 +903,7 @@ window.openMatchModal = (matchId) => {
   modal.classList.remove("hidden");
 };
 
-// Renderizado de Pronósticos de Hoy
+// Renderizado de Pronósticos Hoy
 export function renderTodayPredictions() {
   const container = document.getElementById("predictions-grid");
   if (!container) return;
@@ -953,7 +975,7 @@ export function renderTodayPredictions() {
             : `
             <div class="p-2.5 bg-[#05070a] border border-[#1b2432] flex items-center justify-between text-xs">
               <span class="text-slate-400 text-[11px]">🔒 Jugada exclusiva para miembros VIP</span>
-              <button onclick="window.optacoreGoVip()" class="px-2 py-1 bg-[#10b981] text-slate-950 text-[10px] font-bold uppercase">
+              <button onclick="window.switchTab('tab-planes')" class="px-2 py-1 bg-[#10b981] text-slate-950 text-[10px] font-bold uppercase">
                 Hazte VIP
               </button>
             </div>
@@ -971,9 +993,7 @@ export function renderTodayPredictions() {
   }).join("");
 }
 
-// ============================================================================
-// CÁLCULO DE MULTIPLICADOR Y RESULTADOS DE HOY (CORREGIDO)
-// ============================================================================
+// Resultados Hoy y Balance Multiplicador
 export function renderTodayResults() {
   const box = document.getElementById("today-results-container");
   const summaryBox = document.getElementById("today-financial-summary");
@@ -982,8 +1002,8 @@ export function renderTodayResults() {
   const today = getColombiaDateString();
   const todayList = getAllMasterFeed().filter((p) => p.matchDate === today);
 
-  let totalOddsWon = 0; // Suma de cuotas ganadas
-  let totalOddsLost = 0; // Cuotas caídas
+  let totalOddsWon = 0;
+  let totalOddsLost = 0;
   let countWon = 0;
   let countLost = 0;
 
@@ -998,22 +1018,21 @@ export function renderTodayResults() {
     }
   });
 
-  // Balance Neto: Cuotas cobradas menos las caídas
   const netDiff = totalOddsWon - totalOddsLost;
 
   if (summaryBox) {
     summaryBox.innerHTML = `
-      <div class="quant-card p-3 border-emerald-500/40">
+      <div class="quant-card p-3 border-emerald-500/40 font-mono">
         <span class="text-[10px] text-slate-400 block uppercase font-bold">MULTIPLICADOR COBRADO</span>
         <span class="text-lg font-black text-[#10b981]">+${totalOddsWon.toFixed(2)}x</span>
         <span class="text-[10px] text-slate-400 block">${countWon} jugada(s) ganada(s)</span>
       </div>
-      <div class="quant-card p-3 border-red-500/40">
+      <div class="quant-card p-3 border-red-500/40 font-mono">
         <span class="text-[10px] text-slate-400 block uppercase font-bold">MULTIPLICADOR CAÍDO</span>
         <span class="text-lg font-black text-red-400">-${totalOddsLost.toFixed(2)}x</span>
         <span class="text-[10px] text-slate-400 block">${countLost} jugada(s) caída(s)</span>
       </div>
-      <div class="quant-card p-3 ${netDiff >= 0 ? "border-cyan-500/40" : "border-amber-500/40"}">
+      <div class="quant-card p-3 font-mono ${netDiff >= 0 ? "border-cyan-500/40" : "border-amber-500/40"}">
         <span class="text-[10px] text-slate-400 block uppercase font-bold">BALANCE DEL DÍA</span>
         <span class="text-lg font-black ${netDiff >= 0 ? "text-cyan-400" : "text-amber-400"}">${netDiff >= 0 ? "+" : ""}${netDiff.toFixed(2)}x</span>
         <span class="text-[10px] text-slate-400 block">Rendimiento neto</span>
@@ -1047,9 +1066,7 @@ export function renderTodayResults() {
   }).join("");
 }
 
-// ============================================================================
-// CÁLCULO DE MULTIPLICADOR EN EL HISTORIAL (CORREGIDO)
-// ============================================================================
+// Historial Completo
 export function renderFullPublicHistory() {
   const all = getAllMasterFeed();
   const settled = all.filter((p) => p.outcome === "ACIERTO" || p.outcome === "FALLO");
@@ -1157,8 +1174,6 @@ export function renderFullPublicHistory() {
     }).join("");
   }
 }
-
-window.optacoreGoVip = () => switchTab("tab-planes");
 
 document.addEventListener("DOMContentLoaded", () => {
   setupTabNavigation();
