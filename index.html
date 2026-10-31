@@ -7,6 +7,28 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="stylesheet" href="./estilos.css" />
+  <script>
+    // Función global directa: cambia pestañas sin depender de la carga de otros archivos
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-panel').forEach(function(panel) {
+        panel.classList.add('hidden');
+      });
+      var target = document.getElementById(tabId);
+      if (target) {
+        target.classList.remove('hidden');
+      }
+      document.querySelectorAll('.nav-btn').forEach(function(btn) {
+        if (btn.getAttribute('data-tab') === tabId) {
+          btn.className = "nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#06b6d4] bg-[#06b6d4]/15 text-white";
+        } else {
+          btn.className = "nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#1b2432] bg-[#0a0e14] text-[#8b9bb4] hover:text-white";
+        }
+      });
+      if (tabId === 'tab-historial' && window.renderPerformanceChart) {
+        setTimeout(window.renderPerformanceChart, 50);
+      }
+    }
+  </script>
 </head>
 <body class="min-h-screen flex flex-col justify-between bg-[#05070a] text-slate-100 font-sans">
 
@@ -48,26 +70,26 @@
         </div>
       </div>
 
-      <!-- NAVEGACIÓN -->
+      <!-- BOTONES DE NAVEGACIÓN CON ONCLICK DIRECTO -->
       <nav class="flex items-center gap-1 overflow-x-auto py-1">
-        <button data-tab="tab-pronosticos" class="nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#06b6d4] bg-[#06b6d4]/15 text-white">
+        <button onclick="switchTab('tab-pronosticos')" data-tab="tab-pronosticos" class="nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#06b6d4] bg-[#06b6d4]/15 text-white">
           Pronósticos Hoy
         </button>
-        <button data-tab="tab-resultados" class="nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#1b2432] bg-[#0a0e14] text-[#8b9bb4] hover:text-white">
+        <button onclick="switchTab('tab-resultados')" data-tab="tab-resultados" class="nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#1b2432] bg-[#0a0e14] text-[#8b9bb4] hover:text-white">
           Resultados Hoy
         </button>
-        <button data-tab="tab-historial" class="nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#1b2432] bg-[#0a0e14] text-[#8b9bb4] hover:text-white">
+        <button onclick="switchTab('tab-historial')" data-tab="tab-historial" class="nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#1b2432] bg-[#0a0e14] text-[#8b9bb4] hover:text-white">
           Historial & Aciertos
         </button>
-        <button data-tab="tab-planes" class="nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#10b981]/50 bg-[#10b981]/10 text-[#10b981] hover:bg-[#10b981] hover:text-black">
+        <button onclick="switchTab('tab-planes')" data-tab="tab-planes" class="nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#10b981]/50 bg-[#10b981]/10 text-[#10b981] hover:bg-[#10b981] hover:text-black">
           Planes VIP & Cuentas
         </button>
-        <button data-tab="tab-cuenta" class="nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#1b2432] bg-[#0a0e14] text-[#8b9bb4] hover:text-white">
+        <button onclick="switchTab('tab-cuenta')" data-tab="tab-cuenta" class="nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#1b2432] bg-[#0a0e14] text-[#8b9bb4] hover:text-white">
           Mi Licencia & Referidos
         </button>
       </nav>
 
-      <!-- BOTONES DE ACCIÓN: CANJEAR LLAVE, PRUEBA 24H E INICIAR SESIÓN -->
+      <!-- BOTONES DE ACCESO -->
       <div class="flex items-center gap-1.5">
         <button id="btn-open-redeem-key" class="px-2.5 py-1.5 text-xs font-mono font-bold uppercase border border-amber-500/60 bg-amber-500/10 text-amber-300 hover:bg-amber-500 hover:text-black transition">
           🔑 Canjear Llave
@@ -85,10 +107,10 @@
     </div>
   </header>
 
-  <!-- CONTENIDO PRINCIPAL -->
+  <!-- CONTENIDO -->
   <main class="max-w-7xl w-full mx-auto px-4 py-6 flex-1 space-y-6">
 
-    <!-- TAB 1: PRONÓSTICOS HOY -->
+    <!-- 1. PRONÓSTICOS HOY -->
     <section id="tab-pronosticos" class="tab-panel space-y-4">
       <div class="quant-card p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
@@ -106,7 +128,7 @@
       <div id="predictions-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
     </section>
 
-    <!-- TAB 2: RESULTADOS HOY -->
+    <!-- 2. RESULTADOS HOY -->
     <section id="tab-resultados" class="tab-panel hidden space-y-4">
       <div class="quant-card p-4">
         <h2 class="text-base font-black uppercase text-white font-mono">Auditoría de Resultados del Día</h2>
@@ -117,7 +139,7 @@
       <div id="today-results-container" class="space-y-3"></div>
     </section>
 
-    <!-- TAB 3: HISTORIAL -->
+    <!-- 3. HISTORIAL -->
     <section id="tab-historial" class="tab-panel hidden space-y-5">
       <div id="history-financial-summary" class="grid grid-cols-1 sm:grid-cols-3 gap-3 font-mono"></div>
       <div id="history-kpi-cards" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
@@ -155,14 +177,14 @@
       </div>
     </section>
 
-    <!-- TAB 4: PLANES VIP & CUPÓN DE PROMOTOR -->
+    <!-- 4. PLANES VIP & CUPÓN -->
     <section id="tab-planes" class="tab-panel hidden space-y-6">
       <div class="text-center max-w-xl mx-auto space-y-1">
         <h2 class="text-xl font-black uppercase text-white font-mono">Planes de Membresía VIP</h2>
         <p class="text-xs text-slate-400">Precios en COP y USDT a la TRM Oficial ($3.182,99).</p>
       </div>
 
-      <!-- CAJA DE CÓDIGO DE DESCUENTO (PROMOTORES) -->
+      <!-- Cupón -->
       <div class="max-w-md mx-auto quant-card p-3.5 border-cyan-500/40 bg-[#070e17] font-mono text-xs space-y-2">
         <div class="flex items-center justify-between">
           <span class="font-bold text-cyan-300 uppercase">🎟️ ¿Tienes código de promotor (-20%)?</span>
@@ -181,10 +203,8 @@
         </div>
       </div>
 
-      <!-- Grid de Planes (se recalculan con -20% si hay código) -->
       <div id="vip-plans-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
 
-      <!-- Cuentas de Pago -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 pt-2">
         <div class="lg:col-span-7 quant-card p-5 space-y-4">
           <div class="flex items-center justify-between border-b border-[#1b2432] pb-3">
@@ -224,7 +244,7 @@
       </div>
     </section>
 
-    <!-- TAB 5: MI LICENCIA & REFERIDOS -->
+    <!-- 5. MI LICENCIA & REFERIDOS -->
     <section id="tab-cuenta" class="tab-panel hidden space-y-4 font-mono text-xs">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="quant-card p-4 space-y-2">
@@ -251,7 +271,7 @@
 
   </main>
 
-  <!-- MODAL PARA CANJEAR LLAVE TEMPORAL -->
+  <!-- MODAL CANJEAR LLAVE -->
   <div id="redeem-key-modal" class="fixed inset-0 z-50 hidden bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 font-mono text-xs">
     <div class="quant-card max-w-sm w-full p-5 space-y-3 border-amber-500/60 shadow-[0_0_25px_rgba(245,158,11,0.2)]">
       <div class="flex items-center justify-between border-b border-[#1b2432] pb-2">
@@ -259,9 +279,52 @@
         <button id="btn-close-redeem" class="text-slate-400 hover:text-white font-bold">✕</button>
       </div>
       <p class="text-[11px] text-slate-300 leading-relaxed">
-        Ingresa tu llave de cortesía o código promocional para activar tus días de acceso VIP:
+        Ingresa tu llave de cortesía para activar tus días de acceso VIP:
       </p>
       <form id="redeem-key-form" class="space-y-3 pt-1">
         <div>
           <label class="text-[10px] text-slate-400 block mb-1">CÓDIGO DE LA LLAVE</label>
-          <input id="input-license-key" type="text" required placeholder="Ej: PRUEBA3D" class="w-full bg-[#05070a] border border-[#1b2432] p-2 text-white text-xs uppercase font-bold focus:border-amber-400 focus:outline
+          <input id="input-license-key" type="text" required placeholder="Ej: PRUEBA3D" class="w-full bg-[#05070a] border border-[#1b2432] p-2 text-white text-xs uppercase font-bold focus:border-amber-400 focus:outline-none" />
+        </div>
+        <button type="submit" class="w-full py-2.5 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black uppercase text-xs transition">
+          CANJEAR Y ACTIVAR DÍAS VIP
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL AUTENTICACIÓN -->
+  <div id="auth-modal" class="fixed inset-0 z-50 hidden bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 font-mono text-xs">
+    <div class="quant-card max-w-sm w-full p-5 space-y-3 border-cyan-500/50 shadow-[0_0_25px_rgba(6,182,212,0.2)]">
+      <div class="flex items-center justify-between border-b border-[#1b2432] pb-2">
+        <h3 id="auth-modal-title" class="text-xs font-bold uppercase text-white">REGISTRO PRUEBA VIP 24 HORAS</h3>
+        <button id="btn-close-auth" class="text-slate-400 hover:text-white font-bold">✕</button>
+      </div>
+      <p id="auth-modal-subtitle" class="text-[11px] text-slate-400 leading-relaxed">
+        Ingresa tu correo para activar tus 24 horas de prueba gratuita. Válido una sola vez.
+      </p>
+      <form id="auth-form" class="space-y-3 pt-1">
+        <div>
+          <label class="text-[10px] text-slate-400 block mb-1">CORREO ELECTRÓNICO</label>
+          <input id="auth-email" type="email" required placeholder="tu@correo.com" class="w-full bg-[#05070a] border border-[#1b2432] p-2 text-white text-xs focus:border-cyan-400 focus:outline-none" />
+        </div>
+        <div>
+          <label class="text-[10px] text-slate-400 block mb-1">CONTRASEÑA</label>
+          <input id="auth-pass" type="password" required placeholder="Crea o ingresa tu clave" class="w-full bg-[#05070a] border border-[#1b2432] p-2 text-white text-xs focus:border-cyan-400 focus:outline-none" />
+        </div>
+        <button id="auth-submit-btn" type="submit" class="w-full py-2.5 bg-[#10b981] hover:bg-emerald-400 text-slate-950 font-black uppercase transition text-xs">
+          ACTIVAR MIS 24 HORAS GRATIS
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <footer class="border-t border-[#1b2432] bg-[#030508] px-4 py-4 mt-8 text-[11px] font-mono text-slate-400 text-center">
+    OPTACORE.QUANT © 2026 — Inteligencia Estadística para Pronósticos Deportivos (+18).
+  </footer>
+
+  <script type="module" src="./auth.js"></script>
+  <script type="module" src="./pronosticos.js"></script>
+  <script type="module" src="./pagos.js"></script>
+</body>
+</html>
