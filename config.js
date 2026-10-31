@@ -1,6 +1,6 @@
 // ============================================================================
 // ARCHIVO: config.js
-// TRM Oficial Vigente ($3.182,99 COP) y Enlace Institucional de WhatsApp
+// Llaves de Prueba, Promotores 20% y Precios Oficiales
 // ============================================================================
 
 export const CONFIG = {
@@ -30,8 +30,24 @@ export const CONFIG = {
 
   NOTIFICATIONS: {
     WHATSAPP_NUMBER: "+573332861551",
-    WHATSAPP_LINK: "https://wa.me/573332861551?text=Hola%20equipo%20OptaCore,%20deseo%20activar%20mi%20membres%C3%ADa%20VIP%20en%20la%20plataforma",
+    WHATSAPP_LINK: "https://wa.me/573332861551?text=Hola%20equipo%20OptaCore,%20deseo%20activar%20mi%20membres%C3%ADa%20VIP",
   },
+
+  // 1. LLAVES TEMPORALES (Tú decides el nombre y la cantidad exacta de días)
+  VIP_KEYS: [
+    { code: "PRUEBA3D", days: 3, description: "Pase de cortesía 3 días" },
+    { code: "VIP7D", days: 7, description: "Semana VIP de prueba" },
+    { code: "PROMO15D", days: 15, description: "Quincena especial" },
+    { code: "ACCESO30D", days: 30, description: "Mes completo cortesía" },
+  ],
+
+  // 2. CÓDIGOS DE PROMOTORES (20% DE DESCUENTO)
+  PROMO_CODES: [
+    { code: "PROMO20", discountPct: 20, promoter: "Campaña General" },
+    { code: "VIP20", discountPct: 20, promoter: "Canal VIP" },
+    { code: "CARLOS20", discountPct: 20, promoter: "Promotor Carlos" },
+    { code: "JUAN20", discountPct: 20, promoter: "Promotor Juan" },
+  ],
 
   PAYMENT_ACCOUNTS: {
     COLOMBIA: [
@@ -40,14 +56,14 @@ export const CONFIG = {
         method: "Nequi (Transferencia Directa)",
         accountNumber: "3332861551",
         holderName: "OptaCore Quant Desk",
-        instructions: "Transfiere desde tu app Nequi y envía el comprobante al WhatsApp de la plataforma (+57 333 286 1551).",
+        instructions: "Transfiere desde Nequi y envía el comprobante al WhatsApp oficial.",
       },
       {
         id: "bancolombia",
         method: "Bancolombia — Cuenta de Ahorros",
         accountNumber: "912-417-09219",
         holderName: "OptaCore Quant Desk",
-        instructions: "Consigna vía App Bancolombia o corresponsal bancario y remite el comprobante a soporte.",
+        instructions: "Consigna vía App Bancolombia o corresponsal y envía captura a soporte.",
       },
     ],
     INTERNACIONAL: [
@@ -56,19 +72,19 @@ export const CONFIG = {
         method: "Binance Pay (Cero Comisión)",
         accountNumber: "UID: 204199989",
         holderName: "OptaCore_Quant",
-        instructions: "Envía el valor exacto en USDT mediante Binance Pay al UID indicado y remite la orden completada.",
+        instructions: "Envía el valor en USDT vía Binance Pay a este UID y remite el comprobante.",
       },
       {
         id: "usdt_bep20",
         method: "USDT (Red BNB Smart Chain / BEP-20)",
         accountNumber: "0x595ee53c2c28628325f9baf6bb565ab7e34eec07",
         holderName: "Red: BEP-20 (BSC)",
-        instructions: "Verifica que la red de envío sea BEP-20. Sube la captura con el TXID visible.",
+        instructions: "Verifica que la red sea BEP-20 y remite el hash TXID a WhatsApp.",
       },
     ],
   },
 
-  // Planes calculados con base en la TRM oficial de $3.182,99 COP
+  // Planes base con TRM oficial ($3.182,99 COP)
   VIP_PLANS: [
     { id: "semanal", name: "Semanal", days: 7, priceCop: 12000, priceUsdt: 3.77, discountPct: 0, savedCop: 0, badge: null },
     { id: "quincenal", name: "Quincenal", days: 15, priceCop: 20000, priceUsdt: 6.28, discountPct: 17, savedCop: 4000, badge: null },
@@ -79,7 +95,7 @@ export const CONFIG = {
   ],
 
   LEGAL_TEXTS: {
-    DISCLAIMER: "AVISO: OPTACORE.QUANT es una plataforma de análisis cuantitativo. No somos casa de apuestas ni captamos dinero.",
+    DISCLAIMER: "AVISO: OPTACORE.QUANT es una plataforma de análisis estadístico.",
     AGE_WARNING: "PROHIBIDO EL USO PARA MENORES DE 18 AÑOS (+18).",
     TERMS: "Licencia de uso personal con control de sesión única.",
     PRIVACY: "Los datos se manejan bajo estricta confidencialidad.",
