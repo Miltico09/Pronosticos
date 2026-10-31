@@ -1,6 +1,6 @@
 // ============================================================================
 // ARCHIVO: auth.js
-// Autenticación Real con Supabase (Contraseña Segura) + Bloqueo de Prueba 24h
+// Bloqueador de Correos Desechables + Huella de Dispositivo + Acceso Admin
 // ============================================================================
 
 import { CONFIG } from "./config.js";
@@ -9,6 +9,39 @@ const supabase = window.supabase
   ? window.supabase.createClient(CONFIG.KEYS.SUPABASE_URL, CONFIG.KEYS.SUPABASE_ANON_KEY)
   : null;
 
+// MEJORA #10: Lista negra de dominios temporales desechables
+const DISPOSABLE_DOMAINS = [
+  "yopmail.com", "tempmail.com", "guerrillamail.com", "10minutemail.com",
+  "mailinator.com", "throwawaymail.com", "getnada.com", "sharklasers.com",
+  "trashmail.com", "temp-mail.org", "mohmal.com", "dispostable.com"
+];
+
+function isDisposableEmail(email) {
+  const domain = email.split("@")[1]?.toLowerCase() || "";
+  return DISPOSABLE_DOMAINS.some((d) => domain.includes(d));
+}
+
+// MEJORA #10: Huella digital única del dispositivo
+function getDeviceFingerprint() {
+  let fp = localStorage.getItem("optacore_device_fp");
+  if (!fp) {
+    const raw = [
+      navigator.userAgent,
+      screen.width + "x" + screen.height,
+      Intl.DateTimeFormat().resolvedOptions().timeZone,
+      navigator.language
+    ].join("|");
+    let hash = 0;
+    for (let i = 0; i < raw.length; i++) {
+      hash = (hash << 5) - hash + raw.charCodeAt(i);
+      hash |= 0;
+    }
+    fp = "DEV-" + Math.abs(hash).toString(16).toUpperCase();
+    localStorage.setItem("optacore_device_fp", fp);
+  }
+  return fp;
+}
+
 function generateUniqueReferralCode(email) {
   const clean = email.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
   const seed = clean.substring(0, 4) || "USER";
@@ -16,9 +49,16 @@ function generateUniqueReferralCode(email) {
   return `OPTA-${seed}-${randomHex}`;
 }
 
-export function isUserVipOrAdmin() {
+export function isUserAdmin() {
   const role = localStorage.getItem("optacore_user_role");
-  if (role === "ADMIN" || role === "VIP") return true;
+  const email = (localStorage.getItem("optacore_user_email") || "").toLowerCase();
+  return role === "ADMIN" || email === CONFIG.KEYS.ADMIN_EMAIL.toLowerCase();
+}
+
+export function isUserVipOrAdmin() {
+  if (isUserAdmin()) return true;
+  const role = localStorage.getItem("optacore_user_role");
+  if (role === "VIP") return true;
 
   const expiresTimestamp = localStorage.getItem("optacore_vip_expires_timestamp");
   if (!expiresTimestamp) return false;
@@ -56,13 +96,19 @@ export function updateHeaderStatus() {
   const btnRegister = document.getElementById("btn-open-register");
   const btnAuth = document.getElementById("btn-open-auth");
   const btnLogout = document.getElementById("btn-logout");
+  const btnAdminNav = document.getElementById("btn-nav-admin");
   const referralCardContainer = document.getElementById("referral-card-container");
 
   const email = localStorage.getItem("optacore_user_email");
   const remaining = getRemainingTrialTime();
   const isLoggedIn = !!email;
 
-  // Estado del programa de referidos
+  // Mostrar pestaña secreta si es Administrador
+  if (btnAdminNav) {
+    if (isUserAdmin()) btnAdminNav.classList.remove("hidden");
+    else btnAdminNav.classList.add("hidden");
+  }
+
   if (referralCardContainer) {
     if (isLoggedIn) {
       let refCode = localStorage.getItem("optacore_user_referral_code");
@@ -96,7 +142,7 @@ export function updateHeaderStatus() {
         <div class="quant-card p-4 space-y-2.5 font-mono text-xs border-[#1b2432] bg-[#070a0e]">
           <h3 class="text-xs font-bold uppercase text-slate-400 border-b border-[#1b2432] pb-2">Programa de Referidos (+20% Días VIP)</h3>
           <p class="text-slate-400 text-[11px] leading-relaxed">
-            Para obtener tu código personal y ganar días VIP invitando amigos, primero debes registrarte o iniciar sesión con tu cuenta.
+            Para obtener tu código personal y ganar días VIP invitando amigos, primero debes registrarte o iniciar sesión.
           </p>
           <button onclick="document.getElementById('btn-open-register').click()" class="w-full py-2 bg-[#0a0e14] border border-[#1b2432] hover:border-cyan-400 text-cyan-300 font-bold uppercase text-[10px] transition">
             🔒 Regístrate para Desbloquear tu Código
@@ -106,7 +152,6 @@ export function updateHeaderStatus() {
     }
   }
 
-  // Estado del menú según sesión y membresía
   if (isLoggedIn) {
     if (btnRegister) btnRegister.classList.add("hidden");
     if (btnAuth) btnAuth.classList.add("hidden");
@@ -116,12 +161,16 @@ export function updateHeaderStatus() {
     if (isUserVipOrAdmin()) {
       const role = localStorage.getItem("optacore_user_role") || "PRUEBA_VIP";
       if (badge) {
-        badge.textContent = remaining ? `PRUEBA VIP 24H (${remaining.toUpperCase()})` : "MEMBRESÍA VIP ACTIVA";
+        badge.textContent = isUserAdmin()
+          ? "MODO ADMINISTRADOR ACTIVO"
+          : remaining
+          ? `PRUEBA VIP 24H (${remaining.toUpperCase()})`
+          : "MEMBRESÍA VIP ACTIVA";
         badge.className = "px-2 py-0.5 border border-[#10b981] bg-[#10b981]/20 text-[#10b981] font-bold";
       }
-      if (roleText) roleText.textContent = role === "PRUEBA_VIP" ? "PRUEBA VIP 24 HORAS" : "MIEMBRO VIP";
+      if (roleText) roleText.textContent = isUserAdmin() ? "ADMINISTRADOR" : role === "PRUEBA_VIP" ? "PRUEBA VIP 24 HORAS" : "MIEMBRO VIP";
       if (expiresText) expiresText.textContent = remaining ? `Expira en: ${remaining}` : "Vigencia activa";
-      if (btnTrial) btnTrial.classList.add("hidden"); // Ya tiene VIP activo
+      if (btnTrial) btnTrial.classList.add("hidden");
     } else {
       if (badge) {
         badge.textContent = "CUENTA REGISTRADA // MODO LIBRE";
@@ -147,18 +196,23 @@ export function updateHeaderStatus() {
   }
 }
 
-// 1. REGISTRO OFICIAL EN SUPABASE
 async function handleUserRegister(email, password) {
+  // MEJORA #10: Filtro contra correos falsos temporales
+  if (isDisposableEmail(email)) {
+    alert("⛔ SEGURIDAD OPTACORE:\nNo se permiten correos temporales o desechables (Yopmail, TempMail, etc.). Por favor utiliza tu correo personal oficial (Gmail, Outlook, iCloud, etc.).");
+    return;
+  }
+
   if (!supabase) {
-    alert("Error de conexión a la base de datos de usuarios.");
+    alert("Error de conexión a la base de datos.");
     return;
   }
 
   const { data, error } = await supabase.auth.signUp({ email, password });
 
   if (error) {
-    if (error.message.includes("already registered") || error.message.includes("User already registered")) {
-      alert("Este correo ya se encuentra registrado. Por favor, pulsa en 'Entrar' para iniciar sesión.");
+    if (error.message.includes("already registered")) {
+      alert("Este correo ya se encuentra registrado. Por favor pulsa en 'Entrar' para iniciar sesión.");
     } else {
       alert("Error al registrar: " + error.message);
     }
@@ -180,22 +234,17 @@ async function handleUserRegister(email, password) {
   localStorage.setItem("optacore_user_role", "USER");
   localStorage.setItem("optacore_user_referral_code", userRefCode);
 
-  alert(`¡Cuenta creada con éxito para ${email}! Ya puedes iniciar sesión y reclamar tus 24 horas de prueba VIP.`);
+  alert(`¡Cuenta creada con éxito para ${email}! Ahora puedes pulsar en 'Prueba 24h' para activar tu acceso gratuito.`);
   window.location.reload();
 }
 
-// 2. INICIO DE SESIÓN CON CONTRASEÑA ESTRICTA EN SUPABASE
 async function handleUserLogin(email, password) {
-  if (!supabase) {
-    alert("Error de conexión a la base de datos de usuarios.");
-    return;
-  }
+  if (!supabase) return;
 
-  // Validación estricta con Supabase Auth
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
-    alert("Contraseña o correo incorrectos. Acceso denegado: " + error.message);
+    alert("Contraseña o correo incorrectos. Acceso denegado.");
     return;
   }
 
@@ -203,7 +252,6 @@ async function handleUserLogin(email, password) {
   let userRefCode = generateUniqueReferralCode(email);
   let userRole = "USER";
 
-  // Consultar perfil y membresía en la tabla profiles
   const { data: profile } = await supabase
     .from("profiles")
     .select("role, vip_expires_at, referral_code")
@@ -220,7 +268,6 @@ async function handleUserLogin(email, password) {
     }
   }
 
-  // Validar si es el correo del administrador
   if (email.toLowerCase() === CONFIG.KEYS.ADMIN_EMAIL.toLowerCase()) {
     userRole = "ADMIN";
   }
@@ -233,35 +280,39 @@ async function handleUserLogin(email, password) {
   window.location.reload();
 }
 
-// 3. RECLAMAR PRUEBA VIP 24 HORAS (SOLO PARA REGISTRADOS)
 async function handleClaimTrial() {
   const email = localStorage.getItem("optacore_user_email");
 
-  // CANDADO: Si no ha iniciado sesión, no permite activar
   if (!email) {
-    alert("🔒 ACCESO REQUERIDO:\nDebes registrarte o iniciar sesión con tu correo antes de poder activar tus 24 horas de prueba VIP gratuita.");
+    alert("🔒 REGISTRO REQUERIDO:\nPrimero debes registrarte e iniciar sesión con tu correo antes de activar tus 24 horas de prueba VIP.");
     document.getElementById("btn-open-register")?.click();
+    return;
+  }
+
+  // MEJORA #10: Verificar huella del dispositivo para evitar multicuentas en el mismo celular
+  const deviceClaimed = localStorage.getItem("optacore_device_trial_claimed");
+  const fp = getDeviceFingerprint();
+  if (deviceClaimed) {
+    alert(`⛔ CONTROL ANTIFRAUDE (${fp}):\nEste dispositivo ya reclamó anteriormente una prueba gratuita de 24 horas con la cuenta ${deviceClaimed}. Solo se permite una prueba por dispositivo.`);
     return;
   }
 
   if (!supabase) return;
 
-  // Verificar si ya gastó la prueba en Supabase
   const { data: profile } = await supabase
     .from("profiles")
-    .select("trial_used, vip_expires_at")
+    .select("trial_used")
     .eq("email", email)
     .maybeSingle();
 
   if (profile && profile.trial_used) {
-    alert("Tu cuenta ya utilizó sus 24 horas de prueba VIP gratuitas. Para continuar con acceso completo, activa tu membresía VIP.");
+    alert("Tu correo ya utilizó anteriormente sus 24 horas de prueba VIP gratuitas.");
     return;
   }
 
   const now = Date.now();
   const expiresAt = new Date(now + 24 * 60 * 60 * 1000);
 
-  // Actualizar perfil en Supabase
   await supabase
     .from("profiles")
     .update({
@@ -273,8 +324,9 @@ async function handleClaimTrial() {
 
   localStorage.setItem("optacore_user_role", "PRUEBA_VIP");
   localStorage.setItem("optacore_vip_expires_timestamp", expiresAt.getTime().toString());
+  localStorage.setItem("optacore_device_trial_claimed", email);
 
-  alert(`¡Felicidades! Se han activado tus 24 horas de prueba VIP para ${email}. Tienes acceso completo a todas las jugadas y análisis.`);
+  alert(`¡24 horas de prueba VIP activadas con éxito para ${email}!`);
   window.location.reload();
 }
 
@@ -286,13 +338,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const modalSubtitle = document.getElementById("auth-modal-subtitle");
   const authSubmitBtn = document.getElementById("auth-submit-btn");
   const toggleBtn = document.getElementById("btn-toggle-auth-mode");
-  let currentAuthMode = "REGISTER"; // 'REGISTER' o 'LOGIN'
+  let currentAuthMode = "REGISTER";
 
   function setAuthMode(mode) {
     currentAuthMode = mode;
     if (mode === "REGISTER") {
       if (modalTitle) modalTitle.textContent = "REGISTRO DE USUARIO";
-      if (modalSubtitle) modalSubtitle.textContent = "Ingresa tu correo y define tu contraseña segura para crear tu cuenta.";
+      if (modalSubtitle) modalSubtitle.textContent = "Ingresa tu correo oficial y define tu contraseña segura (mín. 6 caracteres).";
       if (authSubmitBtn) authSubmitBtn.textContent = "CREAR MI CUENTA";
       if (toggleBtn) toggleBtn.textContent = "¿Ya tienes cuenta? Inicia sesión aquí";
     } else {
@@ -303,41 +355,32 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Botón Abrir Registro
   document.getElementById("btn-open-register")?.addEventListener("click", () => {
     setAuthMode("REGISTER");
     modalAuth?.classList.remove("hidden");
   });
 
-  // Botón Abrir Login
   document.getElementById("btn-open-auth")?.addEventListener("click", () => {
     setAuthMode("LOGIN");
     modalAuth?.classList.remove("hidden");
   });
 
-  // Alternar entre Login y Registro en el pie del modal
   toggleBtn?.addEventListener("click", () => {
     setAuthMode(currentAuthMode === "REGISTER" ? "LOGIN" : "REGISTER");
   });
 
-  // Botón Reclamar Prueba 24h
   document.getElementById("btn-trial-24h")?.addEventListener("click", handleClaimTrial);
 
-  // Cerrar Modal
   document.getElementById("btn-close-auth")?.addEventListener("click", () => {
     modalAuth?.classList.add("hidden");
   });
 
-  // Procesar Formulario
   document.getElementById("auth-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const email = document.getElementById("auth-email").value.trim();
     const password = document.getElementById("auth-pass").value;
 
-    if (!email || !password) {
-      alert("Por favor completa todos los campos.");
-      return;
-    }
+    if (!email || !password) return;
 
     if (currentAuthMode === "REGISTER") {
       await handleUserRegister(email, password);
@@ -346,9 +389,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Cerrar Sesión
   document.getElementById("btn-logout")?.addEventListener("click", () => {
-    localStorage.clear();
+    localStorage.removeItem("optacore_user_email");
+    localStorage.removeItem("optacore_user_role");
+    localStorage.removeItem("optacore_vip_expires_timestamp");
     alert("Has cerrado sesión.");
     window.location.reload();
   });
