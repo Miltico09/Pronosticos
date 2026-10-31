@@ -1,6 +1,6 @@
 // ============================================================================
 // ARCHIVO: config.js
-// Edita aquí precios, cuentas bancarias, colores y llaves API sin tocar código
+// Configuración Oficial OPTACORE.QUANT
 // ============================================================================
 
 export const CONFIG = {
@@ -9,11 +9,10 @@ export const CONFIG = {
     TAGLINE: "TERMINAL DE INTELIGENCIA ESTADÍSTICA & PROBABILIDAD BIOCLIMÁTICA",
     TIMEZONE: "America/Bogota",
     FREE_DAILY_DIAMOND_LIMIT: 5,
-    REFERRAL_REWARD_DAYS: 5, // Días VIP gratis por cada referido que pague
+    REFERRAL_REWARD_DAYS: 5,
     TRIAL_HOURS: 24,
   },
 
-  // Paleta de colores institucional (Cero amarillo)
   THEME: {
     BG_PRIMARY: "#05070a",
     BG_SURFACE: "#0a0e14",
@@ -22,61 +21,57 @@ export const CONFIG = {
     ALERT_RED: "#ef4444",
   },
 
-  // Conexión a Supabase y API Deportiva (API-Football v3 de API-Sports.io)
   KEYS: {
-    SUPABASE_URL: "https://tu-proyecto.supabase.co",
-    SUPABASE_ANON_KEY: "TU_SUPABASE_ANON_PUBLIC_KEY",
+    SUPABASE_URL: "https://gmcurxhlxryrffcchfvo.supabase.co",
+    SUPABASE_ANON_KEY: "sb_publishable_XMYlOCNnVN8GblF78uvvEg_Elaw62TX",
     SPORTS_API_HOST: "v3.football.api-sports.io",
-    SPORTS_API_KEY: "TU_API_FOOTBALL_KEY",
-    ADMIN_EMAIL: "admin@optacore.com", // Único correo que ve el Panel Admin
+    SPORTS_API_KEY: "",
+    ADMIN_EMAIL: "admin@optacore.com",
   },
 
-  // Alertas Automáticas (Telegram Bot API + Enlace WhatsApp VIP)
   NOTIFICATIONS: {
-    TELEGRAM_BOT_TOKEN: "TU_BOT_TOKEN_DE_BOTFATHER",
-    TELEGRAM_VIP_CHANNEL_ID: "@tu_canal_vip_optacore",
-    TELEGRAM_ADMIN_CHAT_ID: "TU_CHAT_ID_PERSONAL",
-    WHATSAPP_VIP_CHANNEL_URL: "https://whatsapp.com/channel/tu-canal-vip",
+    TELEGRAM_BOT_TOKEN: "",
+    TELEGRAM_VIP_CHANNEL_ID: "@optacore_vip",
+    TELEGRAM_ADMIN_CHAT_ID: "",
+    WHATSAPP_VIP_CHANNEL_URL: "https://whatsapp.com/channel/optacore-vip",
     ADMIN_WHATSAPP_NUMBER: "573000000000",
   },
 
-  // Cuentas para Pagos Manuales (100% directo a ti, sin pasarelas)
   PAYMENT_ACCOUNTS: {
     COLOMBIA: [
       {
         id: "nequi",
         method: "Nequi (Transferencia Inmediata)",
         accountNumber: "300 000 0000",
-        holderName: "Titular Oficial OptaCore",
-        instructions: "Envía el valor exacto del plan y toma captura donde se vea el número de referencia (Mxxxx).",
+        holderName: "OptaCore Official",
+        instructions: "Envía el valor exacto del plan y sube la captura con el comprobante visible.",
       },
       {
         id: "bancolombia",
         method: "Bancolombia — Ahorros",
         accountNumber: "000-000000-00",
-        holderName: "Titular Oficial OptaCore",
-        instructions: "Realiza transferencia por App Bancolombia o corresponsal y sube foto nítida del comprobante.",
+        holderName: "OptaCore Official",
+        instructions: "Transfiere vía App Bancolombia o corresponsal y adjunta el comprobante.",
       },
     ],
     INTERNACIONAL: [
       {
         id: "binance_pay",
-        method: "Binance Pay (Sin Comisión)",
+        method: "Binance Pay",
         accountNumber: "ID: 884920114",
-        holderName: "OptaCore_Quant_Desk",
-        instructions: "Calcula el equivalente en USDT al cambio del día y adjunta la captura de Orden Completada.",
+        holderName: "OptaCore_Quant",
+        instructions: "Envía el monto equivalente en USDT y sube captura de orden completada.",
       },
       {
         id: "usdt_trc20",
-        method: "USDT (Red TRON / TRC-20)",
+        method: "USDT (Red TRC-20)",
         accountNumber: "Txxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-        holderName: "Red obligatoria: TRC-20",
-        instructions: "Verifica que la red sea TRC-20. Sube captura donde sea visible el TXID de la transacción.",
+        holderName: "Red: TRC-20",
+        instructions: "Verifica que la red sea TRC-20 y sube la captura con el TXID visible.",
       },
     ],
   },
 
-  // Planes VIP en Pesos Colombianos (COP) y Descuentos Oficiales
   VIP_PLANS: [
     {
       id: "semanal",
@@ -136,11 +131,11 @@ export const CONFIG = {
 
   LEGAL_TEXTS: {
     DISCLAIMER:
-      "AVISO DE RESPONSABILIDAD: OPTACORE.QUANT es una plataforma de análisis estadístico, bioclimático y probabilístico. No somos una casa de apuestas ni captamos dinero para apuestas. Los modelos matemáticos se basan en datos históricos y tendencias L10, por lo que NO garantizan resultados futuros.",
-    AGE_WARNING: "PROHIBIDO EL USO PARA MENORES DE 18 AÑOS (+18). Juega con responsabilidad.",
+      "AVISO DE RESPONSABILIDAD: OPTACORE.QUANT es una plataforma de análisis estadístico y probabilístico. No somos una casa de apuestas ni captamos dinero. Los pronósticos no garantizan resultados futuros.",
+    AGE_WARNING: "PROHIBIDO EL USO PARA MENORES DE 18 AÑOS (+18).",
     TERMS:
-      "Cada licencia VIP es personal e intransferible y permite 1 sola sesión activa simultánea. El uso compartido de cuentas o la subida de comprobantes alterados conlleva la cancelación inmediata de la membresía sin derecho a reembolso.",
+      "Cada licencia VIP es personal e intransferible y permite una sola sesión activa simultánea.",
     PRIVACY:
-      "Tus datos de correo y comprobantes se almacenan de forma cifrada únicamente para gestionar la vigencia de tu licencia VIP y el programa de referidos.",
+      "Tus datos de correo y comprobantes se almacenan de forma segura únicamente para la activación de tu membresía.",
   },
 };
