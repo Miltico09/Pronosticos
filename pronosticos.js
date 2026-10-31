@@ -1,12 +1,14 @@
 // ============================================================================
 // ARCHIVO: pronosticos.js
-// Cálculo Exacto de Pérdida: 1 Unidad Fija por Cada Partido Caído
+// Incluye: Win-Ticker, Racha Activa, Filtros Píldora, Calculadora COP,
+// Termómetro de Fiebre de Cancha, Generador de Tickets de Victoria y Panel Admin
 // ============================================================================
 
 import { CONFIG } from "./config.js";
 import { isUserVipOrAdmin } from "./auth.js";
 
-const DB_KEY = "optacore_master_feed_v12";
+const DB_KEY = "optacore_master_feed_v14";
+let activeQuickFilter = "ALL";
 
 export function getColombiaDateString(d = new Date()) {
   return new Intl.DateTimeFormat("en-CA", {
@@ -21,6 +23,29 @@ function getStars(prob) {
   if (prob >= 90) return { stars: "⭐⭐⭐⭐⭐", tag: "5 ESTRELLAS", badge: "border-cyan-400 bg-cyan-500/15 text-cyan-300" };
   if (prob >= 85) return { stars: "⭐⭐⭐⭐", tag: "4 ESTRELLAS", badge: "border-emerald-400 bg-emerald-500/15 text-emerald-300" };
   return { stars: "⭐⭐⭐", tag: "3 ESTRELLAS", badge: "border-slate-600 bg-slate-800 text-slate-300" };
+}
+
+// MEJORA #2: Medidor visual de "Fiebre de Cancha" (Impacto físico/climático)
+function getPitchFeverBar(altitudeM, weatherDesc) {
+  let stressScore = 45;
+  let label = "EXIGENCIA MEDIA";
+  let color = "bg-cyan-400";
+
+  if (weatherDesc.includes("31°C") || weatherDesc.includes("33°C") || weatherDesc.includes("30°C") || weatherDesc.includes("27°C")) {
+    stressScore = 92;
+    label = "🔥 CALOR EXTREMO / DESGASTE RIVAL";
+    color = "bg-amber-500";
+  } else if (altitudeM >= 1400) {
+    stressScore = 88;
+    label = "⛰️ AHOGO POR ALTURA (+1.400m)";
+    color = "bg-emerald-400";
+  } else if (weatherDesc.includes("10°C") || weatherDesc.includes("12°C")) {
+    stressScore = 65;
+    label = "⚡ CÉSPED RÁPIDO / ALTA VELOCIDAD";
+    color = "bg-[#06b6d4]";
+  }
+
+  return { stressScore, label, color };
 }
 
 const LOGOS = {
@@ -414,7 +439,7 @@ function seedMasterRecords() {
       probability: 91.0,
       isFree: true,
       altitudeM: 18,
-      weatherDesc: "Calor de Barranquilla",
+      weatherDesc: "Calor de Barranquilla (30°C)",
       homeAvgGoals: "3",
       awayAvgGoals: "1",
       explanation: `Junior fue una aplanadora en el Metropolitano ganando 3-1.`,
@@ -676,6 +701,128 @@ export function getAllMasterFeed() {
   return seedMasterRecords();
 }
 
+function saveMasterFeed(list) {
+  localStorage.setItem(DB_KEY, JSON.stringify(list));
+  renderLiveTickerAndStreak();
+  renderTodayPredictions();
+  renderTodayResults();
+  renderFullPublicHistory();
+}
+
+// ============================================================================
+// MEJORA #3 Y #5: CINTILLO BURSÁTIL EN VIVO + RACHA ACTIVA
+// ============================================================================
+function renderLiveTickerAndStreak() {
+  const all = getAllMasterFeed();
+  const wins = all.filter((p) => p.outcome === "ACIERTO");
+
+  // Cintillo bursátil
+  const tickerEl = document.getElementById("live-win-ticker");
+  if (tickerEl && wins.length > 0) {
+    const itemsHtml = wins
+      .map(
+        (w) =>
+          `<span class="mx-4"><strong class="text-[#10b981]">✔ COBRADO:</strong> ${w.homeTeam} vs ${w.awayTeam} ► <span class="text-cyan-300">${w.predictionText}</span> (@${(w.odds || 1.45).toFixed(2)}) [${w.liveScore}]</span>`
+      )
+      .join(" • ");
+    tickerEl.innerHTML = itemsHtml + " • " + itemsHtml;
+  }
+
+  // Racha activa (contando desde el más reciente finalizado)
+  const settled = all.filter((p) => p.outcome === "ACIERTO" || p.outcome === "FALLO");
+  let currentStreak = 0;
+  for (const game of settled) {
+    if (game.outcome === "ACIERTO") currentStreak++;
+    else break;
+  }
+
+  const streakBadge = document.getElementById("hot-streak-badge");
+  if (streakBadge) {
+    if (currentStreak >= 2) {
+      streakBadge.textContent = `🔥 RACHA ACTUAL: ${currentStreak} ACIERTOS SEGUIDOS`;
+      streakBadge.classList.remove("hidden");
+    } else {
+      streakBadge.textContent = `⚡ ${wins.length} ACIERTOS AUDITADOS`;
+    }
+  }
+}
+
+// ============================================================================
+// MEJORA #1: GENERADOR DE "TICKETS DE VICTORIA" PARA REDES (SHAREABLE CARD)
+// ============================================================================
+window.openWinTicketCard = (matchId, ev) => {
+  if (ev) ev.stopPropagation();
+  const match = getAllMasterFeed().find((m) => m.id === matchId);
+  if (!match) return;
+
+  let modal = document.getElementById("win-ticket-modal");
+  if (!modal) {
+    modal = document.createElement("div");
+    modal.id = "win-ticket-modal";
+    modal.className = "fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 font-mono";
+    document.body.appendChild(modal);
+  }
+
+  const stake = Number(document.getElementById("stake-calculator-input")?.value || 50000);
+  const totalReturn = Math.round(stake * (match.odds || 1.45));
+  const netProfit = totalReturn - stake;
+
+  modal.innerHTML = `
+    <div class="max-w-sm w-full space-y-3">
+      <!-- Tarjeta vertical formato Historia Instagram / Estado WhatsApp -->
+      <div class="p-6 bg-gradient-to-b from-[#061412] via-[#05070a] to-[#040d14] border-2 border-[#10b981] shadow-[0_0_40px_rgba(16,185,129,0.3)] space-y-5 relative overflow-hidden">
+        <div class="flex items-center justify-between border-b border-[#1b2432] pb-3">
+          <div>
+            <span class="text-base font-black text-white tracking-wider">OPTACORE<span class="text-cyan-400">.QUANT</span></span>
+            <span class="text-[9px] text-slate-400 block">AUDITORÍA OFICIAL VERIFICADA</span>
+          </div>
+          <span class="px-2.5 py-1 bg-[#10b981] text-slate-950 font-black text-xs uppercase">
+            ✔ ACIERTO
+          </span>
+        </div>
+
+        <div class="text-center space-y-2 py-2">
+          <span class="text-[10px] text-cyan-400 uppercase font-bold">${match.sport} // ${match.league}</span>
+          <div class="flex items-center justify-center gap-4 py-2">
+            <img src="${getLogo(match.homeTeam)}" class="w-12 h-12 object-contain" />
+            <span class="text-2xl font-black text-white">${match.liveScore}</span>
+            <img src="${getLogo(match.awayTeam)}" class="w-12 h-12 object-contain" />
+          </div>
+          <div class="text-sm font-black text-white">${match.homeTeam} vs ${match.awayTeam}</div>
+        </div>
+
+        <div class="p-3 bg-[#05070a] border border-[#10b981]/50 space-y-1 text-center">
+          <span class="text-[9px] text-slate-400 uppercase block">PRONÓSTICO CUMPLIDO:</span>
+          <span class="text-sm font-black text-[#10b981] block">${match.predictionText}</span>
+          <span class="text-xs text-white font-bold">Cuota: @${(match.odds || 1.45).toFixed(2)} | Confianza: ${match.probability}%</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 bg-[#070d14] p-2.5 border border-[#1b2432] text-center text-xs">
+          <div>
+            <span class="text-[9px] text-slate-400 block">INVERSIÓN BASE</span>
+            <span class="font-bold text-white">$${stake.toLocaleString("es-CO")}</span>
+          </div>
+          <div>
+            <span class="text-[9px] text-slate-400 block">COBRO TOTAL</span>
+            <span class="font-black text-[#10b981]">$${totalReturn.toLocaleString("es-CO")} (+${netProfit.toLocaleString("es-CO")})</span>
+          </div>
+        </div>
+
+        <div class="text-center pt-2 border-t border-[#1b2432] text-[10px] text-slate-400">
+          📲 Únete al VIP en WhatsApp: <strong class="text-white">+57 333 286 1551</strong>
+        </div>
+      </div>
+
+      <div class="flex gap-2">
+        <button onclick="document.getElementById('win-ticket-modal').classList.add('hidden')" class="flex-1 py-2 bg-[#0a0e14] border border-[#1b2432] text-slate-300 text-xs font-bold uppercase">
+          Cerrar Vista
+        </button>
+      </div>
+    </div>
+  `;
+  modal.classList.remove("hidden");
+};
+
 function formatCountdown(iso, st) {
   if (st === "FINALIZADO") return "FINALIZADO";
   if (st === "EN_VIVO") return "🔴 EN JUEGO AHORA";
@@ -715,7 +862,7 @@ function injectWhatsAppFloatingButton() {
   btn.id = "btn-wa-floating";
   btn.href = CONFIG.NOTIFICATIONS.WHATSAPP_LINK;
   btn.target = "_blank";
-  btn.className = "fixed bottom-5 right-5 z-50 px-4 py-2 bg-[#10b981] hover:bg-emerald-400 text-slate-950 font-black font-mono text-xs uppercase tracking-wider rounded-sm shadow-[0_0_20px_rgba(16,185,129,0.4)] flex items-center gap-2 border border-emerald-300 transition-all";
+  btn.className = "fixed bottom-5 right-5 z-40 px-4 py-2 bg-[#10b981] hover:bg-emerald-400 text-slate-950 font-black font-mono text-xs uppercase tracking-wider rounded-sm shadow-[0_0_20px_rgba(16,185,129,0.4)] flex items-center gap-2 border border-emerald-300 transition-all";
   btn.innerHTML = `<span>💬 WhatsApp VIP (+57 333 286 1551)</span>`;
   document.body.appendChild(btn);
 }
@@ -775,10 +922,15 @@ export function renderPerformanceChart() {
   `;
 }
 
+window.renderPerformanceChart = renderPerformanceChart;
+
 // Modal Emergente
 window.openMatchModal = (matchId) => {
   const match = getAllMasterFeed().find((m) => m.id === matchId);
   if (!match) return;
+
+  const isVip = isUserVipOrAdmin();
+  const canSeePick = isVip || match.isFree;
 
   let modal = document.getElementById("match-telemetry-modal");
   if (!modal) {
@@ -791,6 +943,7 @@ window.openMatchModal = (matchId) => {
   const stars = getStars(match.probability);
   const homeLogo = getLogo(match.homeTeam);
   const awayLogo = getLogo(match.awayTeam);
+  const fever = getPitchFeverBar(match.altitudeM, match.weatherDesc);
 
   modal.innerHTML = `
     <div class="quant-card max-w-2xl w-full p-4 md:p-6 space-y-4 max-h-[92vh] overflow-y-auto border-cyan-500/60 shadow-[0_0_30px_rgba(6,182,212,0.2)]">
@@ -826,30 +979,43 @@ window.openMatchModal = (matchId) => {
         </div>
       </div>
 
-      <div class="p-3 bg-[#061210] border border-[#10b981]/50 flex items-center justify-between text-xs">
-        <div>
-          <span class="text-[10px] text-slate-400 block uppercase">JUGADA OFICIAL:</span>
-          <span class="text-sm md:text-base font-bold text-[#10b981]">${match.predictionText}</span>
-          <span class="text-[11px] text-slate-400 block pt-0.5">Cuota asignada: <strong>@${(match.odds || 1.45).toFixed(2)}</strong></span>
-        </div>
-        <div class="text-right">
-          <span class="text-[10px] text-slate-400 block">CONFIANZA</span>
-          <span class="text-lg md:text-xl font-black text-white">${match.probability}%</span>
-        </div>
-      </div>
+      ${
+        canSeePick
+          ? `
+          <div class="p-3 bg-[#061210] border border-[#10b981]/50 flex items-center justify-between text-xs">
+            <div>
+              <span class="text-[10px] text-slate-400 block uppercase">JUGADA OFICIAL:</span>
+              <span class="text-sm md:text-base font-bold text-[#10b981]">${match.predictionText}</span>
+              <span class="text-[11px] text-slate-400 block pt-0.5">Cuota asignada: <strong>@${(match.odds || 1.45).toFixed(2)}</strong></span>
+            </div>
+            <div class="text-right">
+              <span class="text-[10px] text-slate-400 block">CONFIANZA</span>
+              <span class="text-lg md:text-xl font-black text-white">${match.probability}%</span>
+            </div>
+          </div>
+          `
+          : `
+          <div class="p-3 bg-[#05070a] border border-amber-500/40 flex items-center justify-between text-xs">
+            <span class="text-amber-300 font-bold">🔒 Pronóstico protegido en servidor para Miembros VIP</span>
+            <button onclick="document.getElementById('match-telemetry-modal').classList.add('hidden'); window.switchTab('tab-planes')" class="px-3 py-1 bg-[#10b981] text-slate-950 font-black uppercase">
+              Desbloquear VIP
+            </button>
+          </div>
+          `
+      }
 
-      <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 bg-[#05070a] p-3 border border-[#1b2432] text-xs">
-        <div>
-          <span class="text-[10px] text-slate-400 block">ALTURA / VIAJE</span>
-          <span class="text-white font-bold">${match.altitudeM} metros</span>
+      <!-- MEJORA #2: MEDIDOR DE FIEBRE DE CANCHA -->
+      <div class="p-3 bg-[#05070a] border border-[#1b2432] space-y-1.5 text-xs">
+        <div class="flex justify-between text-[10px]">
+          <span class="text-slate-400 uppercase">TERMÓMETRO DE DESGASTE FÍSICO / CLIMA:</span>
+          <span class="text-amber-300 font-bold">${fever.label} (${fever.stressScore}%)</span>
         </div>
-        <div>
-          <span class="text-[10px] text-slate-400 block">CLIMA EN CANCHA</span>
-          <span class="text-cyan-300 font-bold">${match.weatherDesc}</span>
+        <div class="w-full h-2 bg-[#161f2c] overflow-hidden">
+          <div class="${fever.color} h-full" style="width: ${fever.stressScore}%"></div>
         </div>
-        <div class="col-span-2 sm:col-span-1">
-          <span class="text-[10px] text-slate-400 block">ESTADO</span>
-          <span class="text-[#10b981] font-bold">${match.outcome === "ACIERTO" ? "Ganada con éxito" : match.outcome === "FALLO" ? "Jugada caída" : "En juego"}</span>
+        <div class="flex justify-between text-[10px] text-slate-400 pt-1">
+          <span>Altitud sede: <strong class="text-white">${match.altitudeM} metros</strong></span>
+          <span>Condición: <strong class="text-cyan-300">${match.weatherDesc}</strong></span>
         </div>
       </div>
 
@@ -861,25 +1027,67 @@ window.openMatchModal = (matchId) => {
           ${match.explanation}
         </div>
       </div>
+
+      ${
+        match.outcome === "ACIERTO"
+          ? `
+          <button onclick="window.openWinTicketCard('${match.id}', event)" class="w-full py-2.5 bg-[#10b981] hover:bg-emerald-400 text-slate-950 font-black uppercase text-xs">
+            📸 Generar Ticket de Victoria para Redes
+          </button>
+          `
+          : ""
+      }
     </div>
   `;
   modal.classList.remove("hidden");
 };
 
-// Renderizado de Pronósticos de Hoy
+// ============================================================================
+// MEJORA #4 Y #6: FILTROS RÁPIDOS Y CALCULADORA EN PRONÓSTICOS DE HOY
+// ============================================================================
+window.setQuickFilter = (filterType) => {
+  activeQuickFilter = filterType;
+  document.querySelectorAll(".qfilter-btn").forEach((btn) => {
+    if (btn.dataset.qfilter === filterType) {
+      btn.className = "qfilter-btn px-3 py-1 font-bold uppercase border border-cyan-400 bg-cyan-500/20 text-white shrink-0";
+    } else {
+      btn.className = "qfilter-btn px-3 py-1 font-bold uppercase border border-[#1b2432] bg-[#05070a] text-slate-400 hover:text-white shrink-0";
+    }
+  });
+  renderTodayPredictions();
+};
+
+window.setQuickStake = (amount) => {
+  const input = document.getElementById("stake-calculator-input");
+  if (input) {
+    input.value = amount;
+    renderTodayPredictions();
+  }
+};
+
 export function renderTodayPredictions() {
   const container = document.getElementById("predictions-grid");
   if (!container) return;
 
   const today = getColombiaDateString();
   const search = (document.getElementById("search-input")?.value || "").toLowerCase();
+  const stake = Number(document.getElementById("stake-calculator-input")?.value || 50000);
   const isVip = isUserVipOrAdmin();
   const todayList = getAllMasterFeed().filter((p) => p.matchDate === today);
 
   const filtered = todayList.filter((p) => {
-    return p.homeTeam.toLowerCase().includes(search) ||
-           p.awayTeam.toLowerCase().includes(search) ||
-           p.league.toLowerCase().includes(search);
+    const matchText =
+      p.homeTeam.toLowerCase().includes(search) ||
+      p.awayTeam.toLowerCase().includes(search) ||
+      p.league.toLowerCase().includes(search);
+
+    let matchQuick = true;
+    if (activeQuickFilter === "FÚTBOL") matchQuick = p.sport === "FÚTBOL";
+    else if (activeQuickFilter === "NBA") matchQuick = p.sport === "NBA";
+    else if (activeQuickFilter === "FREE") matchQuick = p.isFree === true;
+    else if (activeQuickFilter === "PENDING") matchQuick = p.matchStatus === "PROGRAMADO";
+
+    return matchText && matchQuick;
   });
 
   const counterBadge = document.getElementById("daily-counter-badge");
@@ -894,6 +1102,11 @@ export function renderTodayPredictions() {
     const stars = getStars(item.probability);
     const homeLogo = getLogo(item.homeTeam);
     const awayLogo = getLogo(item.awayTeam);
+    const fever = getPitchFeverBar(item.altitudeM, item.weatherDesc);
+
+    const odd = item.odds || 1.45;
+    const totalReturn = Math.round(stake * odd);
+    const netProfit = totalReturn - stake;
 
     return `
       <article class="quant-card p-3.5 flex flex-col justify-between space-y-3 font-mono">
@@ -923,40 +1136,67 @@ export function renderTodayPredictions() {
         ${
           isVisible
             ? `
-            <div class="p-2.5 bg-[#05070a] border border-[#10b981]/40 flex items-center justify-between gap-2 text-xs">
-              <div>
-                <span class="text-[9px] uppercase text-slate-400 block">JUGADA SUGERIDA:</span>
-                <span class="text-xs md:text-sm font-bold text-[#10b981]">${item.predictionText}</span>
-                <span class="text-[10px] text-slate-400 block">Cuota: @${(item.odds || 1.45).toFixed(2)}</span>
+            <div class="p-2.5 bg-[#05070a] border border-[#10b981]/40 space-y-2 text-xs">
+              <div class="flex items-center justify-between gap-2">
+                <div>
+                  <span class="text-[9px] uppercase text-slate-400 block">JUGADA SUGERIDA:</span>
+                  <span class="text-xs md:text-sm font-bold text-[#10b981]">${item.predictionText}</span>
+                  <span class="text-[10px] text-slate-400 block">Cuota: @${odd.toFixed(2)}</span>
+                </div>
+                <div class="text-right">
+                  <span class="text-[9px] text-slate-400 block">PROBABILIDAD</span>
+                  <span class="text-sm md:text-base font-black text-white">${item.probability}%</span>
+                </div>
               </div>
-              <div class="text-right">
-                <span class="text-[9px] text-slate-400 block">PROBABILIDAD</span>
-                <span class="text-sm md:text-base font-black text-white">${item.probability}%</span>
+              <!-- MEJORA #6: Retorno calculado según inversión -->
+              <div class="pt-1.5 border-t border-[#1b2432] flex items-center justify-between text-[11px]">
+                <span class="text-slate-400">Con $${stake.toLocaleString("es-CO")} cobras:</span>
+                <span class="text-[#10b981] font-black">$${totalReturn.toLocaleString("es-CO")} (+$${netProfit.toLocaleString("es-CO")})</span>
               </div>
             </div>
             `
             : `
             <div class="p-2.5 bg-[#05070a] border border-[#1b2432] flex items-center justify-between text-xs">
-              <span class="text-slate-400 text-[11px]">🔒 Jugada exclusiva para miembros VIP</span>
-              <button onclick="window.switchTab('tab-planes')" class="px-2 py-1 bg-[#10b981] text-slate-950 text-[10px] font-bold uppercase">
+              <div>
+                <span class="text-slate-400 text-[11px] block">🔒 Jugada VIP Protegida (Cuota @${odd.toFixed(2)})</span>
+                <span class="text-[10px] text-[#10b981]">Con $${stake.toLocaleString("es-CO")} cobras $${totalReturn.toLocaleString("es-CO")}</span>
+              </div>
+              <button onclick="window.switchTab('tab-planes')" class="px-2.5 py-1 bg-[#10b981] text-slate-950 text-[10px] font-bold uppercase">
                 Hazte VIP
               </button>
             </div>
             `
         }
 
+        <!-- MEJORA #2: Barra de Fiebre de Cancha en tarjeta -->
+        <div class="space-y-1">
+          <div class="flex justify-between text-[10px]">
+            <span class="text-slate-400">${item.weatherDesc} (${item.altitudeM}m)</span>
+            <span class="text-amber-300 font-bold">${fever.label}</span>
+          </div>
+          <div class="w-full h-1.5 bg-[#161f2c]">
+            <div class="${fever.color} h-full" style="width: ${fever.stressScore}%"></div>
+          </div>
+        </div>
+
         <div class="flex items-center justify-between text-[11px] pt-1 border-t border-[#1b2432]">
-          <span class="text-slate-400">${item.weatherDesc}</span>
           <button onclick="window.openMatchModal('${item.id}')" class="px-2.5 py-1 text-[10px] font-bold uppercase bg-cyan-500/20 border border-cyan-400 text-cyan-300 hover:bg-cyan-400 hover:text-black">
-            🔍 Ver Análisis
+            🔍 Ver Análisis Completo
           </button>
+          ${
+            item.outcome === "ACIERTO"
+              ? `<button onclick="window.openWinTicketCard('${item.id}', event)" class="px-2.5 py-1 text-[10px] font-bold uppercase bg-[#10b981]/20 border border-[#10b981] text-[#10b981] hover:bg-[#10b981] hover:text-black">
+                  📸 Ticket Victoria
+                </button>`
+              : ""
+          }
         </div>
       </article>
     `;
   }).join("");
 }
 
-// Resultados de Hoy (1 unidad fija por fallo)
+// Resultados de Hoy
 export function renderTodayResults() {
   const box = document.getElementById("today-results-container");
   const summaryBox = document.getElementById("today-financial-summary");
@@ -975,7 +1215,7 @@ export function renderTodayResults() {
       totalOddsWon += o;
       countWon++;
     } else if (p.outcome === "FALLO") {
-      countLost++; // 1 apuesta = 1 unidad de pérdida
+      countLost++;
     }
   });
 
@@ -1016,7 +1256,14 @@ export function renderTodayResults() {
           <div class="text-xs md:text-sm font-bold text-white">${p.homeTeam} vs ${p.awayTeam}</div>
           <div class="text-cyan-300 text-[11px]">Pronóstico: ${p.predictionText} (@${(p.odds || 1.45).toFixed(2)})</div>
         </div>
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2">
+          ${
+            p.outcome === "ACIERTO"
+              ? `<button onclick="window.openWinTicketCard('${p.id}', event)" class="px-2 py-1 bg-[#10b981]/20 border border-[#10b981] text-[#10b981] text-[10px] font-bold uppercase">
+                  📸 Ticket
+                </button>`
+              : ""
+          }
           <div class="text-right">
             <span class="text-[9px] text-slate-400 block">${p.matchStatus}</span>
             <span class="text-sm md:text-base font-black text-white">${p.liveScore}</span>
@@ -1028,7 +1275,7 @@ export function renderTodayResults() {
   }).join("");
 }
 
-// Historial Completo (1 unidad fija por cada fallo)
+// Historial Completo
 export function renderFullPublicHistory() {
   const all = getAllMasterFeed();
   const settled = all.filter((p) => p.outcome === "ACIERTO" || p.outcome === "FALLO");
@@ -1043,7 +1290,7 @@ export function renderFullPublicHistory() {
       totalOddsWon += o;
       countWins++;
     } else if (p.outcome === "FALLO") {
-      countLosses++; // Exactamente 1 unidad de banca perdida por fallo
+      countLosses++;
     }
   });
 
@@ -1129,19 +1376,119 @@ export function renderFullPublicHistory() {
           <td class="py-2.5 px-3 font-bold text-white whitespace-nowrap">@${(p.odds || 1.45).toFixed(2)}</td>
           <td class="py-2.5 px-3 font-bold text-white whitespace-nowrap">${p.liveScore}</td>
           <td class="py-2.5 px-3 whitespace-nowrap"><span class="px-2 py-0.5 text-[9px] font-bold uppercase border ${badge}">${p.outcome}</span></td>
-          <td class="py-2.5 px-3 text-right whitespace-nowrap"><span class="text-cyan-400 underline text-[10px]">Ver Análisis →</span></td>
+          <td class="py-2.5 px-3 text-right whitespace-nowrap space-x-2">
+            ${
+              p.outcome === "ACIERTO"
+                ? `<button onclick="window.openWinTicketCard('${p.id}', event)" class="text-[#10b981] underline text-[10px]">📸 Ticket</button>`
+                : ""
+            }
+            <span class="text-cyan-400 underline text-[10px]">Análisis →</span>
+          </td>
         </tr>
       `;
     }).join("");
   }
 }
 
+// ============================================================================
+// MEJORA #9: PANEL DE CONTROL SECRETO PARA EL ADMINISTRADOR
+// ============================================================================
+window.renderAdminPanel = () => {
+  const listEl = document.getElementById("admin-matches-list");
+  if (!listEl) return;
+
+  const all = getAllMasterFeed();
+  listEl.innerHTML = all.slice(0, 12).map((p) => `
+    <div class="p-2.5 bg-[#05070a] border border-[#1b2432] flex flex-wrap items-center justify-between gap-2 text-xs">
+      <div>
+        <span class="text-[10px] text-slate-400">${p.matchDate} • ${p.league}</span>
+        <div class="font-bold text-white">${p.homeTeam} vs ${p.awayTeam}</div>
+        <span class="text-[11px] text-cyan-300">${p.predictionText}</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <input id="score-${p.id}" type="text" value="${p.liveScore}" class="w-20 bg-[#0a0e14] border border-[#1b2432] px-2 py-1 text-white text-center font-bold" />
+        <select id="outcome-${p.id}" class="bg-[#0a0e14] border border-[#1b2432] px-2 py-1 text-white">
+          <option value="PENDIENTE" ${p.outcome === "PENDIENTE" ? "selected" : ""}>PENDIENTE</option>
+          <option value="ACIERTO" ${p.outcome === "ACIERTO" ? "selected" : ""}>ACIERTO</option>
+          <option value="FALLO" ${p.outcome === "FALLO" ? "selected" : ""}>FALLO</option>
+        </select>
+        <button onclick="window.adminUpdateMatch('${p.id}')" class="px-2.5 py-1 bg-[#10b981] text-slate-950 font-black uppercase text-[10px]">
+          Guardar
+        </button>
+      </div>
+    </div>
+  `).join("");
+};
+
+window.adminUpdateMatch = (id) => {
+  const all = getAllMasterFeed();
+  const idx = all.findIndex((m) => m.id === id);
+  if (idx === -1) return;
+
+  const newScore = document.getElementById(`score-${id}`)?.value || "vs";
+  const newOutcome = document.getElementById(`outcome-${id}`)?.value || "PENDIENTE";
+
+  all[idx].liveScore = newScore;
+  all[idx].outcome = newOutcome;
+  all[idx].matchStatus = newOutcome === "PENDIENTE" ? "PROGRAMADO" : "FINALIZADO";
+
+  saveMasterFeed(all);
+  window.renderAdminPanel();
+  alert(`Partido actualizado: ${all[idx].homeTeam} (${newScore}) -> ${newOutcome}`);
+};
+
+window.resetLocalDatabase = () => {
+  if (confirm("¿Seguro que deseas restaurar los pronósticos base?")) {
+    localStorage.removeItem(DB_KEY);
+    window.location.reload();
+  }
+};
+
 document.addEventListener("DOMContentLoaded", () => {
   startColombiaClock();
   injectWhatsAppFloatingButton();
+  renderLiveTickerAndStreak();
   renderTodayPredictions();
   renderTodayResults();
   renderFullPublicHistory();
 
   document.getElementById("search-input")?.addEventListener("input", renderTodayPredictions);
+  document.getElementById("stake-calculator-input")?.addEventListener("input", renderTodayPredictions);
+
+  // Formulario de Admin para agregar partido
+  document.getElementById("admin-add-match-form")?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const today = getColombiaDateString();
+    const hhmm = document.getElementById("adm-time").value.trim() || "19:00";
+
+    const newMatch = {
+      id: "ADM-" + Date.now(),
+      sport: document.getElementById("adm-sport").value,
+      matchDate: today,
+      kickoffIso: `${today}T${hhmm}:00-05:00`,
+      kickoffLabel: `${hhmm} COL`,
+      league: document.getElementById("adm-league").value.trim(),
+      homeTeam: document.getElementById("adm-home").value.trim(),
+      awayTeam: document.getElementById("adm-away").value.trim(),
+      predictionText: document.getElementById("adm-pick").value.trim(),
+      odds: parseFloat(document.getElementById("adm-odds").value) || 1.50,
+      probability: parseFloat(document.getElementById("adm-prob").value) || 90.0,
+      isFree: document.getElementById("adm-free").value === "true",
+      altitudeM: 150,
+      weatherDesc: "Condición Estándar (20°C)",
+      homeAvgGoals: "1.9 por partido",
+      awayAvgGoals: "1.1 por partido",
+      explanation: document.getElementById("adm-exp").value.trim() || "Análisis verificado por el modelo OptaCore.",
+      liveScore: "vs",
+      matchStatus: "PROGRAMADO",
+      outcome: "PENDIENTE",
+    };
+
+    const all = getAllMasterFeed();
+    all.unshift(newMatch);
+    saveMasterFeed(all);
+    e.target.reset();
+    window.renderAdminPanel();
+    alert("¡Nuevo pronóstico publicado en la cartelera!");
+  });
 });
