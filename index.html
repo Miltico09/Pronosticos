@@ -8,146 +8,145 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="stylesheet" href="./estilos.css" />
 </head>
-<body class="min-h-screen flex flex-col justify-between bg-[#05070a] text-slate-100">
+<body class="min-h-screen flex flex-col justify-between bg-[#05070a] text-slate-100 font-sans">
 
   <!-- BARRA SUPERIOR -->
-  <div class="border-b border-[#1b2432] bg-[#030508] px-3 py-1.5 text-[11px] font-num text-[#8b9bb4]">
+  <div class="border-b border-[#1b2432] bg-[#030508] px-3 py-1.5 text-[11px] font-mono text-[#8b9bb4]">
     <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
       <div class="flex items-center gap-3">
         <span class="flex items-center gap-1.5 text-[#10b981] font-bold">
           <span class="w-2 h-2 bg-[#10b981] inline-block animate-pulse"></span>
-          SISTEMA CUANTITATIVO ACTIVO
+          SISTEMA EN VIVO
         </span>
         <span id="colombia-live-clock" class="text-cyan-400 font-bold">HORA COLOMBIA: --:--:--</span>
       </div>
       <div>
-        <span id="user-role-badge" class="px-2 py-0.5 border border-[#1b2432] bg-[#0a0e14] text-slate-300 font-bold">
-          MODO ABIERTO (4 PRONÓSTICOS DESTACADOS)
+        <span id="user-role-badge" class="px-2 py-0.5 border border-[#1b2432] bg-[#0a0e14] text-[#10b981] font-bold">
+          ACCESO LIBRE // 4 JUGADAS GRATIS HOY
         </span>
       </div>
     </div>
   </div>
 
-  <!-- HEADER -->
+  <!-- ENCABEZADO -->
   <header class="sticky top-0 z-30 border-b border-[#1b2432] bg-[#05070a]/95 backdrop-blur-md px-4 py-3">
     <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
       <div class="flex items-center gap-2.5">
         <div class="w-1.5 h-8 bg-[#10b981]"></div>
         <div>
           <div class="flex items-center gap-2">
-            <span class="text-lg md:text-xl font-black text-white font-num tracking-wide">
+            <span class="text-lg md:text-xl font-black text-white font-mono tracking-wide">
               OPTACORE<span class="text-[#06b6d4]">.QUANT</span>
             </span>
-            <span class="text-[9px] font-num uppercase px-1.5 py-0.5 bg-[#10b981]/15 text-[#10b981] border border-[#10b981]/30 font-bold">
+            <span class="text-[9px] font-mono uppercase px-1.5 py-0.5 bg-[#10b981]/15 text-[#10b981] border border-[#10b981]/30 font-bold">
               FÚTBOL & NBA
             </span>
           </div>
-          <p class="text-[11px] font-num text-slate-400">
+          <p class="text-[11px] font-mono text-slate-400">
             PRONÓSTICOS DE ALTA PROBABILIDAD
           </p>
         </div>
       </div>
 
-      <!-- BOTONES DE NAVEGACIÓN LIMPIOS (SIN DASHBOARD VACÍO) -->
+      <!-- BOTONES DE NAVEGACIÓN -->
       <nav class="flex items-center gap-1 overflow-x-auto py-1">
-        <button data-tab="tab-pronosticos" class="nav-btn px-3 py-1.5 text-xs font-num font-bold uppercase border border-[#06b6d4] bg-[#06b6d4]/15 text-white">
+        <button data-tab="tab-pronosticos" class="nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#06b6d4] bg-[#06b6d4]/15 text-white">
           Pronósticos Hoy
         </button>
-        <button data-tab="tab-resultados" class="nav-btn px-3 py-1.5 text-xs font-num font-bold uppercase border border-[#1b2432] bg-[#0a0e14] text-[#8b9bb4] hover:text-white">
+        <button data-tab="tab-resultados" class="nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#1b2432] bg-[#0a0e14] text-[#8b9bb4] hover:text-white">
           Resultados Hoy
         </button>
-        <button data-tab="tab-historial" class="nav-btn px-3 py-1.5 text-xs font-num font-bold uppercase border border-[#1b2432] bg-[#0a0e14] text-[#8b9bb4] hover:text-white">
-          Historial & % Acierto
+        <button data-tab="tab-historial" class="nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#1b2432] bg-[#0a0e14] text-[#8b9bb4] hover:text-white">
+          Historial & Aciertos
         </button>
-        <button data-tab="tab-planes" class="nav-btn px-3 py-1.5 text-xs font-num font-bold uppercase border border-[#10b981]/50 bg-[#10b981]/10 text-[#10b981] hover:bg-[#10b981] hover:text-black">
+        <button data-tab="tab-planes" class="nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#10b981]/50 bg-[#10b981]/10 text-[#10b981] hover:bg-[#10b981] hover:text-black">
           Planes VIP & Cuentas
         </button>
-        <button data-tab="tab-cuenta" class="nav-btn px-3 py-1.5 text-xs font-num font-bold uppercase border border-[#1b2432] bg-[#0a0e14] text-[#8b9bb4] hover:text-white">
+        <button data-tab="tab-cuenta" class="nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#1b2432] bg-[#0a0e14] text-[#8b9bb4] hover:text-white">
           Mi Licencia & Referidos
         </button>
       </nav>
 
-      <!-- ACCESO RÁPIDO -->
+      <!-- BOTONES DE SESIÓN Y PRUEBA VIP CONECTADOS -->
       <div class="flex items-center gap-2">
-        <button id="btn-trial-24h" class="px-2.5 py-1.5 text-xs font-num font-bold uppercase bg-[#06b6d4] text-slate-950 hover:bg-cyan-300">
+        <button id="btn-trial-24h" class="px-3 py-1.5 text-xs font-mono font-bold uppercase bg-[#06b6d4] text-slate-950 hover:bg-cyan-300">
           Prueba VIP 24h
         </button>
-        <button id="btn-open-auth" class="px-2.5 py-1.5 text-xs font-num font-bold uppercase border border-[#1b2432] bg-[#0f151f] text-white">
+        <button id="btn-open-auth" class="px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#1b2432] bg-[#0f151f] text-white hover:border-slate-500">
           Iniciar Sesión
         </button>
-        <button id="btn-logout" class="hidden px-2.5 py-1.5 text-xs font-num font-bold uppercase border border-[#ef4444] text-[#ef4444]">
+        <button id="btn-logout" class="hidden px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#ef4444] text-[#ef4444]">
           Salir
         </button>
       </div>
     </div>
   </header>
 
-  <!-- CONTENIDO PRINCIPAL -->
+  <!-- CONTENIDO -->
   <main class="max-w-7xl w-full mx-auto px-4 py-6 flex-1 space-y-6">
 
-    <!-- 1. PRONÓSTICOS DE HOY -->
+    <!-- TAB 1: PRONÓSTICOS HOY -->
     <section id="tab-pronosticos" class="tab-panel space-y-4">
       <div class="quant-card p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 class="text-base font-black uppercase text-white font-num">Cartelera Oficial del Día</h1>
-          <span id="daily-counter-badge" class="text-xs font-num text-cyan-400">4 Pronósticos Destacados Abiertos</span>
+          <h1 class="text-base font-black uppercase text-white font-mono">Cartelera Oficial del Día</h1>
+          <span id="daily-counter-badge" class="text-xs font-mono text-cyan-400">4 Pronósticos Destacados Abiertos</span>
         </div>
         <input
           id="search-input"
           type="text"
           placeholder="Buscar equipo o liga..."
-          class="w-full sm:w-64 bg-[#05070a] border border-[#1b2432] px-3 py-1.5 text-xs font-num text-white focus:outline-none focus:border-cyan-400"
+          class="w-full sm:w-64 bg-[#05070a] border border-[#1b2432] px-3 py-1.5 text-xs font-mono text-white focus:outline-none focus:border-cyan-400"
         />
       </div>
 
-      <!-- Grid de Pronósticos -->
       <div id="predictions-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
     </section>
 
-    <!-- 2. RESULTADOS DE HOY (AUDITORÍA COMPLETA, NO SOLO UN BOTÓN) -->
+    <!-- TAB 2: RESULTADOS HOY (SIN BOTÓN DE API Y CON CONTADOR) -->
     <section id="tab-resultados" class="tab-panel hidden space-y-4">
-      <div class="quant-card p-4 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 class="text-base font-black uppercase text-white font-num">Auditoría de Resultados del Día</h2>
-          <p class="text-xs text-slate-400">Marcadores finales calificados automáticamente como ACIERTO o FALLO.</p>
-        </div>
-        <button id="btn-sync-results" class="px-3 py-1.5 text-xs font-num font-bold uppercase bg-[#10b981] text-slate-950 hover:bg-emerald-400">
-          ↻ Sincronizar Marcadores API
-        </button>
+      <div class="quant-card p-4">
+        <h2 class="text-base font-black uppercase text-white font-mono">Auditoría de Resultados del Día</h2>
+        <p class="text-xs text-slate-400">Calificación transparente de los partidos finalizados.</p>
       </div>
 
-      <!-- Tarjetas de Resultados del Día -->
+      <!-- Tarjetas de Ganancia / Pérdida del Día -->
+      <div id="today-financial-summary" class="grid grid-cols-3 gap-3 font-mono text-xs"></div>
+
       <div id="today-results-container" class="space-y-3"></div>
     </section>
 
-    <!-- 3. HISTORIAL COMPLETO ORDENADO POR FECHA Y HORA -->
+    <!-- TAB 3: HISTORIAL & MULTIPLICADOR DE BANCA -->
     <section id="tab-historial" class="tab-panel hidden space-y-5">
+      <!-- Balance Financiero Completo -->
+      <div id="history-financial-summary" class="grid grid-cols-1 sm:grid-cols-3 gap-3 font-mono"></div>
+
       <div id="history-kpi-cards" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
 
       <div class="quant-card p-4 space-y-3">
         <div class="flex items-center justify-between border-b border-[#1b2432] pb-2">
-          <h3 class="text-xs font-num uppercase font-bold text-white">Curva Acumulada de Rendimiento Real</h3>
-          <span class="text-[11px] font-num text-[#10b981]">AUDITORÍA CRONOLÓGICA</span>
+          <h3 class="text-xs font-mono uppercase font-bold text-white">Curva de Rendimiento Acumulado</h3>
+          <span class="text-[11px] font-mono text-[#10b981]">AUDITORÍA CRONOLÓGICA</span>
         </div>
         <div id="performance-chart-box" class="h-44 w-full flex items-end pt-3"></div>
       </div>
 
-      <!-- Tabla Histórica con Botón para Abrir Telemetría de Cada Partido -->
       <div class="quant-card p-4 space-y-3">
         <div class="flex items-center justify-between">
-          <h3 class="text-xs font-num font-bold uppercase text-white">Registro Cronológico (Desde el Más Reciente)</h3>
-          <span class="text-[11px] font-num text-slate-400">Toca cualquier fila para ver el análisis completo</span>
+          <h3 class="text-xs font-mono font-bold uppercase text-white">Historial de Partidos (Desde el Más Reciente)</h3>
+          <span class="text-[11px] font-mono text-slate-400">Toca cualquier fila para ver el análisis completo</span>
         </div>
         <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse font-num text-xs">
+          <table class="w-full text-left border-collapse font-mono text-xs">
             <thead>
               <tr class="border-b border-[#1b2432] text-slate-400 text-[10px] uppercase">
-                <th class="py-2.5 px-3">Fecha / Hora</th>
+                <th class="py-2.5 px-3">Fecha</th>
                 <th class="py-2.5 px-3">Deporte / Liga</th>
                 <th class="py-2.5 px-3">Partido</th>
                 <th class="py-2.5 px-3">Pronóstico</th>
+                <th class="py-2.5 px-3">Cuota</th>
                 <th class="py-2.5 px-3">Marcador</th>
-                <th class="py-2.5 px-3">Estado</th>
+                <th class="py-2.5 px-3">Resultado</th>
                 <th class="py-2.5 px-3 text-right">Detalle</th>
               </tr>
             </thead>
@@ -157,26 +156,24 @@
       </div>
     </section>
 
-    <!-- 4. PLANES VIP & CUENTAS (NEQUI, BANCOLOMBIA, BINANCE Y WALLET BEP20) -->
+    <!-- TAB 4: PLANES VIP & CUENTAS -->
     <section id="tab-planes" class="tab-panel hidden space-y-6">
       <div class="text-center max-w-xl mx-auto space-y-1">
-        <h2 class="text-xl font-black uppercase text-white font-num">Planes de Membresía VIP</h2>
-        <p class="text-xs text-slate-400">Precios en Pesos Colombianos (COP) y Dólares Digitales (USDT).</p>
+        <h2 class="text-xl font-black uppercase text-white font-mono">Planes de Membresía VIP</h2>
+        <p class="text-xs text-slate-400">Precios en Pesos Colombianos (COP) y USDT a la TRM Oficial.</p>
       </div>
 
-      <!-- Tarjetas de Planes -->
       <div id="vip-plans-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
 
-      <!-- Cuentas Bancarias y Cripto -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 pt-2">
         <div class="lg:col-span-7 quant-card p-5 space-y-4">
           <div class="flex items-center justify-between border-b border-[#1b2432] pb-3">
-            <h3 class="text-xs font-num font-bold uppercase text-white">Medios de Pago Oficiales</h3>
+            <h3 class="text-xs font-mono font-bold uppercase text-white">Medios de Pago Oficiales</h3>
             <div class="flex border border-[#1b2432] bg-[#05070a] p-0.5">
-              <button id="btn-reg-col" class="px-3 py-1 text-xs font-num font-bold bg-[#10b981] text-slate-950">
+              <button id="btn-reg-col" class="px-3 py-1 text-xs font-mono font-bold bg-[#10b981] text-slate-950">
                 🇨🇴 COLOMBIA
               </button>
-              <button id="btn-reg-int" class="px-3 py-1 text-xs font-num font-bold text-[#8b9bb4]">
+              <button id="btn-reg-int" class="px-3 py-1 text-xs font-mono font-bold text-[#8b9bb4]">
                 🌐 BINANCE / USDT
               </button>
             </div>
@@ -184,19 +181,19 @@
           <div id="payment-methods-list" class="space-y-3"></div>
         </div>
 
-        <div class="lg:col-span-5 quant-card p-5 space-y-3 font-num text-xs">
+        <div class="lg:col-span-5 quant-card p-5 space-y-3 font-mono text-xs">
           <h3 class="text-xs font-bold uppercase text-[#10b981] border-b border-[#1b2432] pb-2">
-            Activación Manual Inmediata
+            Activación Inmediata
           </h3>
           <p class="text-slate-300 text-[11px] leading-relaxed">
-            Para activar tu membresía sin intermediarios, transfiere a cualquiera de las cuentas indicadas y envía el comprobante directamente al WhatsApp oficial:
+            Transfiere el monto a Nequi, Bancolombia o Binance y reporta el comprobante por WhatsApp:
           </p>
           <div class="p-3 bg-[#05070a] border border-[#1b2432] space-y-1">
             <span class="text-[10px] text-slate-400 block">WHATSAPP OFICIAL:</span>
             <span class="text-sm font-black text-white">+57 333 286 1551</span>
           </div>
           <a
-            href="https://wa.me/573332861551?text=Hola%20Milton,%20acabo%20de%20realizar%20la%20transferencia%20para%20activar%20mi%20VIP.%20Adjunto%20mi%20comprobante:"
+            href="https://wa.me/573332861551?text=Hola%20equipo%20OptaCore,%20acabo%20de%20transferir%20para%20activar%20mi%20VIP.%20Adjunto%20el%20comprobante:"
             target="_blank"
             class="block w-full py-2.5 text-center bg-[#10b981] hover:bg-emerald-400 text-slate-950 font-black uppercase tracking-wider text-xs transition"
           >
@@ -206,20 +203,23 @@
       </div>
     </section>
 
-    <!-- 5. MI LICENCIA & REFERIDOS -->
-    <section id="tab-cuenta" class="tab-panel hidden space-y-4 font-num text-xs">
+    <!-- TAB 5: LICENCIA & REFERIDOS -->
+    <section id="tab-cuenta" class="tab-panel hidden space-y-4 font-mono text-xs">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="quant-card p-4 space-y-2">
           <h3 class="text-xs font-bold uppercase text-white border-b border-[#1b2432] pb-2">Estado de tu Licencia</h3>
-          <div id="account-license-details" class="space-y-1.5 text-slate-300"></div>
+          <div id="account-license-details" class="space-y-1.5 text-slate-300">
+            <p>Estado actual: <strong class="text-cyan-400" id="account-role-text">ACCESO LIBRE</strong></p>
+            <p>Vigencia: <span class="text-slate-400" id="account-expires-text">Sin límite en jugadas gratuitas</span></p>
+          </div>
         </div>
 
         <div class="quant-card p-4 space-y-2">
-          <h3 class="text-xs font-bold uppercase text-[#10b981] border-b border-[#1b2432] pb-2">Sistema de Referidos (+5 Días VIP)</h3>
-          <p class="text-slate-400 text-[11px]">Comparte tu código con un amigo. Si él activa un plan VIP, ganas 5 días adicionales automáticamente.</p>
+          <h3 class="text-xs font-bold uppercase text-[#10b981] border-b border-[#1b2432] pb-2">Gana 5 Días VIP por Invitar Amigos</h3>
+          <p class="text-slate-400 text-[11px]">Comparte tu enlace. Si un amigo activa su membresía VIP, ganas 5 días adicionales automáticamente.</p>
           <div class="p-2.5 bg-[#05070a] border border-[#1b2432] flex items-center justify-between">
             <span id="my-referral-code" class="text-sm font-black text-cyan-400">OPTA-INVITADO</span>
-            <button id="btn-copy-ref" class="px-2 py-1 bg-cyan-500/20 border border-cyan-400 text-cyan-300 text-[10px] font-bold uppercase">
+            <button onclick="navigator.clipboard.writeText(window.location.origin + '?ref=OPTA-INVITADO'); alert('Enlace copiado al portapapeles')" class="px-2 py-1 bg-cyan-500/20 border border-cyan-400 text-cyan-300 text-[10px] font-bold uppercase">
               Copiar Enlace
             </button>
           </div>
@@ -230,22 +230,30 @@
   </main>
 
   <!-- MODAL DE INICIO DE SESIÓN -->
-  <div id="auth-modal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="quant-card max-w-sm w-full p-5 space-y-3 font-num text-xs">
+  <div id="auth-modal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 font-mono text-xs">
+    <div class="quant-card max-w-sm w-full p-5 space-y-3">
       <div class="flex items-center justify-between border-b border-[#1b2432] pb-2">
-        <h3 class="text-xs font-bold uppercase text-white">Acceso de Licencia</h3>
-        <button id="btn-close-auth" class="text-slate-400">✕</button>
+        <h3 class="text-xs font-bold uppercase text-white">Acceso a tu Cuenta</h3>
+        <button id="btn-close-auth" class="text-slate-400 hover:text-white">✕</button>
       </div>
       <form id="auth-form" class="space-y-2.5">
-        <input id="auth-email" type="email" required placeholder="tu@correo.com" class="w-full bg-[#05070a] border border-[#1b2432] p-2 text-white" />
-        <input id="auth-pass" type="password" required placeholder="Contraseña" class="w-full bg-[#05070a] border border-[#1b2432] p-2 text-white" />
-        <button type="submit" class="w-full py-2 bg-[#10b981] text-slate-950 font-bold uppercase">Entrar</button>
+        <div>
+          <label class="text-[10px] text-slate-400 block mb-1">CORREO ELECTRÓNICO</label>
+          <input id="auth-email" type="email" required placeholder="tu@correo.com" class="w-full bg-[#05070a] border border-[#1b2432] p-2 text-white text-xs" />
+        </div>
+        <div>
+          <label class="text-[10px] text-slate-400 block mb-1">CONTRASEÑA</label>
+          <input id="auth-pass" type="password" required placeholder="••••••••" class="w-full bg-[#05070a] border border-[#1b2432] p-2 text-white text-xs" />
+        </div>
+        <button type="submit" class="w-full py-2 bg-[#10b981] hover:bg-emerald-400 text-slate-950 font-bold uppercase transition">
+          Ingresar
+        </button>
       </form>
     </div>
   </div>
 
-  <footer class="border-t border-[#1b2432] bg-[#030508] px-4 py-4 mt-8 text-[11px] font-num text-slate-400 text-center">
-    OPTACORE.QUANT © 2026 — Terminal Cuantitativa de Pronósticos Deportivos (+18).
+  <footer class="border-t border-[#1b2432] bg-[#030508] px-4 py-4 mt-8 text-[11px] font-mono text-slate-400 text-center">
+    OPTACORE.QUANT © 2026 — Inteligencia Estadística para Pronósticos Deportivos (+18).
   </footer>
 
   <script type="module" src="./auth.js"></script>
