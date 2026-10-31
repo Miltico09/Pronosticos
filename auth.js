@@ -56,9 +56,20 @@ export function updateHeaderStatus() {
   const btnRegister = document.getElementById("btn-open-register");
   const btnAuth = document.getElementById("btn-open-auth");
   const btnLogout = document.getElementById("btn-logout");
+  const btnNavAdmin = document.getElementById("btn-nav-admin");
   const referralCardContainer = document.getElementById("referral-card-container");
 
   const email = localStorage.getItem("optacore_user_email");
+  const userRole = localStorage.getItem("optacore_user_role");
+  const isAdmin = userRole === "ADMIN" || (email && email.toLowerCase() === CONFIG.KEYS.ADMIN_EMAIL.toLowerCase());
+
+  if (btnNavAdmin) {
+    if (isAdmin) {
+      btnNavAdmin.classList.remove("hidden");
+    } else {
+      btnNavAdmin.classList.add("hidden");
+    }
+  }
   const remaining = getRemainingTrialTime();
   const isLoggedIn = !!email;
 

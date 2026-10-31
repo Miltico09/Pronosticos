@@ -866,6 +866,88 @@ window.openMatchModal = (matchId) => {
   modal.classList.remove("hidden");
 };
 
+// MEJORA #4: Filtro Rápido
+let currentQuickFilter = "ALL";
+
+window.setQuickFilter = (filterType) => {
+  currentQuickFilter = filterType;
+  document.querySelectorAll(".qfilter-btn").forEach((btn) => {
+    if (btn.getAttribute("data-qfilter") === filterType) {
+      btn.className = "qfilter-btn px-3 py-1 font-bold uppercase border border-cyan-400 bg-cyan-500/20 text-white shrink-0";
+    } else {
+      btn.className = "qfilter-btn px-3 py-1 font-bold uppercase border border-[#1b2432] bg-[#05070a] text-slate-400 hover:text-white shrink-0";
+    }
+  });
+  renderTodayPredictions();
+};
+
+// MEJORA #6: Calculadora Rápida de Inversión
+window.setQuickStake = (amount) => {
+  const input = document.getElementById("stake-calculator-input");
+  if (input) {
+    input.value = amount;
+    renderTodayPredictions();
+  }
+};
+
+// MEJORA #3: Cintillo Bursátil Superior (Live Win-Ticker)
+export function renderLiveWinTicker() {
+  const tickerEl = document.getElementById("live-win-ticker");
+  if (!tickerEl) return;
+
+  const all = getAllMasterFeed();
+  const wins = all.filter((p) => p.outcome === "ACIERTO");
+
+  if (wins.length === 0) {
+    tickerEl.innerHTML = `<span class="px-4">⚡ SISTEMA OPTACORE.QUANT ACTIVO Y EN VIVO</span>`;
+    return;
+  }
+
+  const itemsHtml = wins
+    .map(
+      (w) => `
+      <span class="inline-flex items-center gap-1.5 px-3">
+        <span class="text-emerald-400 font-bold">✔ ACIERTO COBRADO:</span>
+        <span class="text-white font-bold">${w.homeTeam} vs ${w.awayTeam}</span>
+        <span class="text-cyan-400 font-semibold">[${w.predictionText}]</span>
+        <span class="text-emerald-300 font-black">@${(w.odds || 1.45).toFixed(2)}</span>
+        <span class="text-slate-500">(${w.liveScore})</span>
+        <span class="text-slate-600 mx-2">|</span>
+      </span>
+    `
+    )
+    .join("");
+
+  // Duplicar para scroll continuo suave
+  tickerEl.innerHTML = itemsHtml + itemsHtml;
+}
+
+// MEJORA #5: Indicador de Racha Activa
+export function renderHotStreakBadge() {
+  const badgeEl = document.getElementById("hot-streak-badge");
+  if (!badgeEl) return;
+
+  const all = getAllMasterFeed();
+  const settled = all.filter((p) => p.outcome === "ACIERTO" || p.outcome === "FALLO");
+
+  let streak = 0;
+  for (const item of settled) {
+    if (item.outcome === "ACIERTO") {
+      streak++;
+    } else {
+      break;
+    }
+  }
+
+  if (streak > 0) {
+    badgeEl.textContent = `🔥 ${streak} ACIERTOS SEGUIDOS (RACHA ACTIVA)`;
+    badgeEl.className = "px-2 py-0.5 bg-amber-500/15 border border-amber-400/50 text-amber-300 font-black text-[10px]";
+  } else {
+    badgeEl.textContent = `⚡ MONITOR EN VIVO`;
+    badgeEl.className = "px-2 py-0.5 bg-emerald-500/15 border border-emerald-400/50 text-emerald-300 font-black text-[10px]";
+  }
+}
+
 // Renderizado de Pronósticos de Hoy
 export function renderTodayPredictions() {
   const container = document.getElementById("predictions-grid");
@@ -873,13 +955,26 @@ export function renderTodayPredictions() {
 
   const today = getColombiaDateString();
   const search = (document.getElementById("search-input")?.value || "").toLowerCase();
+  const stakeInput = document.getElementById("stake-calculator-input");
+  const stakeAmount = stakeInput ? parseFloat(stakeInput.value) || 50000 : 50000;
   const isVip = isUserVipOrAdmin();
   const todayList = getAllMasterFeed().filter((p) => p.matchDate === today);
 
   const filtered = todayList.filter((p) => {
-    return p.homeTeam.toLowerCase().includes(search) ||
-           p.awayTeam.toLowerCase().includes(search) ||
-           p.league.toLowerCase().includes(search);
+    // Buscador
+    const matchesSearch =
+      p.homeTeam.toLowerCase().includes(search) ||
+      p.awayTeam.toLowerCase().includes(search) ||
+      p.league.toLowerCase().includes(search);
+    if (!matchesSearch) return false;
+
+    // Filtros Rápidos
+    if (currentQuickFilter === "FÚTBOL") return p.sport === "FÚTBOL";
+    if (currentQuickFilter === "NBA") return p.sport === "NBA";
+    if (currentQuickFilter === "FREE") return p.isFree;
+    if (currentQuickFilter === "PENDING") return p.matchStatus === "PROGRAMADO" || p.outcome === "PENDIENTE";
+
+    return true;
   });
 
   const counterBadge = document.getElementById("daily-counter-badge");
@@ -889,11 +984,23 @@ export function renderTodayPredictions() {
       : `ACCESO LIBRE // 4 JUGADAS GRATIS HOY`;
   }
 
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div class="col-span-full quant-card p-6 text-center text-slate-400 font-mono text-xs">
+        No se encontraron pronósticos para el filtro o búsqueda seleccionada.
+      </div>
+    `;
+    return;
+  }
+
   container.innerHTML = filtered.map((item) => {
     const isVisible = isVip || item.isFree;
     const stars = getStars(item.probability);
     const homeLogo = getLogo(item.homeTeam);
     const awayLogo = getLogo(item.awayTeam);
+    const odds = item.odds || 1.45;
+    const potentialPayout = Math.round(stakeAmount * odds);
+    const potentialProfit = Math.round(potentialPayout - stakeAmount);
 
     return `
       <article class="quant-card p-3.5 flex flex-col justify-between space-y-3 font-mono">
@@ -923,15 +1030,23 @@ export function renderTodayPredictions() {
         ${
           isVisible
             ? `
-            <div class="p-2.5 bg-[#05070a] border border-[#10b981]/40 flex items-center justify-between gap-2 text-xs">
-              <div>
-                <span class="text-[9px] uppercase text-slate-400 block">JUGADA SUGERIDA:</span>
-                <span class="text-xs md:text-sm font-bold text-[#10b981]">${item.predictionText}</span>
-                <span class="text-[10px] text-slate-400 block">Cuota: @${(item.odds || 1.45).toFixed(2)}</span>
+            <div class="p-2.5 bg-[#05070a] border border-[#10b981]/40 flex flex-col gap-2 text-xs">
+              <div class="flex items-center justify-between gap-2">
+                <div>
+                  <span class="text-[9px] uppercase text-slate-400 block">JUGADA SUGERIDA:</span>
+                  <span class="text-xs md:text-sm font-bold text-[#10b981]">${item.predictionText}</span>
+                  <span class="text-[10px] text-slate-400 block">Cuota: @${odds.toFixed(2)}</span>
+                </div>
+                <div class="text-right">
+                  <span class="text-[9px] text-slate-400 block">PROBABILIDAD</span>
+                  <span class="text-sm md:text-base font-black text-white">${item.probability}%</span>
+                </div>
               </div>
-              <div class="text-right">
-                <span class="text-[9px] text-slate-400 block">PROBABILIDAD</span>
-                <span class="text-sm md:text-base font-black text-white">${item.probability}%</span>
+
+              <!-- Retorno calculado con la inversión activa -->
+              <div class="pt-1.5 border-t border-[#1b2432]/60 flex items-center justify-between text-[11px]">
+                <span class="text-slate-400">Cobras invirtiendo $${stakeAmount.toLocaleString("es-CO")}:</span>
+                <span class="font-black text-emerald-400">$${potentialPayout.toLocaleString("es-CO")} COP <span class="text-[10px] text-slate-400 font-normal">(+$${potentialProfit.toLocaleString("es-CO")})</span></span>
               </div>
             </div>
             `
@@ -1136,12 +1251,157 @@ export function renderFullPublicHistory() {
   }
 }
 
+function refreshAllViews() {
+  renderLiveWinTicker();
+  renderHotStreakBadge();
+  renderTodayPredictions();
+  renderTodayResults();
+  renderFullPublicHistory();
+  if (window.renderAdminPanel) window.renderAdminPanel();
+}
+
+// MEJORA #9: PANEL DE ADMINISTRACIÓN
+window.resetLocalDatabase = () => {
+  if (confirm("¿Estás seguro de restaurar los datos base originales? Se borrarán los cambios locales.")) {
+    localStorage.removeItem(DB_KEY);
+    seedMasterRecords();
+    refreshAllViews();
+    alert("Datos restaurados correctamente a su estado inicial.");
+  }
+};
+
+window.renderAdminPanel = () => {
+  const container = document.getElementById("admin-matches-list");
+  if (!container) return;
+
+  const matches = getAllMasterFeed();
+
+  container.innerHTML = matches.map((m) => `
+    <div class="p-3 bg-[#05070a] border border-[#1b2432] flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs font-mono">
+      <div class="space-y-1 min-w-0">
+        <div class="flex items-center gap-2">
+          <span class="text-[10px] text-slate-400">${m.matchDate} (${m.kickoffLabel})</span>
+          <span class="text-[10px] px-1.5 py-0.2 bg-[#161f2c] text-cyan-300 font-bold">${m.sport}</span>
+          <span class="text-[10px] text-slate-400 truncate">${m.league}</span>
+        </div>
+        <div class="font-bold text-white">${m.homeTeam} vs ${m.awayTeam}</div>
+        <div class="text-[11px] text-cyan-300">${m.predictionText} (@${(m.odds || 1.45).toFixed(2)})</div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2 shrink-0">
+        <div class="flex items-center gap-1">
+          <span class="text-[10px] text-slate-400">Marcador:</span>
+          <input
+            type="text"
+            id="adm-score-${m.id}"
+            value="${m.liveScore}"
+            class="w-20 bg-[#0a0e14] border border-[#1b2432] px-2 py-1 text-white text-xs text-center font-bold"
+          />
+        </div>
+
+        <div class="flex items-center gap-1">
+          <span class="text-[10px] text-slate-400">Estado:</span>
+          <select id="adm-status-${m.id}" class="bg-[#0a0e14] border border-[#1b2432] px-2 py-1 text-white text-xs">
+            <option value="PROGRAMADO" ${m.matchStatus === "PROGRAMADO" ? "selected" : ""}>PROGRAMADO</option>
+            <option value="EN_VIVO" ${m.matchStatus === "EN_VIVO" ? "selected" : ""}>EN VIVO</option>
+            <option value="FINALIZADO" ${m.matchStatus === "FINALIZADO" ? "selected" : ""}>FINALIZADO</option>
+          </select>
+        </div>
+
+        <div class="flex items-center gap-1">
+          <span class="text-[10px] text-slate-400">Resultado:</span>
+          <select id="adm-outcome-${m.id}" class="bg-[#0a0e14] border border-[#1b2432] px-2 py-1 text-white text-xs">
+            <option value="PENDIENTE" ${m.outcome === "PENDIENTE" ? "selected" : ""}>PENDIENTE</option>
+            <option value="ACIERTO" ${m.outcome === "ACIERTO" ? "selected" : ""}>ACIERTO</option>
+            <option value="FALLO" ${m.outcome === "FALLO" ? "selected" : ""}>FALLO</option>
+          </select>
+        </div>
+
+        <button
+          onclick="window.saveAdminMatchUpdate('${m.id}')"
+          class="px-3 py-1 bg-[#06b6d4] hover:bg-cyan-300 text-slate-950 font-black text-xs uppercase"
+        >
+          Guardar
+        </button>
+      </div>
+    </div>
+  `).join("");
+};
+
+window.saveAdminMatchUpdate = (id) => {
+  const matches = getAllMasterFeed();
+  const target = matches.find((m) => m.id === id);
+  if (!target) return;
+
+  const scoreEl = document.getElementById(`adm-score-${id}`);
+  const statusEl = document.getElementById(`adm-status-${id}`);
+  const outcomeEl = document.getElementById(`adm-outcome-${id}`);
+
+  if (scoreEl) target.liveScore = scoreEl.value.trim();
+  if (statusEl) target.matchStatus = statusEl.value;
+  if (outcomeEl) target.outcome = outcomeEl.value;
+
+  localStorage.setItem(DB_KEY, JSON.stringify(matches));
+  refreshAllViews();
+  alert(`Pronóstico "${target.homeTeam} vs ${target.awayTeam}" actualizado correctamente.`);
+};
+
 document.addEventListener("DOMContentLoaded", () => {
   startColombiaClock();
   injectWhatsAppFloatingButton();
+  renderLiveWinTicker();
+  renderHotStreakBadge();
   renderTodayPredictions();
   renderTodayResults();
   renderFullPublicHistory();
 
   document.getElementById("search-input")?.addEventListener("input", renderTodayPredictions);
+  document.getElementById("stake-calculator-input")?.addEventListener("input", renderTodayPredictions);
+
+  // Formulario de agregar nuevo pronóstico
+  document.getElementById("admin-add-match-form")?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const today = getColombiaDateString();
+    const home = document.getElementById("adm-home").value.trim();
+    const away = document.getElementById("adm-away").value.trim();
+    const league = document.getElementById("adm-league").value.trim();
+    const pick = document.getElementById("adm-pick").value.trim();
+    const odds = parseFloat(document.getElementById("adm-odds").value) || 1.45;
+    const prob = parseFloat(document.getElementById("adm-prob").value) || 90.0;
+    const sport = document.getElementById("adm-sport").value;
+    const isFree = document.getElementById("adm-free").value === "true";
+    const time = document.getElementById("adm-time").value.trim();
+    const exp = document.getElementById("adm-exp").value.trim();
+
+    const newMatch = {
+      id: "OPTA-" + Date.now(),
+      sport: sport,
+      matchDate: today,
+      kickoffIso: `${today}T${time}:00-05:00`,
+      kickoffLabel: `${time} COL`,
+      league: league,
+      homeTeam: home,
+      awayTeam: away,
+      predictionText: pick,
+      odds: odds,
+      probability: prob,
+      isFree: isFree,
+      altitudeM: 100,
+      weatherDesc: "Monitoreado en vivo",
+      homeAvgGoals: "Top rendimiento",
+      awayAvgGoals: "Estadística calculada",
+      explanation: exp || `Pronóstico calculado por el motor cuantitativo de OptaCore. Probabilidad asignada: ${prob}%.`,
+      liveScore: "vs",
+      matchStatus: "PROGRAMADO",
+      outcome: "PENDIENTE",
+    };
+
+    const matches = getAllMasterFeed();
+    matches.unshift(newMatch);
+    localStorage.setItem(DB_KEY, JSON.stringify(matches));
+
+    e.target.reset();
+    refreshAllViews();
+    alert(`Nuevo pronóstico "${home} vs ${away}" publicado con éxito.`);
+  });
 });
