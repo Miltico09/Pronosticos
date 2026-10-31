@@ -1,0 +1,152 @@
+/* ============================================================================
+   ARCHIVO: estilos.css
+   Paleta: Carbón Oscuro (#05070a), Esmeralda (#10b981), Cian (#06b6d4), Rojo (#ef4444)
+   CERO AMARILLO. Tipografía tabular para alineación numérica perfecta.
+   ============================================================================ */
+
+:root {
+  --bg-main: #05070a;
+  --bg-panel: #0a0e14;
+  --bg-elevated: #0f151f;
+  --border-subtle: #1b2432;
+  --border-focus: #06b6d4;
+  --text-primary: #f1f5f9;
+  --text-muted: #8b9bb4;
+  --emerald: #10b981;
+  --cyan: #06b6d4;
+  --silver: #94a3b8;
+  --danger: #ef4444;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-image: radial-gradient(rgba(6, 182, 212, 0.05) 1px, transparent 1px);
+  background-size: 24px 24px;
+  margin: 0;
+  overflow-x: hidden;
+}
+
+.font-num {
+  font-family: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+/* Paneles de geometría industrial precisa */
+.quant-card {
+  background-color: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: 2px;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.quant-card:hover {
+  border-color: rgba(6, 182, 212, 0.45);
+}
+
+/* Niveles de Confianza (Sin Amarillo) */
+.tier-diamante {
+  background: rgba(6, 182, 212, 0.12);
+  border: 1px solid var(--cyan);
+  color: #67e8f9;
+  box-shadow: 0 0 12px rgba(6, 182, 212, 0.18);
+}
+
+.tier-oro {
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid var(--emerald);
+  color: #6ee7b7;
+}
+
+.tier-plata {
+  background: rgba(148, 163, 184, 0.12);
+  border: 1px solid var(--silver);
+  color: #cbd5e1;
+}
+
+/* Estados de Resultados */
+.badge-acierto {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid var(--emerald);
+  color: #34d399;
+}
+
+.badge-fallo {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid var(--danger);
+  color: #f87171;
+}
+
+.badge-pendiente {
+  background: rgba(6, 182, 212, 0.1);
+  border: 1px solid rgba(6, 182, 212, 0.35);
+  color: #67e8f9;
+}
+
+/* Bloqueo de Telemetría para Usuarios Gratis */
+.vip-locked-zone {
+  position: relative;
+  overflow: hidden;
+  border: 1px dashed rgba(6, 182, 212, 0.35);
+  background: rgba(10, 14, 20, 0.9);
+}
+
+.vip-locked-blur {
+  filter: blur(6px);
+  user-select: none;
+  pointer-events: none;
+  opacity: 0.35;
+}
+
+.vip-lock-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, rgba(5, 7, 10, 0.55) 0%, rgba(5, 7, 10, 0.92) 100%);
+  z-index: 10;
+  padding: 1rem;
+  text-align: center;
+}
+
+/* Barras de Progreso de Mitades 1T/2T */
+.split-bar-track {
+  width: 100%;
+  height: 6px;
+  background: #161f2c;
+  display: flex;
+  overflow: hidden;
+}
+
+.split-1h {
+  background: var(--cyan);
+  height: 100%;
+}
+
+.split-2h {
+  background: var(--emerald);
+  height: 100%;
+}
+
+/* Scrollbar técnica delgada */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #05070a;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #06b6d4;
+}
