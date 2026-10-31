@@ -1,15 +1,14 @@
 // ============================================================================
 // ARCHIVO: config.js
-// Configuración Oficial OPTACORE.QUANT
+// Configuración Oficial OPTACORE.QUANT — Soporte WhatsApp Directo
 // ============================================================================
 
 export const CONFIG = {
   BRAND: {
     NAME: "OPTACORE.QUANT",
-    TAGLINE: "TERMINAL DE INTELIGENCIA ESTADÍSTICA & PROBABILIDAD BIOCLIMÁTICA",
+    TAGLINE: "TERMINAL DE PRONÓSTICOS DE ALTA PROBABILIDAD & ANÁLISIS BIOCLIMÁTICO",
     TIMEZONE: "America/Bogota",
-    FREE_DAILY_DIAMOND_LIMIT: 5,
-    REFERRAL_REWARD_DAYS: 5,
+    FREE_DAILY_LIMIT: 4, // 2 de 5 estrellas + 2 de 4 estrellas 100% abiertos
     TRIAL_HOURS: 24,
   },
 
@@ -24,118 +23,55 @@ export const CONFIG = {
   KEYS: {
     SUPABASE_URL: "https://gmcurxhlxryrffcchfvo.supabase.co",
     SUPABASE_ANON_KEY: "sb_publishable_XMYlOCNnVN8GblF78uvvEg_Elaw62TX",
-    SPORTS_API_HOST: "v3.football.api-sports.io",
-    SPORTS_API_KEY: "",
     ADMIN_EMAIL: "admin@optacore.com",
   },
 
   NOTIFICATIONS: {
-    TELEGRAM_BOT_TOKEN: "",
-    TELEGRAM_VIP_CHANNEL_ID: "@optacore_vip",
-    TELEGRAM_ADMIN_CHAT_ID: "",
-    WHATSAPP_VIP_CHANNEL_URL: "https://whatsapp.com/channel/optacore-vip",
-    ADMIN_WHATSAPP_NUMBER: "573000000000",
+    WHATSAPP_NUMBER: "573332861551",
+    WHATSAPP_LINK: "https://wa.me/573332861551?text=Hola%20OptaCore,%20quiero%20informaci%C3%B3n%20para%20activar%20mi%20membres%C3%ADa%20VIP",
   },
 
   PAYMENT_ACCOUNTS: {
     COLOMBIA: [
       {
         id: "nequi",
-        method: "Nequi (Transferencia Inmediata)",
-        accountNumber: "300 000 0000",
-        holderName: "OptaCore Official",
-        instructions: "Envía el valor exacto del plan y sube la captura con el comprobante visible.",
+        method: "Nequi (Transferencia Directa)",
+        accountNumber: "333 286 1551",
+        holderName: "OptaCore Quant Desk",
+        instructions: "Transfiere el valor del plan elegido y envía la captura aquí o al WhatsApp +57 3332861551.",
       },
       {
         id: "bancolombia",
         method: "Bancolombia — Ahorros",
         accountNumber: "000-000000-00",
-        holderName: "OptaCore Official",
-        instructions: "Transfiere vía App Bancolombia o corresponsal y adjunta el comprobante.",
+        holderName: "OptaCore Quant Desk",
+        instructions: "Consigna vía App o corresponsal y reporta tu comprobante para activación inmediata.",
       },
     ],
     INTERNACIONAL: [
       {
         id: "binance_pay",
-        method: "Binance Pay",
+        method: "Binance Pay / USDT",
         accountNumber: "ID: 884920114",
         holderName: "OptaCore_Quant",
-        instructions: "Envía el monto equivalente en USDT y sube captura de orden completada.",
-      },
-      {
-        id: "usdt_trc20",
-        method: "USDT (Red TRC-20)",
-        accountNumber: "Txxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-        holderName: "Red: TRC-20",
-        instructions: "Verifica que la red sea TRC-20 y sube la captura con el TXID visible.",
+        instructions: "Envía el valor en USDT y adjunta la captura de transacción exitosa.",
       },
     ],
   },
 
   VIP_PLANS: [
-    {
-      id: "semanal",
-      name: "Semanal",
-      days: 7,
-      priceCop: 12000,
-      discountPct: 0,
-      savedCop: 0,
-      badge: null,
-    },
-    {
-      id: "quincenal",
-      name: "Quincenal",
-      days: 15,
-      priceCop: 20000,
-      discountPct: 17,
-      savedCop: 4000,
-      badge: null,
-    },
-    {
-      id: "mensual",
-      name: "Mensual",
-      days: 30,
-      priceCop: 36000,
-      discountPct: 25,
-      savedCop: 12000,
-      badge: "MÁS POPULAR",
-    },
-    {
-      id: "trimestral",
-      name: "Trimestral",
-      days: 90,
-      priceCop: 60000,
-      discountPct: 44,
-      savedCop: 48000,
-      badge: null,
-    },
-    {
-      id: "semestral",
-      name: "Semestral",
-      days: 180,
-      priceCop: 100000,
-      discountPct: 54,
-      savedCop: 116000,
-      badge: null,
-    },
-    {
-      id: "anual",
-      name: "Anual",
-      days: 365,
-      priceCop: 150000,
-      discountPct: 65,
-      savedCop: 282000,
-      badge: "MEJOR VALOR",
-    },
+    { id: "semanal", name: "Semanal", days: 7, priceCop: 12000, discountPct: 0, savedCop: 0, badge: null },
+    { id: "quincenal", name: "Quincenal", days: 15, priceCop: 20000, discountPct: 17, savedCop: 4000, badge: null },
+    { id: "mensual", name: "Mensual", days: 30, priceCop: 36000, discountPct: 25, savedCop: 12000, badge: "MÁS POPULAR" },
+    { id: "trimestral", name: "Trimestral", days: 90, priceCop: 60000, discountPct: 44, savedCop: 48000, badge: null },
+    { id: "semestral", name: "Semestral", days: 180, priceCop: 100000, discountPct: 54, savedCop: 116000, badge: null },
+    { id: "anual", name: "Anual", days: 365, priceCop: 150000, discountPct: 65, savedCop: 282000, badge: "MEJOR VALOR" },
   ],
 
   LEGAL_TEXTS: {
-    DISCLAIMER:
-      "AVISO DE RESPONSABILIDAD: OPTACORE.QUANT es una plataforma de análisis estadístico y probabilístico. No somos una casa de apuestas ni captamos dinero. Los pronósticos no garantizan resultados futuros.",
-    AGE_WARNING: "PROHIBIDO EL USO PARA MENORES DE 18 AÑOS (+18).",
-    TERMS:
-      "Cada licencia VIP es personal e intransferible y permite una sola sesión activa simultánea.",
-    PRIVACY:
-      "Tus datos de correo y comprobantes se almacenan de forma segura únicamente para la activación de tu membresía.",
+    DISCLAIMER: "AVISO: OPTACORE.QUANT provee análisis cuantitativo y probabilidades. No somos operadores de apuestas. Las estadísticas no garantizan rendimientos futuros.",
+    AGE_WARNING: "EXCLUSIVO PARA MAYORES DE 18 AÑOS (+18).",
+    TERMS: "Licencia de uso personal con control de sesión única por dispositivo.",
+    PRIVACY: "Tus datos se manejan de forma confidencial para el control de acceso a tu suscripción.",
   },
 };
