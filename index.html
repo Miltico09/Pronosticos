@@ -54,23 +54,26 @@
       </div>
 
       <!-- PESTAÑAS DE NAVEGACIÓN -->
-      <nav class="flex items-center gap-1.5 overflow-x-auto py-1">
-        <button data-tab="tab-pronosticos" class="nav-btn px-3 py-1.5 text-xs font-num font-bold uppercase border border-[#06b6d4] bg-[#06b6d4]/15 text-white">
+      <nav class="flex items-center gap-1.5 overflow-x-auto py-1 max-w-full">
+        <button data-tab="tab-dashboard" class="nav-btn whitespace-nowrap px-3 py-1.5 text-xs font-num font-bold uppercase border border-[#06b6d4] bg-[#06b6d4]/15 text-white">
+          Dashboard
+        </button>
+        <button data-tab="tab-pronosticos" class="nav-btn whitespace-nowrap px-3 py-1.5 text-xs font-num font-bold uppercase border border-[#1b2432] bg-[#0a0e14] text-[#8b9bb4] hover:text-white">
           Pronósticos Hoy
         </button>
-        <button data-tab="tab-resultados" class="nav-btn px-3 py-1.5 text-xs font-num font-bold uppercase border border-[#1b2432] bg-[#0a0e14] text-[#8b9bb4] hover:text-white">
+        <button data-tab="tab-resultados" class="nav-btn whitespace-nowrap px-3 py-1.5 text-xs font-num font-bold uppercase border border-[#1b2432] bg-[#0a0e14] text-[#8b9bb4] hover:text-white">
           Resultados Hoy
         </button>
-        <button data-tab="tab-historial" class="nav-btn px-3 py-1.5 text-xs font-num font-bold uppercase border border-[#1b2432] bg-[#0a0e14] text-[#8b9bb4] hover:text-white">
+        <button data-tab="tab-historial" class="nav-btn whitespace-nowrap px-3 py-1.5 text-xs font-num font-bold uppercase border border-[#1b2432] bg-[#0a0e14] text-[#8b9bb4] hover:text-white">
           Historial & % Acierto
         </button>
-        <button data-tab="tab-planes" class="nav-btn px-3 py-1.5 text-xs font-num font-bold uppercase border border-[#10b981]/50 bg-[#10b981]/10 text-[#10b981] hover:bg-[#10b981] hover:text-black">
+        <button data-tab="tab-planes" class="nav-btn whitespace-nowrap px-3 py-1.5 text-xs font-num font-bold uppercase border border-[#10b981]/50 bg-[#10b981]/10 text-[#10b981] hover:bg-[#10b981] hover:text-black">
           Planes VIP & Pagos
         </button>
-        <button data-tab="tab-cuenta" class="nav-btn px-3 py-1.5 text-xs font-num font-bold uppercase border border-[#1b2432] bg-[#0a0e14] text-[#8b9bb4] hover:text-white">
+        <button data-tab="tab-cuenta" class="nav-btn whitespace-nowrap px-3 py-1.5 text-xs font-num font-bold uppercase border border-[#1b2432] bg-[#0a0e14] text-[#8b9bb4] hover:text-white">
           Licencia & Referidos
         </button>
-        <button id="btn-nav-admin" data-tab="tab-admin" class="hidden nav-btn px-3 py-1.5 text-xs font-num font-bold uppercase border border-cyan-500 bg-cyan-950/60 text-cyan-300">
+        <button id="btn-nav-admin" data-tab="tab-admin" class="hidden nav-btn whitespace-nowrap px-3 py-1.5 text-xs font-num font-bold uppercase border border-cyan-500 bg-cyan-950/60 text-cyan-300">
           Panel Admin
         </button>
       </nav>
@@ -94,9 +97,47 @@
   <main class="max-w-7xl w-full mx-auto px-4 py-6 flex-1 space-y-8">
 
     <!-- ====================================================================
+         SECCIÓN 0: DASHBOARD PRINCIPAL (ESTADO VACÍO / LIENZO EN BLANCO)
+         ==================================================================== -->
+    <section id="tab-dashboard" class="tab-panel space-y-6">
+      <!-- Cabecera del Dashboard -->
+      <div class="quant-card p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="space-y-1.5">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="w-2 h-2 bg-[#06b6d4] inline-block shrink-0"></span>
+            <h1 class="text-base md:text-lg font-black uppercase tracking-wide text-white font-num">
+              Dashboard Central // Consola de Telemetría
+            </h1>
+            <span id="dashboard-status-pill" class="text-[10px] font-num uppercase px-2 py-0.5 border border-[#1b2432] bg-[#05070a] text-[#8b9bb4] font-bold whitespace-nowrap">
+              ESTADO: VACÍO
+            </span>
+          </div>
+          <p class="text-xs text-[#8b9bb4] font-num">
+            Panel de control inicializado en cero. Sin pronósticos, marcadores ni registros precargados.
+          </p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <button id="btn-dash-new-pick" class="px-3.5 py-2 text-xs font-num font-bold uppercase bg-[#10b981] text-slate-950 hover:bg-emerald-400 transition">
+            + Publicar Pronóstico
+          </button>
+          <button id="btn-dash-clear-all" class="px-3 py-2 text-xs font-num font-bold uppercase border border-[#1b2432] bg-[#05070a] text-[#8b9bb4] hover:text-white hover:border-[#ef4444]/60 transition">
+            Reiniciar en Vacío
+          </button>
+        </div>
+      </div>
+
+      <!-- Fila de 4 KPIs en Cero -->
+      <div id="dashboard-kpi-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"></div>
+
+      <!-- Lienzo Principal del Dashboard (Estado Vacío o Resumen Activo) -->
+      <div id="dashboard-main-workspace" class="grid grid-cols-1 lg:grid-cols-12 gap-4"></div>
+    </section>
+
+    <!-- ====================================================================
          SECCIÓN 1: PRONÓSTICOS DEL DÍA ACTUAL (REINICIO 00:00 COLOMBIA)
          ==================================================================== -->
-    <section id="tab-pronosticos" class="tab-panel space-y-5">
+    <section id="tab-pronosticos" class="tab-panel hidden space-y-5">
       <!-- Barra de Estado, Buscador y Filtros de Confianza -->
       <div class="quant-card p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div class="space-y-1">
