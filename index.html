@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OPTACORE.QUANT — Pronósticos Deportivos & Telemetría VIP</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="./estilos.css" />
+</head>
+<body class="min-h-screen flex flex-col justify-between">
+
+  <!-- BANNER DE VENCIMIENTO PRÓXIMO (3 días antes o el día del vencimiento) -->
+  <div id="expiry-alert-banner" class="hidden bg-[#ef4444]/15 border-b border-[#ef4444] px-4 py-2 text-xs font-num text-center text-red-200"></div>
+
+  <!-- BARRA SUPERIOR DE TELEMETRÍA Y RELOJ COLOMBIA -->
+  <div class="border-b border-[#1b2432] bg-[#030508] px-4 py-1.5 text-[11px] font-num text-[#8b9bb4]">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
+      <div class="flex items-center gap-4">
+        <span class="flex items-center gap-1.5 text-[#10b981] font-bold">
+          <span class="w-2 h-2 bg-[#10b981] inline-block animate-pulse"></span>
+          MOTOR BIOCLIMÁTICO ACTIVO
+        </span>
+        <span class="hidden md:inline text-slate-400">REINICIO DIARIO: 00:00 COL (UTC-5)</span>
+        <span id="colombia-live-clock" class="text-cyan-400 font-bold">HORA COL: --:--:--</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <span id="user-role-badge" class="px-2 py-0.5 border border-[#1b2432] bg-[#0a0e14] text-slate-300 font-bold">
+          ROL: GRATIS (5 DIAMANTE/DÍA)
+        </span>
+        <span id="user-expiry-label" class="hidden text-emerald-400"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- HEADER PRINCIPAL Y NAVEGACIÓN -->
+  <header class="sticky top-0 z-30 border-b border-[#1b2432] bg-[#05070a]/95 backdrop-blur-md px-4 py-3">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-1.5 h-9 bg-[#10b981]"></div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-lg md:text-xl font-black tracking-tight text-white font-num">
+              OPTACORE<span class="text-[#06b6d4]">.QUANT</span>
+            </span>
+            <span class="text-[10px] font-num uppercase px-1.5 py-0.5 bg-[#10b981]/10 text-[#10b981] border border-[#10b981]/30 font-bold">
+              PRO ANALYTICS
+            </span>
+          </div>
+          <p class="text-[11px] font-num text-[#8b9bb4]">
+            PRONÓSTICOS DE ALTA PROBABILIDAD • ALTURA • CLIMA • 1T/2T
+          </p>
+        </div>
+      </div>
+
+      <!-- PESTAÑAS DE NAVEGACIÓN -->
+      <nav class="flex items-center gap-1.5 overflow-x-auto py-1">
+        <button data-tab="tab-pronosticos" class="nav-btn px-3 py-1.5 text-xs font-num font-bold uppercase border border-[#06b6d4] bg-[#06b6d4]/15 text-white">
+          Pronósticos Hoy
+        </button>
+        <button data-tab="tab-resultados" class="nav-btn px-3 py-1.5 text-xs font-num font-bold uppercase border border-[#1b2432] bg-[#0a0e14] text-[#8b9bb4] hover:text-white">
+          Resultados Hoy
+        </button>
+        <button data-tab="tab-historial" class="nav-btn px-3 py-1.5 text-xs font-num font-bold uppercase border border-[#1b2432] bg-[#0a0e14] text-[#8b9bb4] hover:text-white">
+          Historial & % Acierto
+        </button>
+        <button data-tab="tab-planes" class="nav-btn px-3 py-1.5 text-xs font-num font-bold uppercase border border-[#10b981]/50 bg-[#10b981]/10 text-[#10b981] hover:bg-[#10b981] hover:text-black">
+          Planes VIP & Pagos
+        </button>
+        <button data-tab="tab-cuenta" class="nav-btn px-3 py-1.5 text-xs font-num font-bold uppercase border border-[#1b2432] bg-[#0a0e14] text-[#8b9bb4] hover:text-white">
+          Licencia & Referidos
+        </button>
+        <button id="btn-nav-admin" data-tab="tab-admin" class="hidden nav-btn px-3 py-1.5 text-xs font-num font-bold uppercase border border-cyan-500 bg-cyan-950/60 text-cyan-300">
+          Panel Admin
+        </button>
+      </nav>
+
+      <!-- ACCIONES DE SESIÓN -->
+      <div class="flex items-center gap-2">
+        <button id="btn-trial-24h" class="px-3 py-1.5 text-xs font-num font-bold uppercase bg-[#06b6d4] text-slate-950 hover:bg-cyan-300 transition">
+          Prueba VIP 24h Gratis
+        </button>
+        <button id="btn-open-auth" class="px-3 py-1.5 text-xs font-num font-bold uppercase border border-[#1b2432] bg-[#0f151f] text-white hover:border-[#06b6d4]">
+          Iniciar Sesión
+        </button>
+        <button id="btn-logout" class="hidden px-3 py-1.5 text-xs font-num font-bold uppercase border border-[#ef4444]/50 text-[#ef4444] hover:bg-[#ef4444]/10">
+          Salir
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTENEDOR PRINCIPAL -->
+  <main class="max-w-7xl w-full mx-auto px-4 py-6 flex-1 space-y-8">
+
+    <!-- ====================================================================
+         SECCIÓN 1: PRONÓSTICOS DEL DÍA ACTUAL (REINICIO 00:00 COLOMBIA)
+         ==================================================================== -->
+    <section id="tab-pronosticos" class="tab-panel space-y-5">
+      <!-- Barra de Estado, Buscador y Filtros de Confianza -->
+      <div class="quant-card p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2">
+            <h1 class="text-base md:text-lg font-black uppercase tracking-wide text-white font-num">
+              Cartelera Oficial del Día (Hora Colombia)
+            </h1>
+            <span id="daily-counter-badge" class="text-xs font-num px-2 py-0.5 bg-[#06b6d4]/15 text-cyan-300 border border-cyan-500/30">
+              Cargando...
+            </span>
+          </div>
+          <p id="free-quota-notice" class="text-xs text-[#8b9bb4]">
+            Modo Gratis: Visualizando los 5 pronósticos Diamante principales del día. Hazte VIP para desbloquear toda la jornada y la telemetría de altura/clima.
+          </p>
+        </div>
+
+        <!-- Buscador por equipo o liga + Filtro de Nivel -->
+        <div class="flex flex-wrap items-center gap-2">
+          <input
+            id="search-input"
+            type="text"
+            placeholder="Buscar equipo o liga (ej. Barcelona, NBA)..."
+            class="w-full sm:w-64 bg-[#05070a] border border-[#1b2432] px-3 py-2 text-xs font-num text-white focus:outline-none focus:border-[#06b6d4]"
+          />
+          <select
+            id="tier-filter"
+            class="bg-[#05070a] border border-[#1b2432] px-3 py-2 text-xs font-num text-white focus:outline-none focus:border-[#06b6d4]"
+          >
+            <option value="ALL">Nivel: Todos (Diamante/Oro/Plata)</option>
+            <option value="DIAMANTE">💎 Solo Diamante (≥90%)</option>
+            <option value="ORO">🟢 Solo Oro (85% - 89%)</option>
+            <option value="PLATA">⚪ Solo Plata (80% - 84%)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Alertas VIP por Telegram y WhatsApp -->
+      <div class="quant-card p-3 bg-[#071118] border-[#06b6d4]/30 flex flex-wrap items-center justify-between gap-3">
+        <div class="text-xs font-num text-slate-300">
+          <strong class="text-[#06b6d4]">🔔 ALERTAS DIAMANTE EN TIEMPO REAL:</strong> Recibe notificación instantánea en tu celular cada vez que el algoritmo detecte un pronóstico nivel Diamante.
+        </div>
+        <div class="flex items-center gap-2">
+          <a id="link-tg-vip" href="#" target="_blank" class="px-3 py-1.5 text-xs font-num font-bold uppercase bg-[#06b6d4]/20 border border-[#06b6d4] text-cyan-300 hover:bg-[#06b6d4] hover:text-black transition">
+            Canal Telegram VIP
+          </a>
+          <a id="link-wa-vip" href="#" target="_blank" class="px-3 py-1.5 text-xs font-num font-bold uppercase bg-[#10b981]/20 border border-[#10b981] text-emerald-300 hover:bg-[#10b981] hover:text-black transition">
+            Alertas WhatsApp VIP
+          </a>
+        </div>
+      </div>
+
+      <!-- Grid de Tarjetas de Pronósticos -->
+      <div id="predictions-grid" class="grid grid-cols-1 lg:grid-cols-2 gap-4"></div>
+    </section>
+
+    <!-- ====================================================================
+         SECCIÓN 2: RESULTADOS DE HOY (EN VIVO Y FINALIZADOS)
+         ==================================================================== -->
+    <section id="tab-resultados" class="tab-panel hidden space-y-5">
+      <div class="quant-card p-4 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 class="text-base md:text-lg font-black uppercase text-white font-num">
+            Auditoría de Resultados del Día (En Vivo & Finalizados)
+          </h2>
+          <p class="text-xs text-[#8b9bb4]">
+            El sistema califica automáticamente cada pronóstico como ACIERTO o FALLO al finalizar los 90 minutos / tiempo reglamentario.
+          </p>
+        </div>
+        <button id="btn-sync-results" class="px-3 py-1.5 text-xs font-num font-bold uppercase bg-[#10b981] text-slate-950 hover:bg-emerald-400">
+          ↻ Sincronizar Marcadores API
+        </button>
+      </div>
+
+      <div id="today-results-container" class="space-y-3"></div>
+    </section>
+
+    <!-- ====================================================================
+         SECCIÓN 3: HISTORIAL PÚBLICO INMUTABLE Y GRÁFICA DE RENDIMIENTO
+         ==================================================================== -->
+    <section id="tab-historial" class="tab-panel hidden space-y-6">
+      <!-- KPIs de Efectividad Global, Mensual, Semanal y por Nivel -->
+      <div id="history-kpi-cards" class="grid grid-cols-2 md:grid-cols-5 gap-3"></div>
+
+      <!-- Desglose por Nivel de Confianza y por Liga + Curva de Rendimiento -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        <div class="lg:col-span-7 quant-card p-4 space-y-3">
+          <div class="flex items-center justify-between border-b border-[#1b2432] pb-2">
+            <h3 class="text-xs font-num uppercase font-bold text-white">
+              Curva Acumulada de Efectividad (% Acierto Histórico)
+            </h3>
+            <span class="text-[11px] font-num text-[#10b981]">AUDITORÍA DESDE DÍA 1</span>
+          </div>
+          <div id="performance-chart-box" class="h-48 w-full flex items-end pt-4"></div>
+        </div>
+
+        <div class="lg:col-span-5 quant-card p-4 space-y-3">
+          <h3 class="text-xs font-num uppercase font-bold text-white border-b border-[#1b2432] pb-2">
+            Efectividad por Nivel de Confianza & Liga
+          </h3>
+          <div id="breakdown-stats-box" class="space-y-2.5 text-xs font-num"></div>
+        </div>
+      </div>
+
+      <!-- Tabla Filtrable de Todo el Historial desde el Día 1 -->
+      <div class="quant-card p-4 space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <h3 class="text-sm font-num font-bold uppercase text-white">
+            Registro Histórico Completo de Pronósticos Emitidos
+          </h3>
+          <div class="flex flex-wrap items-center gap-2">
+            <select id="hist-filter-period" class="bg-[#05070a] border border-[#1b2432] px-2.5 py-1.5 text-xs font-num text-white">
+              <option value="ALL">Periodo: Desde el Día 1</option>
+              <option value="MONTH">Este Mes</option>
+              <option value="WEEK">Últimos 7 Días</option>
+            </select>
+            <select id="hist-filter-league" class="bg-[#05070a] border border-[#1b2432] px-2.5 py-1.5 text-xs font-num text-white">
+              <option value="ALL">Todas las Ligas</option>
+            </select>
+            <select id="hist-filter-tier" class="bg-[#05070a] border border-[#1b2432] px-2.5 py-1.5 text-xs font-num text-white">
+              <option value="ALL">Todos los Niveles</option>
+              <option value="DIAMANTE">Diamante</option>
+              <option value="ORO">Oro</option>
+              <option value="PLATA">Plata</option>
+            </select>
+            <select id="hist-filter-outcome" class="bg-[#05070a] border border-[#1b2432] px-2.5 py-1.5 text-xs font-num text-white">
+              <option value="ALL">Estado: Todos</option>
+              <option value="ACIERTO">Solo Aciertos</option>
+              <option value="FALLO">Solo Fallos</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse font-num text-xs">
+            <thead>
+              <tr class="border-b border-[#1b2432] text-[#8b9bb4] uppercase text-[11px]">
+                <th class="py-2.5 px-3">Fecha</th>
+                <th class="py-2.5 px-3">Liga</th>
+                <th class="py-2.5 px-3">Partido</th>
+                <th class="py-2.5 px-3">Pronóstico Emitido</th>
+                <th class="py-2.5 px-3">Confianza</th>
+                <th class="py-2.5 px-3">Marcador Final</th>
+                <th class="py-2.5 px-3">Veredicto</th>
+              </tr>
+            </thead>
+            <tbody id="history-table-body" class="divide-y divide-[#1b2432]/60"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SECCIÓN 4: PLANES VIP (COP) Y PAGOS MANUALES (NEQUI/BANCOLOMBIA/BINANCE)
+         ==================================================================== -->
+    <section id="tab-planes" class="tab-panel hidden space-y-6">
+      <div class="text-center max-w-2xl mx-auto space-y-2">
+        <span class="text-xs font-num uppercase px-2.5 py-1 bg-[#10b981]/15 text-[#10b981] border border-[#10b981]/30 font-bold">
+          ACCESO TOTAL SIN RESTRICCIONES
+        </span>
+        <h2 class="text-2xl font-black uppercase text-white font-num">
+          Planes de Membresía VIP (COP)
+        </h2>
+        <p class="text-xs text-[#8b9bb4]">
+          Desbloquea el 100% de los pronósticos diarios (Diamante, Oro y Plata), indicadores de altitud ($\Delta m$), desgaste climático L10, explosividad 1T/2T y alertas directas por Telegram/WhatsApp.
+        </p>
+      </div>
+
+      <!-- Tarjetas de los 6 Planes VIP con Descuentos -->
+      <div id="vip-plans-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+
+      <!-- Módulo de Pago Manual y Subida de Comprobante Anti-Duplicados -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-4">
+        <!-- Instrucciones de Pago por Región -->
+        <div class="lg:col-span-6 quant-card p-5 space-y-4">
+          <div class="flex items-center justify-between border-b border-[#1b2432] pb-3">
+            <h3 class="text-sm font-num font-bold uppercase text-white">
+              1. Selecciona tu Región de Pago
+            </h3>
+            <div class="flex border border-[#1b2432] bg-[#05070a] p-0.5">
+              <button id="btn-reg-col" class="px-3 py-1 text-xs font-num font-bold bg-[#10b981] text-slate-950">
+                🇨🇴 COLOMBIA
+              </button>
+              <button id="btn-reg-int" class="px-3 py-1 text-xs font-num font-bold text-[#8b9bb4]">
+                🌐 INTERNACIONAL
+              </button>
+            </div>
+          </div>
+
+          <div id="payment-methods-list" class="space-y-3"></div>
+        </div>
+
+        <!-- Formulario de Reporte de Comprobante -->
+        <div class="lg:col-span-6 quant-card p-5 space-y-4">
+          <h3 class="text-sm font-num font-bold uppercase text-white border-b border-[#1b2432] pb-3">
+            2. Subir Comprobante para Activación VIP
+          </h3>
+
+          <form id="payment-upload-form" class="space-y-3.5 text-xs font-num">
+            <div>
+              <label class="block text-[#8b9bb4] mb-1">PLAN SELECCIONADO:</label>
+              <select id="pay-plan-select" required class="w-full bg-[#05070a] border border-[#1b2432] px-3 py-2 text-white"></select>
+            </div>
+
+            <div>
+              <label class="block text-[#8b9bb4] mb-1">MEDIO DE PAGO UTILIZADO:</label>
+              <select id="pay-method-select" required class="w-full bg-[#05070a] border border-[#1b2432] px-3 py-2 text-white"></select>
+            </div>
+
+            <div>
+              <label class="block text-[#8b9bb4] mb-1">
+                CAPTURA DEL COMPROBANTE (JPG/PNG — Verificación Hash Anti-Duplicados):
+              </label>
+              <input
+                id="pay-receipt-file"
+                type="file"
+                accept="image/*"
+                required
+                class="w-full bg-[#05070a] border border-[#1b2432] p-2 text-slate-300"
+              />
+            </div>
+
+            <div id="payment-form-feedback" class="hidden p-2.5 border text-xs"></div>
+
+            <button
+              type="submit"
+              class="w-full py-2.5 bg-[#10b981] hover:bg-emerald-400 text-slate-950 font-bold uppercase tracking-wider transition"
+            >
+              Enviar Comprobante a Revisión
+            </button>
+          </form>
+
+          <!-- Estado de Solicitudes del Usuario -->
+          <div class="border-t border-[#1b2432] pt-4 space-y-2">
+            <h4 class="text-xs font-num uppercase font-bold text-[#8b9bb4]">
+              Estado de tus Solicitudes de Activación:
+            </h4>
+            <div id="user-payment-requests-list" class="space-y-2"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SECCIÓN 5: MI LICENCIA, SESIÓN ÚNICA Y SISTEMA DE REFERIDOS
+         ==================================================================== -->
+    <section id="tab-cuenta" class="tab-panel hidden space-y-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="quant-card p-5 space-y-3 font-num text-xs">
+          <h3 class="text-sm font-bold uppercase text-white border-b border-[#1b2432] pb-2">
+            Estado de tu Licencia & Seguridad de Sesión Única
+          </h3>
+          <div id="account-license-details" class="space-y-2 text-slate-300"></div>
+        </div>
+
+        <div class="quant-card p-5 space-y-3 font-num text-xs">
+          <h3 class="text-sm font-bold uppercase text-[#10b981] border-b border-[#1b2432] pb-2">
+            Programa de Referidos (Gana Días VIP Gratis)
+          </h3>
+          <p class="text-[#8b9bb4]">
+            Comparte tu código único. Por cada amigo que se registre con tu código y active cualquier plan VIP de pago, el sistema suma automáticamente <strong class="text-white">+5 días VIP gratis</strong> a tu fecha de vencimiento.
+          </p>
+          <div class="p-3 bg-[#05070a] border border-[#1b2432] flex items-center justify-between">
+            <div>
+              <span class="text-[10px] text-[#8b9bb4] block">TU CÓDIGO DE REFERIDO:</span>
+              <span id="my-referral-code" class="text-base font-black text-[#06b6d4]">INICIA SESIÓN</span>
+            </div>
+            <button id="btn-copy-ref" class="px-3 py-1.5 bg-[#06b6d4]/20 border border-[#06b6d4] text-cyan-300 font-bold uppercase">
+              Copiar Enlace
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SECCIÓN 6: PANEL DE ADMINISTRADOR (SOLO VISIBLE PARA TI)
+         ==================================================================== -->
+    <section id="tab-admin" class="tab-panel hidden space-y-6">
+      <!-- Métricas Financieras del Mes y VIP Activos -->
+      <div id="admin-kpi-row" class="grid grid-cols-1 sm:grid-cols-4 gap-4"></div>
+
+      <!-- Cola de Solicitudes de Pago Pendientes (Con Captura y Botones Aprobar/Rechazar) -->
+      <div class="quant-card p-5 space-y-4">
+        <h3 class="text-sm font-num font-bold uppercase text-[#06b6d4] border-b border-[#1b2432] pb-2">
+          Solicitudes de Pago Manuales (Revisión de Comprobantes)
+        </h3>
+        <div id="admin-payments-queue" class="space-y-3"></div>
+      </div>
+
+      <!-- Gestión Manual de Usuarios (Activar/Quitar VIP) y Publicador de Pronósticos -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="lg:col-span-7 quant-card p-5 space-y-4">
+          <h3 class="text-sm font-num font-bold uppercase text-white border-b border-[#1b2432] pb-2">
+            Directorio de Usuarios & Control Manual de Licencias VIP
+          </h3>
+          <div id="admin-users-table" class="overflow-x-auto"></div>
+        </div>
+
+        <div class="lg:col-span-5 quant-card p-5 space-y-3 font-num text-xs">
+          <h3 class="text-sm font-bold uppercase text-[#10b981] border-b border-[#1b2432] pb-2">
+            Emitir Nuevo Pronóstico (+ Alerta VIP Telegram)
+          </h3>
+          <form id="admin-new-pick-form" class="space-y-2.5">
+            <div class="grid grid-cols-2 gap-2">
+              <input id="adm-league" placeholder="Liga (ej. Serie A)" required class="bg-[#05070a] border border-[#1b2432] p-2 text-white" />
+              <input id="adm-time" type="time" required class="bg-[#05070a] border border-[#1b2432] p-2 text-white" />
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <input id="adm-home" placeholder="Equipo Local" required class="bg-[#05070a] border border-[#1b2432] p-2 text-white" />
+              <input id="adm-away" placeholder="Equipo Visitante" required class="bg-[#05070a] border border-[#1b2432] p-2 text-white" />
+            </div>
+            <input id="adm-pick" placeholder="Pronóstico (ej. Más de 2.5 Goles Totales)" required class="w-full bg-[#05070a] border border-[#1b2432] p-2 text-white" />
+            <div class="grid grid-cols-3 gap-2">
+              <input id="adm-prob" type="number" step="0.1" placeholder="Prob % (92.5)" required class="bg-[#05070a] border border-[#1b2432] p-2 text-white" />
+              <select id="adm-tier" class="bg-[#05070a] border border-[#1b2432] p-2 text-white">
+                <option value="DIAMANTE">DIAMANTE</option>
+                <option value="ORO">ORO</option>
+                <option value="PLATA">PLATA</option>
+              </select>
+              <input id="adm-alt" type="number" placeholder="Altitud (m)" required class="bg-[#05070a] border border-[#1b2432] p-2 text-white" />
+            </div>
+            <input id="adm-l10" placeholder="Resumen Bioclimático L10 y Altitud" required class="w-full bg-[#05070a] border border-[#1b2432] p-2 text-white" />
+            <button type="submit" class="w-full py-2 bg-[#06b6d4] text-slate-950 font-bold uppercase">
+              Publicar Pronóstico & Disparar Alerta VIP
+            </button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL DE LOGIN / REGISTRO (EMAIL + GOOGLE + CÓDIGO DE REFERIDO) -->
+  <div id="auth-modal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="quant-card max-w-md w-full p-6 space-y-4 font-num text-xs">
+      <div class="flex items-center justify-between border-b border-[#1b2432] pb-3">
+        <h3 class="text-sm font-bold uppercase text-white">Acceso de Licencia // Sesión Única</h3>
+        <button id="btn-close-auth" class="text-slate-400 hover:text-white">✕</button>
+      </div>
+
+      <form id="auth-form" class="space-y-3">
+        <div>
+          <label class="block text-[#8b9bb4] mb-1">CORREO ELECTRÓNICO:</label>
+          <input id="auth-email" type="email" required placeholder="tu@correo.com" class="w-full bg-[#05070a] border border-[#1b2432] p-2.5 text-white" />
+        </div>
+        <div>
+          <label class="block text-[#8b9bb4] mb-1">CONTRASEÑA:</label>
+          <input id="auth-pass" type="password" required placeholder="••••••••" class="w-full bg-[#05070a] border border-[#1b2432] p-2.5 text-white" />
+        </div>
+        <div>
+          <label class="block text-[#8b9bb4] mb-1">CÓDIGO DE REFERIDO (OPCIONAL):</label>
+          <input id="auth-ref" type="text" placeholder="Ej. OPTA-9921" class="w-full bg-[#05070a] border border-[#1b2432] p-2 text-cyan-300" />
+        </div>
+        <div id="auth-feedback" class="hidden p-2 border text-xs"></div>
+        <div class="grid grid-cols-2 gap-2 pt-1">
+          <button type="submit" data-mode="login" class="py-2.5 bg-[#10b981] text-slate-950 font-bold uppercase">
+            Entrar
+          </button>
+          <button type="button" id="btn-register" class="py-2.5 border border-[#06b6d4] text-[#06b6d4] font-bold uppercase">
+            Crear Cuenta
+          </button>
+        </div>
+      </form>
+
+      <button id="btn-google-login" class="w-full py-2.5 border border-[#1b2432] bg-[#0f151f] text-white font-bold uppercase hover:border-cyan-400">
+        Continuar con Google OAuth
+      </button>
+    </div>
+  </div>
+
+  <!-- PIE DE PÁGINA LEGAL Y AVISO DE RESPONSABILIDAD -->
+  <footer class="border-t border-[#1b2432] bg-[#030508] px-4 py-6 mt-12 text-[11px] font-num text-[#8b9bb4]">
+    <div class="max-w-7xl mx-auto space-y-3">
+      <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#1b2432] pb-3">
+        <span class="font-bold text-white">OPTACORE.QUANT © 2026 — PLATAFORMA DE PROBABILIDAD DEPORTIVA</span>
+        <span id="legal-age-badge" class="px-2 py-0.5 bg-[#ef4444]/15 border border-[#ef4444] text-red-300 font-bold"></span>
+      </div>
+      <p id="legal-disclaimer"></p>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1 text-[10px] text-slate-400">
+        <p id="legal-terms"></p>
+        <p id="legal-privacy"></p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- CARGA MODULAR DE SCRIPTS -->
+  <script type="module" src="./auth.js"></script>
+  <script type="module" src="./pronosticos.js"></script>
+  <script type="module" src="./pagos.js"></script>
+  <script type="module" src="./admin.js"></script>
+</body>
+</html>
