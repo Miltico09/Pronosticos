@@ -1,36 +1,12 @@
 // ============================================================================
 // ARCHIVO: pronosticos.js
-// Navegación Blindada entre Menús + Curva Gráfica + Balance Multiplicador
+// Cálculo Exacto de Pérdida: 1 Unidad Fija por Cada Partido Caído
 // ============================================================================
 
 import { CONFIG } from "./config.js";
 import { isUserVipOrAdmin } from "./auth.js";
 
-const DB_KEY = "optacore_master_feed_v11";
-
-// Función Global de Navegación Garantizada
-window.switchTab = function(tabId) {
-  document.querySelectorAll(".tab-panel").forEach((panel) => {
-    panel.classList.add("hidden");
-  });
-
-  const target = document.getElementById(tabId);
-  if (target) {
-    target.classList.remove("hidden");
-  }
-
-  document.querySelectorAll(".nav-btn").forEach((btn) => {
-    if (btn.dataset.tab === tabId) {
-      btn.className = "nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#06b6d4] bg-[#06b6d4]/15 text-white";
-    } else {
-      btn.className = "nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#1b2432] bg-[#0a0e14] text-[#8b9bb4] hover:text-white";
-    }
-  });
-
-  if (tabId === "tab-historial") {
-    setTimeout(renderPerformanceChart, 50);
-  }
-};
+const DB_KEY = "optacore_master_feed_v12";
 
 export function getColombiaDateString(d = new Date()) {
   return new Intl.DateTimeFormat("en-CA", {
@@ -744,7 +720,7 @@ function injectWhatsAppFloatingButton() {
   document.body.appendChild(btn);
 }
 
-// Curva de Rendimiento
+// Curva acumulada
 export function renderPerformanceChart() {
   const chartBox = document.getElementById("performance-chart-box");
   if (!chartBox) return;
@@ -797,19 +773,6 @@ export function renderPerformanceChart() {
         .join("")}
     </svg>
   `;
-}
-
-// Vinculación Única y Blindada de los Menús
-function setupTabNavigation() {
-  document.querySelectorAll(".nav-btn").forEach((btn) => {
-    btn.onclick = (e) => {
-      e.preventDefault();
-      const tabId = btn.dataset.tab;
-      if (tabId && window.switchTab) {
-        window.switchTab(tabId);
-      }
-    };
-  });
 }
 
 // Modal Emergente
@@ -903,7 +866,7 @@ window.openMatchModal = (matchId) => {
   modal.classList.remove("hidden");
 };
 
-// Renderizado de Pronósticos Hoy
+// Renderizado de Pronósticos de Hoy
 export function renderTodayPredictions() {
   const container = document.getElementById("predictions-grid");
   if (!container) return;
@@ -993,7 +956,7 @@ export function renderTodayPredictions() {
   }).join("");
 }
 
-// Resultados Hoy y Balance Multiplicador
+// Resultados de Hoy (1 unidad fija por fallo)
 export function renderTodayResults() {
   const box = document.getElementById("today-results-container");
   const summaryBox = document.getElementById("today-financial-summary");
@@ -1003,7 +966,6 @@ export function renderTodayResults() {
   const todayList = getAllMasterFeed().filter((p) => p.matchDate === today);
 
   let totalOddsWon = 0;
-  let totalOddsLost = 0;
   let countWon = 0;
   let countLost = 0;
 
@@ -1013,11 +975,11 @@ export function renderTodayResults() {
       totalOddsWon += o;
       countWon++;
     } else if (p.outcome === "FALLO") {
-      totalOddsLost += o;
-      countLost++;
+      countLost++; // 1 apuesta = 1 unidad de pérdida
     }
   });
 
+  const totalOddsLost = countLost * 1.0;
   const netDiff = totalOddsWon - totalOddsLost;
 
   if (summaryBox) {
@@ -1028,7 +990,7 @@ export function renderTodayResults() {
         <span class="text-[10px] text-slate-400 block">${countWon} jugada(s) ganada(s)</span>
       </div>
       <div class="quant-card p-3 border-red-500/40 font-mono">
-        <span class="text-[10px] text-slate-400 block uppercase font-bold">MULTIPLICADOR CAÍDO</span>
+        <span class="text-[10px] text-slate-400 block uppercase font-bold">PÉRDIDA REAL</span>
         <span class="text-lg font-black text-red-400">-${totalOddsLost.toFixed(2)}x</span>
         <span class="text-[10px] text-slate-400 block">${countLost} jugada(s) caída(s)</span>
       </div>
@@ -1066,13 +1028,12 @@ export function renderTodayResults() {
   }).join("");
 }
 
-// Historial Completo
+// Historial Completo (1 unidad fija por cada fallo)
 export function renderFullPublicHistory() {
   const all = getAllMasterFeed();
   const settled = all.filter((p) => p.outcome === "ACIERTO" || p.outcome === "FALLO");
 
   let totalOddsWon = 0;
-  let totalOddsLost = 0;
   let countWins = 0;
   let countLosses = 0;
 
@@ -1082,11 +1043,11 @@ export function renderFullPublicHistory() {
       totalOddsWon += o;
       countWins++;
     } else if (p.outcome === "FALLO") {
-      totalOddsLost += o;
-      countLosses++;
+      countLosses++; // Exactamente 1 unidad de banca perdida por fallo
     }
   });
 
+  const totalOddsLost = countLosses * 1.0;
   const netBalance = totalOddsWon - totalOddsLost;
 
   const financialSummaryBox = document.getElementById("history-financial-summary");
@@ -1098,9 +1059,9 @@ export function renderFullPublicHistory() {
         <span class="text-[11px] text-slate-400 block">${countWins} cuotas acertadas acumuladas</span>
       </div>
       <div class="quant-card p-4 border-red-500/50 font-mono">
-        <span class="text-[10px] text-slate-400 uppercase block font-bold">MULTIPLICADOR CAÍDO</span>
+        <span class="text-[10px] text-slate-400 uppercase block font-bold">PÉRDIDA REGISTRADA</span>
         <span class="text-2xl font-black text-red-400">-${totalOddsLost.toFixed(2)}x</span>
-        <span class="text-[11px] text-slate-400 block">${countLosses} partidos no completados</span>
+        <span class="text-[11px] text-slate-400 block">${countLosses} partidos no completados (1x c/u)</span>
       </div>
       <div class="quant-card p-4 border-cyan-500/50 font-mono">
         <span class="text-[10px] text-cyan-300 uppercase block font-bold">BALANCE NETO AUDITADO</span>
@@ -1176,7 +1137,6 @@ export function renderFullPublicHistory() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  setupTabNavigation();
   startColombiaClock();
   injectWhatsAppFloatingButton();
   renderTodayPredictions();
