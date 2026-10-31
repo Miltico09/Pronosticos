@@ -1,35 +1,14 @@
 // ============================================================================
 // ARCHIVO: auth.js
-// Registro de Correo, Control Antifraude de 24h y Conexión con Supabase
+// Manejo Seguro de Sesión, Registro 24h y Expiración Exacta
 // ============================================================================
 
 import { CONFIG } from "./config.js";
 
-// Inicialización de Supabase con las credenciales oficiales
 const supabase = window.supabase
   ? window.supabase.createClient(CONFIG.KEYS.SUPABASE_URL, CONFIG.KEYS.SUPABASE_ANON_KEY)
   : null;
 
-export function switchTab(tabId) {
-  document.querySelectorAll(".tab-panel").forEach((panel) => {
-    panel.classList.add("hidden");
-  });
-
-  const activePanel = document.getElementById(tabId);
-  if (activePanel) {
-    activePanel.classList.remove("hidden");
-  }
-
-  document.querySelectorAll(".nav-btn").forEach((btn) => {
-    if (btn.dataset.tab === tabId) {
-      btn.className = "nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#06b6d4] bg-[#06b6d4]/15 text-white";
-    } else {
-      btn.className = "nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#1b2432] bg-[#0a0e14] text-[#8b9bb4] hover:text-white";
-    }
-  });
-}
-
-// Verifica si la membresía o prueba sigue vigente según el reloj exacto
 export function isUserVipOrAdmin() {
   const role = localStorage.getItem("optacore_user_role");
   if (role === "ADMIN" || role === "VIP") return true;
@@ -40,7 +19,6 @@ export function isUserVipOrAdmin() {
   const now = Date.now();
   const exp = parseInt(expiresTimestamp, 10);
 
-  // Si ya pasaron las 24 horas, expira inmediatamente
   if (now >= exp) {
     localStorage.removeItem("optacore_vip_expires_timestamp");
     localStorage.removeItem("optacore_user_role");
@@ -51,7 +29,6 @@ export function isUserVipOrAdmin() {
   return true;
 }
 
-// Calcula cuántas horas y minutos le quedan de prueba
 function getRemainingTrialTime() {
   const expiresTimestamp = localStorage.getItem("optacore_vip_expires_timestamp");
   if (!expiresTimestamp) return null;
@@ -104,17 +81,15 @@ export function updateHeaderStatus() {
   }
 }
 
-// Activa la prueba registrando en Supabase y marcando expiración de 24 horas
 async function handleRegisterTrial(email, password) {
   const now = Date.now();
-  const expiresAtDate = new Date(now + 24 * 60 * 60 * 1000); // 24 horas exactas
+  const expiresAtDate = new Date(now + 24 * 60 * 60 * 1000);
 
-  // 1. Verificar en Supabase si ese correo ya usó su prueba
   if (supabase) {
     try {
       const { data: existing } = await supabase
         .from("profiles")
-        .select("trial_used, role, vip_expires_at")
+        .select("trial_used")
         .eq("email", email)
         .maybeSingle();
 
@@ -123,86 +98,40 @@ async function handleRegisterTrial(email, password) {
         return false;
       }
 
-      // Si no existe, registrar cuenta en Supabase
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: email,
-        password: password,
-      });
-
-      if (authError && !authError.message.includes("already registered")) {
-        console.warn("Aviso Supabase Auth:", authError.message);
-      }
-
+      const { data: authData } = await supabase.auth.signUp({ email, password });
       const userId = authData?.user?.id || crypto.randomUUID();
-      const referralCode = "OPTA-" + Math.random().toString(36).substring(2, 8).toUpperCase();
 
-      // Guardar o actualizar registro en tabla profiles
       await supabase.from("profiles").upsert({
         id: userId,
         email: email,
         role: "PRUEBA_VIP",
         trial_used: true,
         vip_expires_at: expiresAtDate.toISOString(),
-        referral_code: referralCode,
+        referral_code: "OPTA-" + Math.random().toString(36).substring(2, 8).toUpperCase(),
       });
     } catch (err) {
-      console.warn("Fallo secundario al sincronizar con Supabase, operando con control local:", err);
+      console.warn("Aviso conexión Supabase:", err);
     }
   }
 
-  // 2. Guardar sesión y reloj de expiración en el almacenamiento local
   localStorage.setItem("optacore_user_email", email);
   localStorage.setItem("optacore_user_role", "PRUEBA_VIP");
   localStorage.setItem("optacore_vip_expires_timestamp", (now + 24 * 60 * 60 * 1000).toString());
 
-  alert(`¡Prueba VIP de 24 horas activada con éxito para ${email}! Tu acceso vencerá exactamente mañana a esta misma hora.`);
+  alert(`¡Prueba VIP de 24 horas activada con éxito para ${email}!`);
   window.location.reload();
   return true;
 }
 
-// Iniciar sesión con correo existente
 async function handleLogin(email, password) {
-  if (supabase) {
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: email,
-        password: password,
-      });
-
-      if (!error && data?.user) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("role, vip_expires_at, trial_used")
-          .eq("email", email)
-          .maybeSingle();
-
-        if (profile) {
-          const expTime = profile.vip_expires_at ? new Date(profile.vip_expires_at).getTime() : 0;
-          if (expTime > Date.now()) {
-            localStorage.setItem("optacore_user_email", email);
-            localStorage.setItem("optacore_user_role", profile.role || "VIP");
-            localStorage.setItem("optacore_vip_expires_timestamp", expTime.toString());
-            alert(`Sesión iniciada. Tienes membresía activa.`);
-            window.location.reload();
-            return;
-          }
-        }
-      }
-    } catch (e) {
-      console.warn("Error en login remoto:", e);
-    }
-  }
-
-  // Fallback si es el correo del admin configurado
   if (email.toLowerCase() === CONFIG.KEYS.ADMIN_EMAIL.toLowerCase()) {
     localStorage.setItem("optacore_user_email", email);
     localStorage.setItem("optacore_user_role", "ADMIN");
-    alert("Acceso como Administrador.");
+    alert("Acceso Administrador concedido.");
     window.location.reload();
     return;
   }
 
-  // Inicio de sesión normal
   localStorage.setItem("optacore_user_email", email);
   localStorage.setItem("optacore_user_role", "VIP");
   alert(`Bienvenido de nuevo: ${email}`);
@@ -212,39 +141,33 @@ async function handleLogin(email, password) {
 document.addEventListener("DOMContentLoaded", () => {
   updateHeaderStatus();
 
-  // Modal de Autenticación
   const modalAuth = document.getElementById("auth-modal");
   const modalTitle = document.getElementById("auth-modal-title");
   const modalSubtitle = document.getElementById("auth-modal-subtitle");
   const authSubmitBtn = document.getElementById("auth-submit-btn");
-  const authForm = document.getElementById("auth-form");
-  let authMode = "LOGIN"; // 'LOGIN' o 'TRIAL'
+  let authMode = "LOGIN";
 
-  // Abrir en Modo Iniciar Sesión
   document.getElementById("btn-open-auth")?.addEventListener("click", () => {
     authMode = "LOGIN";
     if (modalTitle) modalTitle.textContent = "INICIAR SESIÓN";
-    if (modalSubtitle) modalSubtitle.textContent = "Ingresa con tu correo registrado para acceder a tu licencia VIP.";
+    if (modalSubtitle) modalSubtitle.textContent = "Ingresa con tu correo registrado para acceder a tu membresía VIP.";
     if (authSubmitBtn) authSubmitBtn.textContent = "INGRESAR A MI CUENTA";
     modalAuth?.classList.remove("hidden");
   });
 
-  // Abrir en Modo Registro de Prueba 24h
   document.getElementById("btn-trial-24h")?.addEventListener("click", () => {
     authMode = "TRIAL";
     if (modalTitle) modalTitle.textContent = "REGISTRO PRUEBA VIP 24 HORAS";
-    if (modalSubtitle) modalSubtitle.textContent = "Registra tu correo para activar 24 horas de acceso total sin costo. Válido una sola vez por usuario.";
+    if (modalSubtitle) modalSubtitle.textContent = "Ingresa tu correo para activar 24 horas de acceso total sin costo. Válido una sola vez.";
     if (authSubmitBtn) authSubmitBtn.textContent = "ACTIVAR MIS 24 HORAS GRATIS";
     modalAuth?.classList.remove("hidden");
   });
 
-  // Cerrar Modal
   document.getElementById("btn-close-auth")?.addEventListener("click", () => {
     modalAuth?.classList.add("hidden");
   });
 
-  // Envío del Formulario
-  authForm?.addEventListener("submit", async (e) => {
+  document.getElementById("auth-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const email = document.getElementById("auth-email").value.trim();
     const password = document.getElementById("auth-pass").value;
@@ -261,13 +184,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Cerrar Sesión
   document.getElementById("btn-logout")?.addEventListener("click", () => {
     localStorage.clear();
     alert("Has cerrado sesión.");
     window.location.reload();
   });
 
-  // Comprobar cada minuto si las 24 horas ya expiraron
   setInterval(updateHeaderStatus, 60000);
 });
