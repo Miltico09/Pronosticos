@@ -8,7 +8,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="stylesheet" href="./estilos.css" />
   <script>
-    // Función global directa: cambia pestañas sin depender de la carga de otros archivos
     function switchTab(tabId) {
       document.querySelectorAll('.tab-panel').forEach(function(panel) {
         panel.classList.add('hidden');
@@ -70,7 +69,7 @@
         </div>
       </div>
 
-      <!-- BOTONES DE NAVEGACIÓN CON ONCLICK DIRECTO -->
+      <!-- BOTONES DE NAVEGACIÓN -->
       <nav class="flex items-center gap-1 overflow-x-auto py-1">
         <button onclick="switchTab('tab-pronosticos')" data-tab="tab-pronosticos" class="nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#06b6d4] bg-[#06b6d4]/15 text-white">
           Pronósticos Hoy
@@ -89,7 +88,7 @@
         </button>
       </nav>
 
-      <!-- BOTONES DE ACCESO -->
+      <!-- BOTONES DE ACCIÓN -->
       <div class="flex items-center gap-1.5">
         <button id="btn-open-redeem-key" class="px-2.5 py-1.5 text-xs font-mono font-bold uppercase border border-amber-500/60 bg-amber-500/10 text-amber-300 hover:bg-amber-500 hover:text-black transition">
           🔑 Canjear Llave
@@ -107,7 +106,7 @@
     </div>
   </header>
 
-  <!-- CONTENIDO -->
+  <!-- CONTENIDO PRINCIPAL -->
   <main class="max-w-7xl w-full mx-auto px-4 py-6 flex-1 space-y-6">
 
     <!-- 1. PRONÓSTICOS HOY -->
@@ -181,7 +180,7 @@
     <section id="tab-planes" class="tab-panel hidden space-y-6">
       <div class="text-center max-w-xl mx-auto space-y-1">
         <h2 class="text-xl font-black uppercase text-white font-mono">Planes de Membresía VIP</h2>
-        <p class="text-xs text-slate-400">Precios en COP y USDT a la TRM Oficial ($3.182,99).</p>
+        <p class="text-xs text-slate-400">Precios en COP y USDT.</p>
       </div>
 
       <!-- Cupón -->
@@ -244,7 +243,7 @@
       </div>
     </section>
 
-    <!-- 5. MI LICENCIA & REFERIDOS -->
+    <!-- 5. MI LICENCIA & REFERIDOS (20% DE DÍAS REDONDEADO HACIA ARRIBA) -->
     <section id="tab-cuenta" class="tab-panel hidden space-y-4 font-mono text-xs">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="quant-card p-4 space-y-2">
@@ -257,11 +256,15 @@
         </div>
 
         <div class="quant-card p-4 space-y-2">
-          <h3 class="text-xs font-bold uppercase text-[#10b981] border-b border-[#1b2432] pb-2">Gana 5 Días VIP por Invitar Amigos</h3>
-          <p class="text-slate-400 text-[11px]">Comparte tu enlace. Si un amigo activa su membresía VIP, ganas 5 días adicionales automáticamente.</p>
+          <h3 class="text-xs font-bold uppercase text-[#10b981] border-b border-[#1b2432] pb-2">
+            Gana el 20% en Días VIP por Invitar Amigos
+          </h3>
+          <p class="text-slate-400 text-[11px] leading-relaxed">
+            Comparte tu enlace. Si un amigo activa cualquier membresía VIP, recibes automáticamente el <strong>20% de los días de su plan</strong> (redondeado hacia arriba a días completos; por ejemplo, si compra 7 días recibes 2 días adicionales).
+          </p>
           <div class="p-2.5 bg-[#05070a] border border-[#1b2432] flex items-center justify-between">
             <span id="my-referral-code" class="text-sm font-black text-cyan-400">OPTA-INVITADO</span>
-            <button onclick="navigator.clipboard.writeText(window.location.origin + '?ref=OPTA-INVITADO'); alert('Enlace copiado al portapapeles')" class="px-2 py-1 bg-cyan-500/20 border border-cyan-400 text-cyan-300 text-[10px] font-bold uppercase">
+            <button onclick="navigator.clipboard.writeText(window.location.origin + '?ref=OPTA-INVITADO'); alert('Enlace de referido copiado al portapapeles')" class="px-2 py-1 bg-cyan-500/20 border border-cyan-400 text-cyan-300 text-[10px] font-bold uppercase">
               Copiar Enlace
             </button>
           </div>
