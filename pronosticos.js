@@ -1,12 +1,12 @@
 // ============================================================================
 // ARCHIVO: pronosticos.js
-// Contador de Ganancias/Pérdidas, Curva Garantizada y Análisis Detallados
+// Cálculo Oficial Corregido: Multiplicadores Reales de Cuota y Balance
 // ============================================================================
 
 import { CONFIG } from "./config.js";
 import { isUserVipOrAdmin, switchTab } from "./auth.js";
 
-const DB_KEY = "optacore_master_feed_v9";
+const DB_KEY = "optacore_master_feed_v10";
 
 export function getColombiaDateString(d = new Date()) {
   return new Intl.DateTimeFormat("en-CA", {
@@ -720,9 +720,7 @@ function injectWhatsAppFloatingButton() {
   document.body.appendChild(btn);
 }
 
-// ============================================================================
-// DIBUJO DE LA GRÁFICA DE RENDIMIENTO (GARANTIZADO)
-// ============================================================================
+// Curva acumulada
 export function renderPerformanceChart() {
   const chartBox = document.getElementById("performance-chart-box");
   if (!chartBox) return;
@@ -903,7 +901,7 @@ export function renderTodayPredictions() {
   if (counterBadge) {
     counterBadge.textContent = isVip
       ? `ACCESO VIP ACTIVO (${todayList.length} PRONÓSTICOS HOY)`
-      : `MODO ABIERTO (4 PRONÓSTICOS DESTACADOS GRATIS)`;
+      : `ACCESO LIBRE // 4 JUGADAS GRATIS HOY`;
   }
 
   container.innerHTML = filtered.map((item) => {
@@ -947,7 +945,7 @@ export function renderTodayPredictions() {
                 <span class="text-[10px] text-slate-400 block">Cuota: @${(item.odds || 1.45).toFixed(2)}</span>
               </div>
               <div class="text-right">
-                <span class="text-[9px] text-slate-400 block">CONFIANZA</span>
+                <span class="text-[9px] text-slate-400 block">PROBABILIDAD</span>
                 <span class="text-sm md:text-base font-black text-white">${item.probability}%</span>
               </div>
             </div>
@@ -973,7 +971,9 @@ export function renderTodayPredictions() {
   }).join("");
 }
 
-// Renderizado de Resultados y Balance Financiero
+// ============================================================================
+// CÁLCULO DE MULTIPLICADOR Y RESULTADOS DE HOY (CORREGIDO)
+// ============================================================================
 export function renderTodayResults() {
   const box = document.getElementById("today-results-container");
   const summaryBox = document.getElementById("today-financial-summary");
@@ -982,31 +982,41 @@ export function renderTodayResults() {
   const today = getColombiaDateString();
   const todayList = getAllMasterFeed().filter((p) => p.matchDate === today);
 
-  const settledToday = todayList.filter((p) => p.outcome === "ACIERTO" || p.outcome === "FALLO");
-  let wonOdds = 0;
-  let lostOdds = 0;
+  let totalOddsWon = 0; // Suma de cuotas ganadas
+  let totalOddsLost = 0; // Cuotas caídas
+  let countWon = 0;
+  let countLost = 0;
 
-  settledToday.forEach((p) => {
-    const odd = p.odds || 1.45;
-    if (p.outcome === "ACIERTO") wonOdds += (odd - 1);
-    else if (p.outcome === "FALLO") lostOdds += 1.0;
+  todayList.forEach((p) => {
+    const o = p.odds || 1.45;
+    if (p.outcome === "ACIERTO") {
+      totalOddsWon += o;
+      countWon++;
+    } else if (p.outcome === "FALLO") {
+      totalOddsLost += o;
+      countLost++;
+    }
   });
 
-  const netBalance = wonOdds - lostOdds;
+  // Balance Neto: Cuotas cobradas menos las caídas
+  const netDiff = totalOddsWon - totalOddsLost;
 
   if (summaryBox) {
     summaryBox.innerHTML = `
       <div class="quant-card p-3 border-emerald-500/40">
-        <span class="text-[10px] text-slate-400 block">GANANCIA HOY</span>
-        <span class="text-base font-black text-[#10b981]">+${wonOdds.toFixed(2)}x</span>
+        <span class="text-[10px] text-slate-400 block uppercase font-bold">MULTIPLICADOR COBRADO</span>
+        <span class="text-lg font-black text-[#10b981]">+${totalOddsWon.toFixed(2)}x</span>
+        <span class="text-[10px] text-slate-400 block">${countWon} jugada(s) ganada(s)</span>
       </div>
       <div class="quant-card p-3 border-red-500/40">
-        <span class="text-[10px] text-slate-400 block">PÉRDIDA HOY</span>
-        <span class="text-base font-black text-red-400">-${lostOdds.toFixed(2)}x</span>
+        <span class="text-[10px] text-slate-400 block uppercase font-bold">MULTIPLICADOR CAÍDO</span>
+        <span class="text-lg font-black text-red-400">-${totalOddsLost.toFixed(2)}x</span>
+        <span class="text-[10px] text-slate-400 block">${countLost} jugada(s) caída(s)</span>
       </div>
-      <div class="quant-card p-3 ${netBalance >= 0 ? "border-cyan-500/40" : "border-amber-500/40"}">
-        <span class="text-[10px] text-slate-400 block">BALANCE NETO</span>
-        <span class="text-base font-black ${netBalance >= 0 ? "text-cyan-400" : "text-amber-400"}">${netBalance >= 0 ? "+" : ""}${netBalance.toFixed(2)}x</span>
+      <div class="quant-card p-3 ${netDiff >= 0 ? "border-cyan-500/40" : "border-amber-500/40"}">
+        <span class="text-[10px] text-slate-400 block uppercase font-bold">BALANCE DEL DÍA</span>
+        <span class="text-lg font-black ${netDiff >= 0 ? "text-cyan-400" : "text-amber-400"}">${netDiff >= 0 ? "+" : ""}${netDiff.toFixed(2)}x</span>
+        <span class="text-[10px] text-slate-400 block">Rendimiento neto</span>
       </div>
     `;
   }
@@ -1037,42 +1047,48 @@ export function renderTodayResults() {
   }).join("");
 }
 
-// Historial Completo con Multiplicador Total de Ganancia / Pérdida
+// ============================================================================
+// CÁLCULO DE MULTIPLICADOR EN EL HISTORIAL (CORREGIDO)
+// ============================================================================
 export function renderFullPublicHistory() {
   const all = getAllMasterFeed();
   const settled = all.filter((p) => p.outcome === "ACIERTO" || p.outcome === "FALLO");
 
-  let totalWonUnits = 0;
-  let totalLostUnits = 0;
+  let totalOddsWon = 0;
+  let totalOddsLost = 0;
+  let countWins = 0;
+  let countLosses = 0;
 
   settled.forEach((p) => {
     const o = p.odds || 1.45;
     if (p.outcome === "ACIERTO") {
-      totalWonUnits += (o - 1);
+      totalOddsWon += o;
+      countWins++;
     } else if (p.outcome === "FALLO") {
-      totalLostUnits += 1.0;
+      totalOddsLost += o;
+      countLosses++;
     }
   });
 
-  const totalNet = totalWonUnits - totalLostUnits;
+  const netBalance = totalOddsWon - totalOddsLost;
 
   const financialSummaryBox = document.getElementById("history-financial-summary");
   if (financialSummaryBox) {
     financialSummaryBox.innerHTML = `
-      <div class="quant-card p-4 border-emerald-500/50">
-        <span class="text-[10px] text-slate-400 uppercase block font-bold">MULTIPLICADOR GANANCIA</span>
-        <span class="text-2xl font-black text-[#10b981]">+${totalWonUnits.toFixed(2)}x</span>
-        <span class="text-[11px] text-slate-400 block">Suma de cuotas limpias acertadas</span>
+      <div class="quant-card p-4 border-emerald-500/50 font-mono">
+        <span class="text-[10px] text-slate-400 uppercase block font-bold">MULTIPLICADOR TOTAL COBRADO</span>
+        <span class="text-2xl font-black text-[#10b981]">+${totalOddsWon.toFixed(2)}x</span>
+        <span class="text-[11px] text-slate-400 block">${countWins} cuotas acertadas acumuladas</span>
       </div>
-      <div class="quant-card p-4 border-red-500/50">
-        <span class="text-[10px] text-slate-400 uppercase block font-bold">PÉRDIDA REGISTRADA</span>
-        <span class="text-2xl font-black text-red-400">-${totalLostUnits.toFixed(2)}x</span>
-        <span class="text-[11px] text-slate-400 block">Partidos que no se dieron</span>
+      <div class="quant-card p-4 border-red-500/50 font-mono">
+        <span class="text-[10px] text-slate-400 uppercase block font-bold">MULTIPLICADOR CAÍDO</span>
+        <span class="text-2xl font-black text-red-400">-${totalOddsLost.toFixed(2)}x</span>
+        <span class="text-[11px] text-slate-400 block">${countLosses} partidos no completados</span>
       </div>
-      <div class="quant-card p-4 border-cyan-500/50">
-        <span class="text-[10px] text-cyan-300 uppercase block font-bold">BALANCE NETO REAL</span>
-        <span class="text-2xl font-black text-white">+${totalNet.toFixed(2)}x</span>
-        <span class="text-[11px] text-[#10b981] block font-bold">Rendimiento positivo transparente</span>
+      <div class="quant-card p-4 border-cyan-500/50 font-mono">
+        <span class="text-[10px] text-cyan-300 uppercase block font-bold">BALANCE NETO AUDITADO</span>
+        <span class="text-2xl font-black ${netBalance >= 0 ? "text-white" : "text-amber-400"}">${netBalance >= 0 ? "+" : ""}${netBalance.toFixed(2)}x</span>
+        <span class="text-[11px] text-[#10b981] block font-bold">Rendimiento positivo real</span>
       </div>
     `;
   }
