@@ -21,7 +21,7 @@
         <span id="colombia-live-clock" class="text-cyan-400 font-bold">HORA COLOMBIA: --:--:--</span>
       </div>
       <div>
-        <span id="user-role-badge" class="px-2 py-0.5 border border-[#1b2432] bg-[#0a0e14] text-[#10b981] font-bold">
+        <span id="user-role-badge" class="px-2 py-0.5 border border-[#1b2432] bg-[#0a0e14] text-slate-300 font-bold">
           ACCESO LIBRE // 4 JUGADAS GRATIS HOY
         </span>
       </div>
@@ -48,7 +48,7 @@
         </div>
       </div>
 
-      <!-- BOTONES DE NAVEGACIÓN -->
+      <!-- NAVEGACIÓN -->
       <nav class="flex items-center gap-1 overflow-x-auto py-1">
         <button data-tab="tab-pronosticos" class="nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#06b6d4] bg-[#06b6d4]/15 text-white">
           Pronósticos Hoy
@@ -67,22 +67,25 @@
         </button>
       </nav>
 
-      <!-- BOTONES DE SESIÓN Y PRUEBA VIP CONECTADOS -->
-      <div class="flex items-center gap-2">
-        <button id="btn-trial-24h" class="px-3 py-1.5 text-xs font-mono font-bold uppercase bg-[#06b6d4] text-slate-950 hover:bg-cyan-300">
-          Prueba VIP 24h
+      <!-- BOTONES DE ACCIÓN: CANJEAR LLAVE, PRUEBA 24H E INICIAR SESIÓN -->
+      <div class="flex items-center gap-1.5">
+        <button id="btn-open-redeem-key" class="px-2.5 py-1.5 text-xs font-mono font-bold uppercase border border-amber-500/60 bg-amber-500/10 text-amber-300 hover:bg-amber-500 hover:text-black transition">
+          🔑 Canjear Llave
         </button>
-        <button id="btn-open-auth" class="px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#1b2432] bg-[#0f151f] text-white hover:border-slate-500">
-          Iniciar Sesión
+        <button id="btn-trial-24h" class="px-2.5 py-1.5 text-xs font-mono font-bold uppercase bg-[#06b6d4] text-slate-950 hover:bg-cyan-300">
+          Prueba 24h
         </button>
-        <button id="btn-logout" class="hidden px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#ef4444] text-[#ef4444]">
+        <button id="btn-open-auth" class="px-2.5 py-1.5 text-xs font-mono font-bold uppercase border border-[#1b2432] bg-[#0f151f] text-white hover:border-slate-500">
+          Entrar
+        </button>
+        <button id="btn-logout" class="hidden px-2.5 py-1.5 text-xs font-mono font-bold uppercase border border-[#ef4444] text-[#ef4444]">
           Salir
         </button>
       </div>
     </div>
   </header>
 
-  <!-- CONTENIDO -->
+  <!-- CONTENIDO PRINCIPAL -->
   <main class="max-w-7xl w-full mx-auto px-4 py-6 flex-1 space-y-6">
 
     <!-- TAB 1: PRONÓSTICOS HOY -->
@@ -103,24 +106,20 @@
       <div id="predictions-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
     </section>
 
-    <!-- TAB 2: RESULTADOS HOY (SIN BOTÓN DE API Y CON CONTADOR) -->
+    <!-- TAB 2: RESULTADOS HOY -->
     <section id="tab-resultados" class="tab-panel hidden space-y-4">
       <div class="quant-card p-4">
         <h2 class="text-base font-black uppercase text-white font-mono">Auditoría de Resultados del Día</h2>
         <p class="text-xs text-slate-400">Calificación transparente de los partidos finalizados.</p>
       </div>
 
-      <!-- Tarjetas de Ganancia / Pérdida del Día -->
       <div id="today-financial-summary" class="grid grid-cols-3 gap-3 font-mono text-xs"></div>
-
       <div id="today-results-container" class="space-y-3"></div>
     </section>
 
-    <!-- TAB 3: HISTORIAL & MULTIPLICADOR DE BANCA -->
+    <!-- TAB 3: HISTORIAL -->
     <section id="tab-historial" class="tab-panel hidden space-y-5">
-      <!-- Balance Financiero Completo -->
       <div id="history-financial-summary" class="grid grid-cols-1 sm:grid-cols-3 gap-3 font-mono"></div>
-
       <div id="history-kpi-cards" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
 
       <div class="quant-card p-4 space-y-3">
@@ -156,15 +155,36 @@
       </div>
     </section>
 
-    <!-- TAB 4: PLANES VIP & CUENTAS -->
+    <!-- TAB 4: PLANES VIP & CUPÓN DE PROMOTOR -->
     <section id="tab-planes" class="tab-panel hidden space-y-6">
       <div class="text-center max-w-xl mx-auto space-y-1">
         <h2 class="text-xl font-black uppercase text-white font-mono">Planes de Membresía VIP</h2>
-        <p class="text-xs text-slate-400">Precios en Pesos Colombianos (COP) y USDT a la TRM Oficial.</p>
+        <p class="text-xs text-slate-400">Precios en COP y USDT a la TRM Oficial ($3.182,99).</p>
       </div>
 
+      <!-- CAJA DE CÓDIGO DE DESCUENTO (PROMOTORES) -->
+      <div class="max-w-md mx-auto quant-card p-3.5 border-cyan-500/40 bg-[#070e17] font-mono text-xs space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="font-bold text-cyan-300 uppercase">🎟️ ¿Tienes código de promotor (-20%)?</span>
+          <span id="promo-status-badge" class="text-[10px] text-slate-400">Sin aplicar</span>
+        </div>
+        <div class="flex gap-2">
+          <input
+            id="input-promo-code"
+            type="text"
+            placeholder="Ej: PROMO20"
+            class="flex-1 bg-[#05070a] border border-[#1b2432] px-3 py-1.5 uppercase text-white font-bold focus:border-cyan-400 focus:outline-none"
+          />
+          <button id="btn-apply-promo" class="px-4 py-1.5 bg-[#06b6d4] hover:bg-cyan-300 text-slate-950 font-black uppercase text-xs">
+            Aplicar
+          </button>
+        </div>
+      </div>
+
+      <!-- Grid de Planes (se recalculan con -20% si hay código) -->
       <div id="vip-plans-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
 
+      <!-- Cuentas de Pago -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 pt-2">
         <div class="lg:col-span-7 quant-card p-5 space-y-4">
           <div class="flex items-center justify-between border-b border-[#1b2432] pb-3">
@@ -186,13 +206,14 @@
             Activación Inmediata
           </h3>
           <p class="text-slate-300 text-[11px] leading-relaxed">
-            Transfiere el monto a Nequi, Bancolombia o Binance y reporta el comprobante por WhatsApp:
+            Transfiere a Nequi, Bancolombia o Binance y reporta el comprobante por WhatsApp:
           </p>
           <div class="p-3 bg-[#05070a] border border-[#1b2432] space-y-1">
             <span class="text-[10px] text-slate-400 block">WHATSAPP OFICIAL:</span>
             <span class="text-sm font-black text-white">+57 333 286 1551</span>
           </div>
           <a
+            id="btn-general-whatsapp-pay"
             href="https://wa.me/573332861551?text=Hola%20equipo%20OptaCore,%20acabo%20de%20transferir%20para%20activar%20mi%20VIP.%20Adjunto%20el%20comprobante:"
             target="_blank"
             class="block w-full py-2.5 text-center bg-[#10b981] hover:bg-emerald-400 text-slate-950 font-black uppercase tracking-wider text-xs transition"
@@ -203,13 +224,14 @@
       </div>
     </section>
 
-    <!-- TAB 5: LICENCIA & REFERIDOS -->
+    <!-- TAB 5: MI LICENCIA & REFERIDOS -->
     <section id="tab-cuenta" class="tab-panel hidden space-y-4 font-mono text-xs">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="quant-card p-4 space-y-2">
           <h3 class="text-xs font-bold uppercase text-white border-b border-[#1b2432] pb-2">Estado de tu Licencia</h3>
           <div id="account-license-details" class="space-y-1.5 text-slate-300">
-            <p>Estado actual: <strong class="text-cyan-400" id="account-role-text">ACCESO LIBRE</strong></p>
+            <p>Correo vinculado: <strong class="text-white" id="account-email-text">No registrado</strong></p>
+            <p>Estado de membresía: <strong class="text-cyan-400" id="account-role-text">ACCESO LIBRE</strong></p>
             <p>Vigencia: <span class="text-slate-400" id="account-expires-text">Sin límite en jugadas gratuitas</span></p>
           </div>
         </div>
@@ -229,35 +251,17 @@
 
   </main>
 
-  <!-- MODAL DE INICIO DE SESIÓN -->
-  <div id="auth-modal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 font-mono text-xs">
-    <div class="quant-card max-w-sm w-full p-5 space-y-3">
+  <!-- MODAL PARA CANJEAR LLAVE TEMPORAL -->
+  <div id="redeem-key-modal" class="fixed inset-0 z-50 hidden bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 font-mono text-xs">
+    <div class="quant-card max-w-sm w-full p-5 space-y-3 border-amber-500/60 shadow-[0_0_25px_rgba(245,158,11,0.2)]">
       <div class="flex items-center justify-between border-b border-[#1b2432] pb-2">
-        <h3 class="text-xs font-bold uppercase text-white">Acceso a tu Cuenta</h3>
-        <button id="btn-close-auth" class="text-slate-400 hover:text-white">✕</button>
+        <h3 class="text-xs font-bold uppercase text-amber-300">🔑 CANJEAR LLAVE DE ACCESO</h3>
+        <button id="btn-close-redeem" class="text-slate-400 hover:text-white font-bold">✕</button>
       </div>
-      <form id="auth-form" class="space-y-2.5">
+      <p class="text-[11px] text-slate-300 leading-relaxed">
+        Ingresa tu llave de cortesía o código promocional para activar tus días de acceso VIP:
+      </p>
+      <form id="redeem-key-form" class="space-y-3 pt-1">
         <div>
-          <label class="text-[10px] text-slate-400 block mb-1">CORREO ELECTRÓNICO</label>
-          <input id="auth-email" type="email" required placeholder="tu@correo.com" class="w-full bg-[#05070a] border border-[#1b2432] p-2 text-white text-xs" />
-        </div>
-        <div>
-          <label class="text-[10px] text-slate-400 block mb-1">CONTRASEÑA</label>
-          <input id="auth-pass" type="password" required placeholder="••••••••" class="w-full bg-[#05070a] border border-[#1b2432] p-2 text-white text-xs" />
-        </div>
-        <button type="submit" class="w-full py-2 bg-[#10b981] hover:bg-emerald-400 text-slate-950 font-bold uppercase transition">
-          Ingresar
-        </button>
-      </form>
-    </div>
-  </div>
-
-  <footer class="border-t border-[#1b2432] bg-[#030508] px-4 py-4 mt-8 text-[11px] font-mono text-slate-400 text-center">
-    OPTACORE.QUANT © 2026 — Inteligencia Estadística para Pronósticos Deportivos (+18).
-  </footer>
-
-  <script type="module" src="./auth.js"></script>
-  <script type="module" src="./pronosticos.js"></script>
-  <script type="module" src="./pagos.js"></script>
-</body>
-</html>
+          <label class="text-[10px] text-slate-400 block mb-1">CÓDIGO DE LA LLAVE</label>
+          <input id="input-license-key" type="text" required placeholder="Ej: PRUEBA3D" class="w-full bg-[#05070a] border border-[#1b2432] p-2 text-white text-xs uppercase font-bold focus:border-amber-400 focus:outline
