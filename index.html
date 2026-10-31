@@ -8,6 +8,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="stylesheet" href="./estilos.css" />
   <script>
+    // Navegación nativa directa para evitar cualquier bloqueo en dispositivos móviles
     function switchTab(tabId) {
       document.querySelectorAll('.tab-panel').forEach(function(panel) {
         panel.classList.add('hidden');
@@ -88,7 +89,7 @@
         </button>
       </nav>
 
-      <!-- BOTONES DE ACCIÓN -->
+      <!-- BOTONES DE ACCESO RÁPIDO -->
       <div class="flex items-center gap-1.5">
         <button id="btn-open-redeem-key" class="px-2.5 py-1.5 text-xs font-mono font-bold uppercase border border-amber-500/60 bg-amber-500/10 text-amber-300 hover:bg-amber-500 hover:text-black transition">
           🔑 Canjear Llave
@@ -109,7 +110,7 @@
   <!-- CONTENIDO PRINCIPAL -->
   <main class="max-w-7xl w-full mx-auto px-4 py-6 flex-1 space-y-6">
 
-    <!-- 1. PRONÓSTICOS HOY -->
+    <!-- TAB 1: PRONÓSTICOS HOY -->
     <section id="tab-pronosticos" class="tab-panel space-y-4">
       <div class="quant-card p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
@@ -127,7 +128,7 @@
       <div id="predictions-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
     </section>
 
-    <!-- 2. RESULTADOS HOY -->
+    <!-- TAB 2: RESULTADOS HOY -->
     <section id="tab-resultados" class="tab-panel hidden space-y-4">
       <div class="quant-card p-4">
         <h2 class="text-base font-black uppercase text-white font-mono">Auditoría de Resultados del Día</h2>
@@ -138,7 +139,7 @@
       <div id="today-results-container" class="space-y-3"></div>
     </section>
 
-    <!-- 3. HISTORIAL -->
+    <!-- TAB 3: HISTORIAL & MULTIPLICADOR AUDITADO -->
     <section id="tab-historial" class="tab-panel hidden space-y-5">
       <div id="history-financial-summary" class="grid grid-cols-1 sm:grid-cols-3 gap-3 font-mono"></div>
       <div id="history-kpi-cards" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
@@ -176,14 +177,14 @@
       </div>
     </section>
 
-    <!-- 4. PLANES VIP & CUPÓN -->
+    <!-- TAB 4: PLANES VIP & DESCUENTO PROMOTOR -->
     <section id="tab-planes" class="tab-panel hidden space-y-6">
       <div class="text-center max-w-xl mx-auto space-y-1">
         <h2 class="text-xl font-black uppercase text-white font-mono">Planes de Membresía VIP</h2>
         <p class="text-xs text-slate-400">Precios en COP y USDT.</p>
       </div>
 
-      <!-- Cupón -->
+      <!-- Cupón Promotor 20% -->
       <div class="max-w-md mx-auto quant-card p-3.5 border-cyan-500/40 bg-[#070e17] font-mono text-xs space-y-2">
         <div class="flex items-center justify-between">
           <span class="font-bold text-cyan-300 uppercase">🎟️ ¿Tienes código de promotor (-20%)?</span>
@@ -204,6 +205,7 @@
 
       <div id="vip-plans-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
 
+      <!-- Cuentas Oficiales -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 pt-2">
         <div class="lg:col-span-7 quant-card p-5 space-y-4">
           <div class="flex items-center justify-between border-b border-[#1b2432] pb-3">
@@ -243,9 +245,10 @@
       </div>
     </section>
 
-    <!-- 5. MI LICENCIA & REFERIDOS (20% DE DÍAS REDONDEADO HACIA ARRIBA) -->
+    <!-- TAB 5: MI LICENCIA & REFERIDOS DINÁMICO -->
     <section id="tab-cuenta" class="tab-panel hidden space-y-4 font-mono text-xs">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Estado de la Licencia -->
         <div class="quant-card p-4 space-y-2">
           <h3 class="text-xs font-bold uppercase text-white border-b border-[#1b2432] pb-2">Estado de tu Licencia</h3>
           <div id="account-license-details" class="space-y-1.5 text-slate-300">
@@ -255,26 +258,14 @@
           </div>
         </div>
 
-        <div class="quant-card p-4 space-y-2">
-          <h3 class="text-xs font-bold uppercase text-[#10b981] border-b border-[#1b2432] pb-2">
-            Gana el 20% en Días VIP por Invitar Amigos
-          </h3>
-          <p class="text-slate-400 text-[11px] leading-relaxed">
-            Comparte tu enlace. Si un amigo activa cualquier membresía VIP, recibes automáticamente el <strong>20% de los días de su plan</strong> (redondeado hacia arriba a días completos; por ejemplo, si compra 7 días recibes 2 días adicionales).
-          </p>
-          <div class="p-2.5 bg-[#05070a] border border-[#1b2432] flex items-center justify-between">
-            <span id="my-referral-code" class="text-sm font-black text-cyan-400">OPTA-INVITADO</span>
-            <button onclick="navigator.clipboard.writeText(window.location.origin + '?ref=OPTA-INVITADO'); alert('Enlace de referido copiado al portapapeles')" class="px-2 py-1 bg-cyan-500/20 border border-cyan-400 text-cyan-300 text-[10px] font-bold uppercase">
-              Copiar Enlace
-            </button>
-          </div>
-        </div>
+        <!-- Contenedor Dinámico de Referidos (Generado por auth.js) -->
+        <div id="referral-card-container"></div>
       </div>
     </section>
 
   </main>
 
-  <!-- MODAL CANJEAR LLAVE -->
+  <!-- MODAL CANJEAR LLAVE TEMPORAL -->
   <div id="redeem-key-modal" class="fixed inset-0 z-50 hidden bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 font-mono text-xs">
     <div class="quant-card max-w-sm w-full p-5 space-y-3 border-amber-500/60 shadow-[0_0_25px_rgba(245,158,11,0.2)]">
       <div class="flex items-center justify-between border-b border-[#1b2432] pb-2">
@@ -296,7 +287,7 @@
     </div>
   </div>
 
-  <!-- MODAL AUTENTICACIÓN -->
+  <!-- MODAL AUTENTICACIÓN / PRUEBA 24H -->
   <div id="auth-modal" class="fixed inset-0 z-50 hidden bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 font-mono text-xs">
     <div class="quant-card max-w-sm w-full p-5 space-y-3 border-cyan-500/50 shadow-[0_0_25px_rgba(6,182,212,0.2)]">
       <div class="flex items-center justify-between border-b border-[#1b2432] pb-2">
