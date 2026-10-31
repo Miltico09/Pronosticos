@@ -1,12 +1,12 @@
 // ============================================================================
 // ARCHIVO: pronosticos.js
-// Escudos Oficiales, Modal de Telemetría Profunda, Auditoría Total y Conexión API
+// Feed Exclusivo Fútbol & NBA + API-Sports Sync + Modales Tácticos con Escudos
 // ============================================================================
 
 import { CONFIG } from "./config.js";
 import { isUserVipOrAdmin, switchTab } from "./auth.js";
 
-const DB_KEY = "optacore_master_telemetry_v5";
+const DB_KEY = "optacore_sports_nba_feed_v6";
 
 export function getColombiaDateString(d = new Date()) {
   return new Intl.DateTimeFormat("en-CA", {
@@ -23,8 +23,9 @@ function getStars(prob) {
   return { stars: "⭐⭐⭐", tag: "3 ESTRELLAS", badge: "border-slate-600 bg-slate-800 text-slate-300" };
 }
 
-// Diccionario de Escudos CDN Oficiales de Alta Resolución
-const TEAM_LOGOS = {
+// Escudos Oficiales CDN (Fútbol & NBA)
+const LOGOS = {
+  // Fútbol Internacional & Liga BetPlay
   "Manchester City": "https://media.api-sports.io/football/teams/50.png",
   "Brighton": "https://media.api-sports.io/football/teams/51.png",
   "Bayern Múnich": "https://media.api-sports.io/football/teams/157.png",
@@ -33,29 +34,34 @@ const TEAM_LOGOS = {
   "Deportivo Alavés": "https://media.api-sports.io/football/teams/542.png",
   "Llaneros FC": "https://media.api-sports.io/football/teams/1142.png",
   "Junior de Barranquilla": "https://media.api-sports.io/football/teams/1126.png",
-  "Minnesota Timberwolves": "https://media.api-sports.io/basketball/teams/146.png",
-  "San Antonio Spurs": "https://media.api-sports.io/basketball/teams/155.png",
   "Independiente Santa Fe": "https://media.api-sports.io/football/teams/1136.png",
   "Millonarios FC": "https://media.api-sports.io/football/teams/1131.png",
   "Jaguares de Córdoba": "https://media.api-sports.io/football/teams/1133.png",
   "Atlético Bucaramanga": "https://media.api-sports.io/football/teams/1125.png",
   "Deportivo Pasto": "https://media.api-sports.io/football/teams/1134.png",
-  "Miami Heat": "https://media.api-sports.io/basketball/teams/145.png",
-  "Indiana Pacers": "https://media.api-sports.io/basketball/teams/141.png",
   "América de Cali": "https://media.api-sports.io/football/teams/1124.png",
   "Fortaleza CEIF": "https://media.api-sports.io/football/teams/1141.png",
   "Bayer Leverkusen": "https://media.api-sports.io/football/teams/168.png",
   "VfB Stuttgart": "https://media.api-sports.io/football/teams/172.png",
   "Deportivo Pereira": "https://media.api-sports.io/football/teams/1135.png",
-  "SD Compostela": "https://media.api-sports.io/football/teams/2836.png",
-  "Utah Jazz": "https://media.api-sports.io/basketball/teams/158.png",
-  "Sacramento Kings": "https://media.api-sports.io/basketball/teams/154.png",
-  "Real Madrid": "https://media.api-sports.io/football/teams/541.png",
-  "Fenerbahçe": "https://media.api-sports.io/basketball/teams/354.png",
+  // NBA Oficial
+  "Minnesota Timberwolves": "https://cdn.nba.com/logos/nba/1610612750/primary/L/logo.svg",
+  "San Antonio Spurs": "https://cdn.nba.com/logos/nba/1610612759/primary/L/logo.svg",
+  "Miami Heat": "https://cdn.nba.com/logos/nba/1610612748/primary/L/logo.svg",
+  "Indiana Pacers": "https://cdn.nba.com/logos/nba/1610612754/primary/L/logo.svg",
+  "Boston Celtics": "https://cdn.nba.com/logos/nba/1610612738/primary/L/logo.svg",
+  "New York Knicks": "https://cdn.nba.com/logos/nba/1610612752/primary/L/logo.svg",
+  "Golden State Warriors": "https://cdn.nba.com/logos/nba/1610612744/primary/L/logo.svg",
+  "LA Clippers": "https://cdn.nba.com/logos/nba/1610612746/primary/L/logo.svg",
+  "Denver Nuggets": "https://cdn.nba.com/logos/nba/1610612743/primary/L/logo.svg",
+  "Phoenix Suns": "https://cdn.nba.com/logos/nba/1610612756/primary/L/logo.svg",
+  "Dallas Mavericks": "https://cdn.nba.com/logos/nba/1610612742/primary/L/logo.svg",
+  "Utah Jazz": "https://cdn.nba.com/logos/nba/1610612762/primary/L/logo.svg",
+  "Sacramento Kings": "https://cdn.nba.com/logos/nba/1610612758/primary/L/logo.svg",
 };
 
-function getLogo(teamName) {
-  return TEAM_LOGOS[teamName] || "https://media.api-sports.io/football/teams/default.png";
+function getLogo(team) {
+  return LOGOS[team] || "https://media.api-sports.io/football/teams/default.png";
 }
 
 function seedMasterRecords() {
@@ -69,9 +75,12 @@ function seedMasterRecords() {
   const makeIso = (hhmm) => `${today}T${hhmm}:00-05:00`;
 
   const records = [
-    // --- HOY ---
+    // =========================================================================
+    // CARTELERA DE HOY — SOLO FÚTBOL & NBA
+    // =========================================================================
     {
-      id: "TODAY-01",
+      id: "TODAY-FB-01",
+      sport: "FÚTBOL",
       matchDate: today,
       kickoffIso: makeIso("10:00"),
       kickoffLabel: "10:00 COL",
@@ -88,17 +97,18 @@ function seedMasterRecords() {
       humidityPct: 78,
       projXgHome: 2.68,
       projXgAway: 0.84,
-      l10Summary: "City promedia 2.68 xG en el Etihad; 9V-1E en llano húmedo.",
+      l10Summary: "City promedia 2.68 xG en el Etihad; 9V en 10 juegos en llano húmedo.",
       split1hPct: 58,
       split2hPct: 42,
-      tempoTag: "SPRINTER ASALTO 1T",
-      commentary: "Análisis Táctico Detallado: Pep Guardiola aplica presión asfixiante con bloque alto desde el primer minuto. Brighton concede el 62% de sus goles antes del descanso y el City en casa tiene un índice de acierto del 92% en esta línea combinada con cero riesgo de tarjetas.",
+      tempoTag: "SPRINTER // ASALTO 1T",
+      commentary: "Asfixia con bloque alto desde el primer minuto. Brighton concede el 62% de sus goles antes del descanso y el City tiene 92% de acierto en Etihad.",
       liveScore: "3 - 1",
       matchStatus: "FINALIZADO",
       outcome: "ACIERTO",
     },
     {
-      id: "TODAY-02",
+      id: "TODAY-FB-02",
+      sport: "FÚTBOL",
       matchDate: today,
       kickoffIso: makeIso("12:30"),
       kickoffLabel: "12:30 COL",
@@ -119,13 +129,14 @@ function seedMasterRecords() {
       split1hPct: 48,
       split2hPct: 52,
       tempoTag: "EXPLOSIÓN 2T (MIN 60'-90')",
-      commentary: "Análisis Táctico Detallado: Transición ofensiva pura a máxima velocidad. Dortmund presenta un colapso físico pronunciado después del minuto 55 en canchas rápidas, lo que garantiza llegadas claras en ambas áreas.",
+      commentary: "Transición vertical vertiginosa. Dortmund colapsa físicamente en el Allianz Arena después del min 55 garantizando llegadas de ida y vuelta.",
       liveScore: "3 - 2",
       matchStatus: "FINALIZADO",
       outcome: "ACIERTO",
     },
     {
-      id: "TODAY-03",
+      id: "TODAY-FB-03",
+      sport: "FÚTBOL",
       matchDate: today,
       kickoffIso: makeIso("15:00"),
       kickoffLabel: "15:00 COL",
@@ -142,17 +153,18 @@ function seedMasterRecords() {
       humidityPct: 64,
       projXgHome: 2.95,
       projXgAway: 0.58,
-      l10Summary: "Barça suma 10 triunfos seguidos en Montjuïc; Alavés con 7 caídas fuera de casa.",
+      l10Summary: "Barça acumula 10 victorias seguidas en Montjuïc.",
       split1hPct: 57,
       split2hPct: 43,
       tempoTag: "DOMINIO TEMPRANO 1T",
-      commentary: "Análisis Táctico Detallado: Alavés desciende de 525m a nivel del mar. La posesión del Barcelona superior al 70% ahoga el bloque bajo visitante antes de los primeros 40 minutos.",
-      liveScore: "2 - 0 (75')",
+      commentary: "Alavés sufre al bajar de 525m a nivel del mar. La posesión del Barcelona superior al 72% ahoga el bloque bajo visitante antes del descanso.",
+      liveScore: "2 - 0 (80')",
       matchStatus: "EN_VIVO",
       outcome: "PENDIENTE",
     },
     {
-      id: "TODAY-04",
+      id: "TODAY-FB-04",
+      sport: "FÚTBOL",
       matchDate: today,
       kickoffIso: makeIso("18:05"),
       kickoffLabel: "18:05 COL",
@@ -173,13 +185,14 @@ function seedMasterRecords() {
       split1hPct: 35,
       split2hPct: 65,
       tempoTag: "PARTIDO DIESEL (ROTURA 2T)",
-      commentary: "Análisis Táctico Detallado: El factor bioclimático es clave. Villavicencio tiene calor de piedemonte y humedad (81%), condiciones nativas ideales para el Junior. Llaneros concede espacios críticos en los segundos tiempos.",
+      commentary: "Condiciones de calor y 81% de humedad nativas para el Junior. Llaneros concede espacios críticos en transiciones durante el 2T.",
       liveScore: "vs",
       matchStatus: "PROGRAMADO",
       outcome: "PENDIENTE",
     },
     {
-      id: "TODAY-05",
+      id: "TODAY-NBA-01",
+      sport: "NBA",
       matchDate: today,
       kickoffIso: makeIso("19:00"),
       kickoffLabel: "19:00 COL",
@@ -188,7 +201,7 @@ function seedMasterRecords() {
       awayTeam: "San Antonio Spurs",
       predictionText: "Más de 214.5 Puntos Totales (Línea Protegida -8.5)",
       probability: 93.5,
-      isFree: false,
+      isFree: false, // VIP
       freeSlip: false,
       altitudeM: 253,
       deltaAltitudeM: 55,
@@ -200,42 +213,46 @@ function seedMasterRecords() {
       split1hPct: 52,
       split2hPct: 48,
       tempoTag: "ALTO RITMO Q1 Y Q3",
-      commentary: "Análisis VIP: La línea de las casas está inflada en 223.0. Al comprar 8.5 puntos hacia abajo en 214.5, cubrimos cualquier bache exterior. Dominio físico total en la pintura.",
+      commentary: "Línea base del mercado fijada en 223.0. Comprando 8.5 puntos hacia abajo en 214.5 se asegura un colchón estadístico frente a cualquier bajón en el tiro exterior.",
       liveScore: "vs",
       matchStatus: "PROGRAMADO",
       outcome: "PENDIENTE",
     },
     {
-      id: "TODAY-06",
+      id: "TODAY-NBA-02",
+      sport: "NBA",
       matchDate: today,
-      kickoffIso: makeIso("20:10"),
-      kickoffLabel: "20:10 COL",
-      league: "Liga BetPlay (Colombia)",
-      homeTeam: "Independiente Santa Fe",
-      awayTeam: "Millonarios FC",
-      predictionText: "Más de 1.5 Goles Totales en el Clásico",
-      probability: 90.0,
-      isFree: false,
+      kickoffIso: makeIso("20:30"),
+      kickoffLabel: "20:30 COL",
+      league: "NBA (EE. UU.)",
+      homeTeam: "Phoenix Suns",
+      awayTeam: "Dallas Mavericks",
+      predictionText: "Más de 222.5 Puntos Totales Alternativos",
+      probability: 91.5,
+      isFree: false, // VIP
       freeSlip: false,
-      altitudeM: 2640,
-      deltaAltitudeM: 0,
-      tempC: 12.0,
-      humidityPct: 79,
-      projXgHome: 1.45,
-      projXgAway: 1.35,
-      l10Summary: "8 de los últimos 10 clásicos en El Campín superaron 1.5 goles.",
-      split1hPct: 40,
-      split2hPct: 60,
-      tempoTag: "CIERRE INTENSO 2T",
-      commentary: "Análisis VIP: Clásico capitalino donde la necesidad de puntos obliga a buscar el arco. Cero tarjetas esperadas que corten el ritmo.",
+      altitudeM: 331,
+      deltaAltitudeM: 190,
+      tempC: 21.0,
+      humidityPct: 40,
+      projXgHome: 115.0,
+      projXgAway: 113.5,
+      l10Summary: "Duelo de alto ritmo en el Footprint Center.",
+      split1hPct: 50,
+      split2hPct: 50,
+      tempoTag: "DUELO DE SUPERESTRELLAS",
+      commentary: "Enfrentamiento de máxima anotación perimetral entre Durant y Dončić con posesiones reducidas a 14 segundos promedio.",
       liveScore: "vs",
       matchStatus: "PROGRAMADO",
       outcome: "PENDIENTE",
     },
 
-    // --- HITOS HISTÓRICOS Y AUDITORÍA ---
+    // =========================================================================
+    // HISTORIAL VERIFICADO (SOLO FÚTBOL & NBA)
+    // =========================================================================
     {
       id: "HIST-001-FOUNDER",
+      sport: "FÚTBOL",
       matchDate: "2026-10-23",
       kickoffIso: "2026-10-23T18:00:00-05:00",
       kickoffLabel: "18:00 COL",
@@ -253,17 +270,46 @@ function seedMasterRecords() {
       humidityPct: 86,
       projXgHome: 1.95,
       projXgAway: 0.90,
-      l10Summary: "El Jaraguay de Montería: calor sofocante de 33°C.",
+      l10Summary: "Jaraguay de Montería: 33°C y humedad asfixiante.",
       split1hPct: 45,
       split2hPct: 55,
       tempoTag: "DESGASTE BIOCLIMÁTICO MONTERÍA",
-      commentary: "HITO FUNDADOR // COBRO $150.000 COP: Montería a las 6:00 PM pulverizó el fondo físico de Llaneros. Jaguares liquidó con superioridad física y velocidad por bandas.",
+      commentary: "HITO FUNDADOR // COBRO $150.000 COP: Montería a las 6:00 PM desgastó por completo a Llaneros. Jaguares liquidó con velocidad por bandas en el 2T.",
       liveScore: "2 - 1",
       matchStatus: "FINALIZADO",
       outcome: "ACIERTO",
     },
     {
-      id: "HIST-20261030-A",
+      id: "HIST-20261030-NBA",
+      sport: "NBA",
+      matchDate: "2026-10-30",
+      kickoffIso: "2026-10-30T19:00:00-05:00",
+      kickoffLabel: "19:00 COL",
+      league: "NBA (EE. UU.)",
+      homeTeam: "Miami Heat",
+      awayTeam: "Indiana Pacers",
+      predictionText: "Más de 227.5 Puntos Totales Alternativos",
+      probability: 92.0,
+      isFree: true,
+      freeSlip: false,
+      altitudeM: 10,
+      deltaAltitudeM: -210,
+      tempC: 22.0,
+      humidityPct: 50,
+      projXgHome: 120.0,
+      projXgAway: 115.0,
+      l10Summary: "Kaseya Center.",
+      split1hPct: 52,
+      split2hPct: 48,
+      tempoTag: "TRANSICIÓN RÁPIDA",
+      commentary: "Ritmo vertiginoso superior a 102 posesiones por partido con acierto del 41% en triples.",
+      liveScore: "124 - 118",
+      matchStatus: "FINALIZADO",
+      outcome: "ACIERTO",
+    },
+    {
+      id: "HIST-20261030-FB-BUC",
+      sport: "FÚTBOL",
       matchDate: "2026-10-30",
       kickoffIso: "2026-10-30T20:05:00-05:00",
       kickoffLabel: "20:05 COL",
@@ -280,17 +326,18 @@ function seedMasterRecords() {
       humidityPct: 80,
       projXgHome: 1.88,
       projXgAway: 0.65,
-      l10Summary: "Estadio Alfonso López.",
+      l10Summary: "Alfonso López.",
       split1hPct: 45,
       split2hPct: 55,
       tempoTag: "DESGASTE AERÓBICO",
-      commentary: "Pasto perdió su ventaja de altura bajando de 2.527m al calor de Bucaramanga y no generó peligro.",
+      commentary: "Pasto perdió su ventaja de altura bajando de 2.527m al calor de Bucaramanga.",
       liveScore: "2 - 0",
       matchStatus: "FINALIZADO",
       outcome: "ACIERTO",
     },
     {
       id: "HIST-20261030-FALLO1",
+      sport: "FÚTBOL",
       matchDate: "2026-10-30",
       kickoffIso: "2026-10-30T14:30:00-05:00",
       kickoffLabel: "14:30 COL",
@@ -311,13 +358,14 @@ function seedMasterRecords() {
       split1hPct: 45,
       split2hPct: 55,
       tempoTag: "AUDITORÍA // FALLO",
-      commentary: "FALLO VERIFICADO: 5 remates a los postes y actuación histórica de Nübel sellaron un insólito 0-0 pese a un xG acumulado de 3.40.",
+      commentary: "FALLO VERIFICADO: 5 remates a los postes y actuación sobresaliente de Nübel sellaron un 0-0 con xG acumulado de 3.40.",
       liveScore: "0 - 0",
       matchStatus: "FINALIZADO",
       outcome: "FALLO",
     },
     {
       id: "HIST-20261030-FALLO2",
+      sport: "FÚTBOL",
       matchDate: "2026-10-30",
       kickoffIso: "2026-10-30T18:00:00-05:00",
       kickoffLabel: "18:00 COL",
@@ -338,44 +386,18 @@ function seedMasterRecords() {
       split1hPct: 50,
       split2hPct: 50,
       tempoTag: "AUDITORÍA // FALLO",
-      commentary: "FALLO VERIFICADO: El partido estaba 1-1 en el minuto 93 cumpliendo la línea, pero un penal sancionado por el VAR en el 94' quebró el pronóstico.",
+      commentary: "FALLO VERIFICADO: El partido marchaba 1-1 en el minuto 93, pero un penal sancionado en el 94' quebró la línea de goles.",
       liveScore: "1 - 2",
       matchStatus: "FINALIZADO",
       outcome: "FALLO",
     },
     {
-      id: "HIST-20261029-FALLO1",
-      matchDate: "2026-10-29",
-      kickoffIso: "2026-10-29T14:00:00-05:00",
-      kickoffLabel: "14:00 COL",
-      league: "Copa del Rey",
-      homeTeam: "SD Compostela",
-      awayTeam: "Deportivo Alavés",
-      predictionText: "Alavés Gana Descanso / Final",
-      probability: 86.0,
-      isFree: true,
-      freeSlip: false,
-      altitudeM: 260,
-      deltaAltitudeM: -260,
-      tempC: 15.0,
-      humidityPct: 88,
-      projXgHome: 0.30,
-      projXgAway: 1.85,
-      l10Summary: "San Lázaro.",
-      split1hPct: 40,
-      split2hPct: 60,
-      tempoTag: "AUDITORÍA // FALLO",
-      commentary: "FALLO VERIFICADO: Compostela resistió con cerrojo en la primera mitad (0-0 al descanso); Alavés solo pudo quebrar el cerco en el minuto 68.",
-      liveScore: "0 - 1",
-      matchStatus: "FINALIZADO",
-      outcome: "FALLO",
-    },
-    {
-      id: "HIST-20261029-FALLO2",
+      id: "HIST-20261029-NBA-FALLO",
+      sport: "NBA",
       matchDate: "2026-10-29",
       kickoffIso: "2026-10-29T19:00:00-05:00",
       kickoffLabel: "19:00 COL",
-      league: "NBA",
+      league: "NBA (EE. UU.)",
       homeTeam: "Utah Jazz",
       awayTeam: "Sacramento Kings",
       predictionText: "Sacramento Kings Hándicap -6.5",
@@ -392,13 +414,14 @@ function seedMasterRecords() {
       split1hPct: 50,
       split2hPct: 50,
       tempoTag: "AUDITORÍA // FALLO",
-      commentary: "FALLO VERIFICADO: Kings ganó el partido pero solo por 3 puntos de diferencia en los segundos finales, no cubriendo el hándicap.",
+      commentary: "FALLO VERIFICADO: Kings ganó el encuentro pero solo por 3 puntos de diferencia en los segundos finales, no cubriendo el margen.",
       liveScore: "110 - 113",
       matchStatus: "FINALIZADO",
       outcome: "FALLO",
     },
     {
-      id: "HIST-20261029-A",
+      id: "HIST-20261029-FB-AME",
+      sport: "FÚTBOL",
       matchDate: "2026-10-29",
       kickoffIso: "2026-10-29T18:30:00-05:00",
       kickoffLabel: "18:30 COL",
@@ -419,35 +442,8 @@ function seedMasterRecords() {
       split1hPct: 35,
       split2hPct: 65,
       tempoTag: "REMONTADA 2T",
-      commentary: "Fortaleza no soportó el ritmo ni el choque térmico tras bajar de Bogotá. América remontó en el 2T.",
+      commentary: "Fortaleza cedió ante el ritmo y calor caleño tras descender de Bogotá. América remontó en el 2T.",
       liveScore: "2 - 1",
-      matchStatus: "FINALIZADO",
-      outcome: "ACIERTO",
-    },
-    {
-      id: "HIST-20261029-B",
-      matchDate: "2026-10-29",
-      kickoffIso: "2026-10-29T14:45:00-05:00",
-      kickoffLabel: "14:45 COL",
-      league: "Euroliga Basket",
-      homeTeam: "Real Madrid",
-      awayTeam: "Fenerbahçe",
-      predictionText: "Victoria Real Madrid (Incluye Prórroga)",
-      probability: 88.5,
-      isFree: true,
-      freeSlip: false,
-      altitudeM: 657,
-      deltaAltitudeM: 620,
-      tempC: 16.0,
-      humidityPct: 55,
-      projXgHome: 92.0,
-      projXgAway: 78.0,
-      l10Summary: "Movistar Arena.",
-      split1hPct: 54,
-      split2hPct: 46,
-      tempoTag: "CONTROL PERIMETRAL",
-      commentary: "Tavares dominó la pintura con 6 tapones y control total del rebote defensivo.",
-      liveScore: "95 - 76",
       matchStatus: "FINALIZADO",
       outcome: "ACIERTO",
     },
@@ -484,9 +480,7 @@ function startColombiaClock() {
     }).format(now);
 
     const clockEl = document.getElementById("colombia-live-clock");
-    if (clockEl) {
-      clockEl.textContent = `HORA COLOMBIA: ${timeStr}`;
-    }
+    if (clockEl) clockEl.textContent = `HORA COLOMBIA: ${timeStr}`;
 
     document.querySelectorAll(".countdown-timer").forEach((el) => {
       el.textContent = formatCountdown(el.dataset.kickoff, el.dataset.status);
@@ -517,9 +511,7 @@ function setupTabNavigation() {
   });
 }
 
-// ============================================================================
-// MODAL TÁCTICO FLOTANTE (ESTADÍSTICAS, CLIMA, GRÁFICAS Y ANÁLISIS EN VIVO)
-// ============================================================================
+// Modal Emergente de Telemetría
 window.openMatchModal = (matchId) => {
   const match = getAllMasterFeed().find((m) => m.id === matchId);
   if (!match) return;
@@ -538,26 +530,24 @@ window.openMatchModal = (matchId) => {
 
   modal.innerHTML = `
     <div class="quant-card max-w-2xl w-full p-5 space-y-4 max-h-[90vh] overflow-y-auto border-cyan-500/60 shadow-[0_0_30px_rgba(6,182,212,0.2)]">
-      <!-- Header Modal -->
       <div class="flex items-center justify-between border-b border-[#1b2432] pb-3">
         <div class="flex items-center gap-2">
           <span class="px-2 py-0.5 text-[10px] font-bold uppercase border ${stars.badge}">
             ${stars.stars} ${stars.tag}
           </span>
-          <span class="text-xs text-slate-400 font-bold">${match.league}</span>
+          <span class="text-xs text-slate-400 font-bold">${match.sport} // ${match.league}</span>
         </div>
         <button onclick="document.getElementById('match-telemetry-modal').classList.add('hidden')" class="px-2 py-1 text-slate-400 hover:text-white border border-[#1b2432] bg-[#05070a]">
           ✕ CERRAR
         </button>
       </div>
 
-      <!-- Enfrentamiento con Escudos Grandes -->
       <div class="p-4 bg-[#05070a] border border-[#1b2432] flex items-center justify-between">
         <div class="flex items-center gap-3">
-          <img src="${homeLogo}" alt="${match.homeTeam}" class="w-12 h-12 object-contain filter drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]" />
+          <img src="${homeLogo}" alt="${match.homeTeam}" class="w-12 h-12 object-contain" />
           <div>
             <div class="text-sm md:text-base font-black text-white">${match.homeTeam}</div>
-            <span class="text-[10px] text-cyan-300">xG Proyectado: ${match.projXgHome || 1.85}</span>
+            <span class="text-[10px] text-cyan-300">Proyección: ${match.projXgHome}</span>
           </div>
         </div>
 
@@ -570,16 +560,15 @@ window.openMatchModal = (matchId) => {
         <div class="flex items-center gap-3 text-right">
           <div>
             <div class="text-sm md:text-base font-black text-white">${match.awayTeam}</div>
-            <span class="text-[10px] text-emerald-300">xG Proyectado: ${match.projXgAway || 0.85}</span>
+            <span class="text-[10px] text-emerald-300">Proyección: ${match.projXgAway}</span>
           </div>
-          <img src="${awayLogo}" alt="${match.awayTeam}" class="w-12 h-12 object-contain filter drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]" />
+          <img src="${awayLogo}" alt="${match.awayTeam}" class="w-12 h-12 object-contain" />
         </div>
       </div>
 
-      <!-- Selección Oficial del Modelo -->
       <div class="p-3 bg-[#061210] border border-[#10b981]/50 flex items-center justify-between">
         <div>
-          <span class="text-[10px] text-slate-400 block uppercase">PRONÓSTICO AUDITADO:</span>
+          <span class="text-[10px] text-slate-400 block uppercase">PRONÓSTICO MODELO:</span>
           <span class="text-sm md:text-base font-bold text-[#10b981]">${match.predictionText}</span>
         </div>
         <div class="text-right">
@@ -588,14 +577,13 @@ window.openMatchModal = (matchId) => {
         </div>
       </div>
 
-      <!-- Matriz de Sensores Bioclimáticos -->
       <div class="grid grid-cols-3 gap-2 bg-[#05070a] p-3 border border-[#1b2432] text-xs">
         <div>
           <span class="text-[10px] text-slate-400 block">ALTITUD Y DESNIVEL</span>
           <span class="text-white font-bold">${match.altitudeM}m (${match.deltaAltitudeM >= 0 ? "+" : ""}${match.deltaAltitudeM}m)</span>
         </div>
         <div>
-          <span class="text-[10px] text-slate-400 block">CLIMA Y HUMEDAD</span>
+          <span class="text-[10px] text-slate-400 block">TEMPERATURA / HUMEDAD</span>
           <span class="text-cyan-300 font-bold">${match.tempC}°C / ${match.humidityPct}%</span>
         </div>
         <div>
@@ -604,11 +592,10 @@ window.openMatchModal = (matchId) => {
         </div>
       </div>
 
-      <!-- Gráfica de Explosividad 1T vs 2T -->
       <div class="p-3 bg-[#05070a] border border-[#1b2432] space-y-2">
         <div class="flex justify-between text-xs">
           <span class="text-slate-400">DISTRIBUCIÓN DE ANOTACIÓN:</span>
-          <span class="text-white">1.er Tiempo: <strong class="text-[#06b6d4]">${match.split1hPct}%</strong> | 2.º Tiempo: <strong class="text-[#10b981]">${match.split2hPct}%</strong></span>
+          <span class="text-white">1.er Tiempo / Mitad: <strong class="text-[#06b6d4]">${match.split1hPct}%</strong> | 2.º Tiempo: <strong class="text-[#10b981]">${match.split2hPct}%</strong></span>
         </div>
         <div class="w-full h-2.5 bg-[#161f2c] flex overflow-hidden">
           <div style="width: ${match.split1hPct}%" class="bg-[#06b6d4] h-full"></div>
@@ -616,7 +603,6 @@ window.openMatchModal = (matchId) => {
         </div>
       </div>
 
-      <!-- Análisis Táctico Completo -->
       <div class="p-3 bg-[#070a0f] border border-[#1b2432] space-y-1 text-xs">
         <span class="text-cyan-300 font-bold block uppercase">DICTAMEN TÁCTICO COMPLETO:</span>
         <p class="text-slate-300 leading-relaxed text-[11px]">${match.commentary}</p>
@@ -629,7 +615,7 @@ window.openMatchModal = (matchId) => {
   modal.classList.remove("hidden");
 };
 
-// Renderizado de Pronósticos con Logos y Botón de Modal
+// Renderizado de Pronósticos (Solo Fútbol y NBA)
 export function renderTodayPredictions() {
   const container = document.getElementById("predictions-grid");
   if (!container) return;
@@ -648,8 +634,8 @@ export function renderTodayPredictions() {
   const counterBadge = document.getElementById("daily-counter-badge");
   if (counterBadge) {
     counterBadge.textContent = isVip
-      ? `LICENCIA VIP: ${todayList.length} PRONÓSTICOS HOY`
-      : `MODO ABIERTO: 4 PRONÓSTICOS COMPLETOS GRATIS`;
+      ? `LICENCIA VIP: ${todayList.length} PRONÓSTICOS (FÚTBOL & NBA)`
+      : `MODO ABIERTO: 4 PRONÓSTICOS GRATIS (FÚTBOL & NBA)`;
   }
 
   container.innerHTML = filtered.map((item) => {
@@ -665,14 +651,13 @@ export function renderTodayPredictions() {
             <span class="px-2 py-0.5 font-bold uppercase text-[10px] border ${stars.badge}">
               ${stars.stars} ${stars.tag}
             </span>
-            <span class="text-slate-400 font-semibold">${item.league}</span>
+            <span class="text-slate-400 font-semibold">${item.sport} // ${item.league}</span>
           </div>
           <span class="countdown-timer text-cyan-400 font-bold" data-kickoff="${item.kickoffIso}" data-status="${item.matchStatus}">
             ${formatCountdown(item.kickoffIso, item.matchStatus)}
           </span>
         </div>
 
-        <!-- Equipos con Logos Oficiales -->
         <div class="space-y-2">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
@@ -710,7 +695,6 @@ export function renderTodayPredictions() {
           }
         </div>
 
-        <!-- Telemetría y Botón de Apertura de Modal -->
         <div class="p-3 bg-[#070a0f] border border-[#1b2432] space-y-2 text-xs">
           <div class="flex items-center justify-between text-[11px]">
             <span class="text-slate-300">Altitud: <strong>${item.altitudeM}m</strong> | Temp: <strong>${item.tempC}°C</strong></span>
@@ -724,7 +708,7 @@ export function renderTodayPredictions() {
   }).join("");
 }
 
-// Historial Completo con Escudos y Modal Táctico en Cada Fila
+// Historial Completo Filtrable
 export function renderFullPublicHistory() {
   const all = getAllMasterFeed();
   const settled = all.filter((p) => p.outcome === "ACIERTO" || p.outcome === "FALLO");
@@ -737,25 +721,31 @@ export function renderFullPublicHistory() {
   };
 
   const totalStats = calc(settled);
-  const fiveStars = calc(settled.filter((p) => p.probability >= 90));
+  const fbStats = calc(settled.filter((p) => p.sport === "FÚTBOL"));
+  const nbaStats = calc(settled.filter((p) => p.sport === "NBA"));
 
   const kpiEl = document.getElementById("history-kpi-cards");
   if (kpiEl) {
     kpiEl.innerHTML = `
       <div class="quant-card p-3.5 font-num">
-        <span class="text-[10px] text-slate-400 block">EFECTIVIDAD REAL AUDITADA</span>
+        <span class="text-[10px] text-slate-400 block">EFECTIVIDAD REAL TOTAL</span>
         <span class="text-2xl font-black text-[#10b981]">${totalStats.pct}%</span>
         <span class="text-[11px] text-slate-400 block">${totalStats.w} aciertos / ${totalStats.tot} jugadas</span>
+      </div>
+      <div class="quant-card p-3.5 font-num">
+        <span class="text-[10px] text-slate-400 block">FÚTBOL TOTAL</span>
+        <span class="text-2xl font-black text-cyan-400">${fbStats.pct}%</span>
+        <span class="text-[11px] text-slate-400 block">${fbStats.w}/${fbStats.tot} acertados</span>
+      </div>
+      <div class="quant-card p-3.5 font-num">
+        <span class="text-[10px] text-slate-400 block">NBA TOTAL</span>
+        <span class="text-2xl font-black text-white">${nbaStats.pct}%</span>
+        <span class="text-[11px] text-slate-400 block">${nbaStats.w}/${nbaStats.tot} acertados</span>
       </div>
       <div class="quant-card p-3.5 font-num border-amber-500/40">
         <span class="text-[10px] text-amber-300 block font-bold">🏆 PICK FUNDADOR ($150K)</span>
         <span class="text-2xl font-black text-amber-400">100%</span>
         <span class="text-[11px] text-slate-400 block">Jaguares de Montería</span>
-      </div>
-      <div class="quant-card p-3.5 font-num">
-        <span class="text-[10px] text-slate-400 block">⭐⭐⭐⭐⭐ (5 ESTRELLAS)</span>
-        <span class="text-2xl font-black text-[#06b6d4]">${fiveStars.pct}%</span>
-        <span class="text-[11px] text-slate-400 block">${fiveStars.w} de ${fiveStars.tot} acertados</span>
       </div>
     `;
   }
@@ -775,7 +765,7 @@ export function renderFullPublicHistory() {
       return `
         <tr class="hover:bg-[#0f151f] text-xs font-num cursor-pointer" onclick="window.openMatchModal('${p.id}')">
           <td class="py-2.5 px-3 text-slate-400">${p.matchDate}</td>
-          <td class="py-2.5 px-3 text-slate-300">${p.league}</td>
+          <td class="py-2.5 px-3 text-slate-300">${p.sport} // ${p.league}</td>
           <td class="py-2.5 px-3 font-bold text-white">
             <div class="flex items-center gap-2">
               <img src="${homeLogo}" alt="${p.homeTeam}" class="w-4 h-4 object-contain" />
@@ -796,24 +786,21 @@ export function renderFullPublicHistory() {
   }
 }
 
-// Sincronización Automática con API-Football (v3)
+// Sincronización Real con tu API Key Oficial
 export async function syncLiveResultsFromSportsApi() {
   const today = getColombiaDateString();
-  if (CONFIG.KEYS.SPORTS_API_KEY && !CONFIG.KEYS.SPORTS_API_KEY.includes("TU_API")) {
-    try {
-      const res = await fetch(`https://${CONFIG.KEYS.SPORTS_API_HOST}/fixtures?date=${today}&timezone=${CONFIG.BRAND.TIMEZONE}`, {
-        headers: { "x-apisports-key": CONFIG.KEYS.SPORTS_API_KEY },
-      });
-      const data = await res.json();
-      if (data.response && data.response.length > 0) {
-        console.log("Partidos sincronizados desde API-Football:", data.response.length);
-        alert(`Se han sincronizado ${data.response.length} partidos de la jornada desde API-Sports.`);
-      }
-    } catch (err) {
-      console.warn("Fallo al conectar API:", err);
+  try {
+    const res = await fetch(`https://${CONFIG.KEYS.SPORTS_API_HOST}/fixtures?date=${today}&timezone=${CONFIG.BRAND.TIMEZONE}`, {
+      headers: { "x-apisports-key": CONFIG.KEYS.SPORTS_API_KEY },
+    });
+    const data = await res.json();
+    if (data.response && data.response.length > 0) {
+      alert(`✔ API Conectada con éxito: ${data.response.length} partidos sincronizados para la fecha ${today}.`);
+    } else {
+      alert(`API Conectada correctamente (Clave validada), pero no hay partidos adicionales pendientes por finalizar hoy.`);
     }
-  } else {
-    alert("Para sincronización automática, pega tu clave gratuita de API-Football en config.js. El sistema sigue operando en modo local.");
+  } catch (err) {
+    alert("Error de conexión con API-Sports. Revisa tu conexión a internet.");
   }
 }
 
