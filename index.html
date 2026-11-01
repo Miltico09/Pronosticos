@@ -51,6 +51,15 @@
           btn.className = "bottom-nav-btn flex flex-col items-center justify-center text-cyan-400 font-bold text-[10px]";
         } else {
           btn.className = "bottom-nav-btn flex flex-col items-center justify-center text-slate-400 font-bold text-[10px]";
+        } else {
+          btn.className = "nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#1b2432] bg-[#0a0e14] text-[#8b9bb4] hover:text-white shrink-0";
+        }
+      });
+      document.querySelectorAll('.bottom-nav-btn').forEach(function(btn) {
+        if (btn.getAttribute('data-tab') === tabId) {
+          btn.className = "bottom-nav-btn flex flex-col items-center justify-center text-cyan-400 font-bold text-[10px]";
+        } else {
+          btn.className = "bottom-nav-btn flex flex-col items-center justify-center text-slate-400 font-bold text-[10px]";
         }
       });
       if (tabId === 'tab-pronosticos' && window.renderTodayPredictions) {
@@ -66,10 +75,32 @@
       if (tabId === 'tab-admin' && window.renderAdminPanel) {
         window.renderAdminPanel();
       }
+      if (tabId === 'tab-admin' && window.renderAdminPanel) {
+        window.renderAdminPanel();
+      }
     }
   </script>
 </head>
 <body class="min-h-screen flex flex-col justify-between bg-[#05070a] text-slate-100 font-sans pb-16 md:pb-0">
+
+  <!-- PANTALLA DE MODO MANTENIMIENTO -->
+  <div id="maintenance-overlay" class="hidden fixed inset-0 z-50 bg-[#05070a] flex flex-col items-center justify-center p-6 text-center font-mono space-y-4">
+    <div class="w-16 h-16 border-4 border-cyan-400 border-t-transparent animate-spin rounded-full"></div>
+    <h1 class="text-xl font-black text-white uppercase tracking-wider">Calibrando Algoritmos Cuantitativos</h1>
+    <p class="text-xs text-slate-400 max-w-md">Estamos cargando la cartelera oficial y procesando métricas en vivo. Disponible en unos minutos.</p>
+    <span class="text-[10px] text-[#10b981] font-bold">OPTACORE.QUANT — ACTUALIZACIÓN EN CURSO</span>
+  </div>
+
+  <!-- CINTILLO BURSÁTIL SUPERIOR (LIVE WIN-TICKER) -->
+  <div class="bg-[#020406] border-b border-[#1b2432] py-1 text-[10px] font-mono">
+    <div class="ticker-wrap">
+      <div id="live-win-ticker" class="ticker-move text-slate-300">
+        <!-- Generado dinámicamente -->
+      </div>
+    </div>
+  </div>
+
+  <!-- BARRA DE ESTADO Y RELOJ -->
   <div class="bg-[#020406] border-b border-[#1b2432] py-1 text-[10px] font-mono">
     <div class="ticker-wrap">
       <div id="live-win-ticker" class="ticker-move text-slate-300"></div>
@@ -84,6 +115,7 @@
         </span>
         <span id="colombia-live-clock" class="text-cyan-400 font-bold">HORA COLOMBIA: --:--:--</span>
       </div>
+      <div class="flex items-center gap-2">
       <div class="flex items-center gap-2 pr-20 sm:pr-24">
         <span id="cart-closing-timer" class="text-[10px] text-amber-300 font-bold hidden sm:inline-block">⏳ Cierre cartelera libre: 02h:14m</span>
         <span id="hot-streak-badge" class="px-2 py-0.5 bg-amber-500/15 border border-amber-400/50 text-amber-300 font-black text-[10px]">
@@ -95,6 +127,8 @@
       </div>
     </div>
   </div>
+
+  <!-- ENCABEZADO PRINCIPAL -->
   <header class="sticky top-0 z-30 border-b border-[#1b2432] bg-[#05070a]/95 backdrop-blur-md px-4 py-3">
     <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
       <div class="flex items-center gap-2.5">
@@ -113,6 +147,8 @@
           </p>
         </div>
       </div>
+
+      <!-- BOTONES DE NAVEGACIÓN SUPERIOR (DESKTOP) -->
       <nav class="hidden md:flex items-center gap-1 overflow-x-auto py-1">
         <button onclick="switchTab('tab-pronosticos')" data-tab="tab-pronosticos" class="nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#06b6d4] bg-[#06b6d4]/15 text-white shrink-0">
           Pronósticos Hoy
@@ -133,6 +169,8 @@
           ⚙️ Panel Admin
         </button>
       </nav>
+
+      <!-- BOTONES DE ACCESO RÁPIDO -->
       <div class="flex items-center gap-1.5">
         <button id="btn-open-redeem-key" class="px-2.5 py-1.5 text-xs font-mono font-bold uppercase border border-amber-500/60 bg-amber-500/10 text-amber-300 hover:bg-amber-500 hover:text-black transition">
           🔑 Canjear Llave
