@@ -1,869 +1,123 @@
 // ============================================================================
-// ARCHIVO: pronosticos.js
-// Cálculo Exacto de Pérdida: 1 Unidad Fija por Cada Partido Caído
+// ARCHIVO: pronosticos.js - Motor Autónomo Blindado (10 Hoy + 24 Historial)
 // ============================================================================
-
-import { CONFIG } from "./config.js";
-import { isUserVipOrAdmin } from "./auth.js";
-
-const DB_KEY = "optacore_master_feed_v12";
-
-export function getColombiaDateString(d = new Date()) {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: CONFIG.BRAND.TIMEZONE,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(d);
-}
-
-function getStars(prob) {
-  if (prob >= 90) return { stars: "⭐⭐⭐⭐⭐", tag: "5 ESTRELLAS", badge: "border-cyan-400 bg-cyan-500/15 text-cyan-300" };
-  if (prob >= 85) return { stars: "⭐⭐⭐⭐", tag: "4 ESTRELLAS", badge: "border-emerald-400 bg-emerald-500/15 text-emerald-300" };
-  return { stars: "⭐⭐⭐", tag: "3 ESTRELLAS", badge: "border-slate-600 bg-slate-800 text-slate-300" };
-}
-
-const LOGOS = {
-  "Manchester City": "https://media.api-sports.io/football/teams/50.png",
-  "Brighton": "https://media.api-sports.io/football/teams/51.png",
-  "Bayern Múnich": "https://media.api-sports.io/football/teams/157.png",
-  "Borussia Dortmund": "https://media.api-sports.io/football/teams/165.png",
-  "FC Barcelona": "https://media.api-sports.io/football/teams/529.png",
-  "Deportivo Alavés": "https://media.api-sports.io/football/teams/542.png",
-  "Llaneros FC": "https://media.api-sports.io/football/teams/1142.png",
-  "Junior de Barranquilla": "https://media.api-sports.io/football/teams/1126.png",
-  "Jaguares de Córdoba": "https://media.api-sports.io/football/teams/1133.png",
-  "Atlético Bucaramanga": "https://media.api-sports.io/football/teams/1125.png",
-  "Deportivo Pasto": "https://media.api-sports.io/football/teams/1134.png",
-  "América de Cali": "https://media.api-sports.io/football/teams/1124.png",
-  "Fortaleza CEIF": "https://media.api-sports.io/football/teams/1141.png",
-  "Bayer Leverkusen": "https://media.api-sports.io/football/teams/168.png",
-  "VfB Stuttgart": "https://media.api-sports.io/football/teams/172.png",
-  "Deportivo Pereira": "https://media.api-sports.io/football/teams/1135.png",
-  "SD Compostela": "https://media.api-sports.io/football/teams/2836.png",
-  "Aston Villa": "https://media.api-sports.io/football/teams/66.png",
-  "Bournemouth": "https://media.api-sports.io/football/teams/35.png",
-  "RB Leipzig": "https://media.api-sports.io/football/teams/173.png",
-  "SC Freiburg": "https://media.api-sports.io/football/teams/160.png",
-  "Real Madrid": "https://media.api-sports.io/football/teams/541.png",
-  "Independiente Medellín": "https://media.api-sports.io/football/teams/1138.png",
-  "Deportes Tolima": "https://media.api-sports.io/football/teams/1137.png",
-  "Once Caldas": "https://media.api-sports.io/football/teams/1132.png",
-  "Chelsea": "https://media.api-sports.io/football/teams/49.png",
-  "Newcastle": "https://media.api-sports.io/football/teams/34.png",
-  "Arsenal": "https://media.api-sports.io/football/teams/42.png",
-  "Liverpool": "https://media.api-sports.io/football/teams/40.png",
-  "Inter de Milán": "https://media.api-sports.io/football/teams/505.png",
-  "Juventus": "https://media.api-sports.io/football/teams/496.png",
-  "Olympique Marsella": "https://media.api-sports.io/football/teams/81.png",
-  "PSG": "https://media.api-sports.io/football/teams/85.png",
-  "Minnesota Timberwolves": "https://cdn.nba.com/logos/nba/1610612750/primary/L/logo.svg",
-  "San Antonio Spurs": "https://cdn.nba.com/logos/nba/1610612759/primary/L/logo.svg",
-  "Miami Heat": "https://cdn.nba.com/logos/nba/1610612748/primary/L/logo.svg",
-  "Indiana Pacers": "https://cdn.nba.com/logos/nba/1610612754/primary/L/logo.svg",
-  "Denver Nuggets": "https://cdn.nba.com/logos/nba/1610612743/primary/L/logo.svg",
-  "LA Clippers": "https://cdn.nba.com/logos/nba/1610612746/primary/L/logo.svg",
-  "Golden State Warriors": "https://cdn.nba.com/logos/nba/1610612744/primary/L/logo.svg",
-  "Phoenix Suns": "https://cdn.nba.com/logos/nba/1610612756/primary/L/logo.svg",
-  "Dallas Mavericks": "https://cdn.nba.com/logos/nba/1610612742/primary/L/logo.svg",
-  "Utah Jazz": "https://cdn.nba.com/logos/nba/1610612762/primary/L/logo.svg",
-  "Sacramento Kings": "https://cdn.nba.com/logos/nba/1610612758/primary/L/logo.svg",
+const DB_KEY = "optacore_master_feed_v40";
+const API_SYNC_THROTTLE_MS = 10 * 60 * 1000;
+let activeQuickFilter = "ALL";
+let currentLang = localStorage.getItem("optacore_lang") || "ES";
+localStorage.removeItem("optacore_maintenance_mode");
+const SAFE_CONFIG = {
+  TIMEZONE: "America/Bogota",
+  SPORTS_API_HOST: "v3.football.api-sports.io",
+  SPORTS_API_KEY: "0d242e4cfb0ebf2bca5b089f6bfe2b92",
+  WHATSAPP_LINK: "https://wa.me/573332861551?text=Hola%20equipo%20OptaCore,%20deseo%20activar%20mi%20membres%C3%ADa%20VIP",
+  ADMIN_EMAIL: "admin@optacore.com",
+  PROMO_CODES: [
+    { code: "PROMO20", discountPct: 20, promoter: "Campaña General" },
+    { code: "VIP20", discountPct: 20, promoter: "Canal VIP" },
+    { code: "CARLOS20", discountPct: 20, promoter: "Promotor Carlos" },
+    { code: "JUAN20", discountPct: 20, promoter: "Promotor Juan" }
+  ]
 };
-
-function getLogo(name) {
-  return LOGOS[name] || "https://media.api-sports.io/football/teams/default.png";
+function checkUserVipOrAdmin() {
+  const role = localStorage.getItem("optacore_user_role");
+  const email = (localStorage.getItem("optacore_user_email") || "").toLowerCase();
+  if (role === "ADMIN" || role === "VIP" || email === SAFE_CONFIG.ADMIN_EMAIL) return true;
+  const exp = parseInt(localStorage.getItem("optacore_vip_expires_timestamp") || "0", 10);
+  if (exp > Date.now()) return true;
+  return false;
 }
-
-function seedMasterRecords() {
-  const today = getColombiaDateString();
-  const cached = localStorage.getItem(DB_KEY);
-  if (cached) {
-    const list = JSON.parse(cached);
-    if (list.some((p) => p.matchDate === today)) return list;
+export function getColombiaDateString(d = new Date()) {
+  try {
+    return new Intl.DateTimeFormat("en-CA", {
+      timeZone: SAFE_CONFIG.TIMEZONE,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(d);
+  } catch (e) {
+    return "2026-11-01";
   }
-
-  const makeIso = (d, hhmm) => `${d}T${hhmm}:00-05:00`;
-
-  const records = [
-    // --- HOY (31 DE OCTUBRE) ---
-    {
-      id: "20261031-01",
-      sport: "FÚTBOL",
-      matchDate: today,
-      kickoffIso: makeIso(today, "10:00"),
-      kickoffLabel: "10:00 COL",
-      league: "Premier League (Inglaterra)",
-      homeTeam: "Manchester City",
-      awayTeam: "Brighton",
-      predictionText: "Manchester City Gana + Más de 1.5 Goles Totales",
-      odds: 1.45,
-      probability: 92.5,
-      isFree: true,
-      altitudeM: 48,
-      weatherDesc: "Frío húmedo (12°C)",
-      homeAvgGoals: "2.7 por partido",
-      awayAvgGoals: "0.8 por partido",
-      explanation: `¿Por qué se eligió esta jugada?: El Manchester City en su estadio es una máquina que arranca a toda velocidad desde el primer minuto. Brighton siempre intenta salir jugando con la pelota dominada y suele perder balones peligrosos muy cerca de su propio arco.\n\n¿Cómo se resolvió?: El City marcó dos goles en el primer tiempo. En el segundo tiempo Brighton descontó, pero Haaland liquidó el 3-1 definitivo asegurando la victoria con total tranquilidad.`,
-      liveScore: "3 - 1",
-      matchStatus: "FINALIZADO",
-      outcome: "ACIERTO",
-    },
-    {
-      id: "20261031-02",
-      sport: "FÚTBOL",
-      matchDate: today,
-      kickoffIso: makeIso(today, "12:30"),
-      kickoffLabel: "12:30 COL",
-      league: "Bundesliga (Alemania)",
-      homeTeam: "Bayern Múnich",
-      awayTeam: "Borussia Dortmund",
-      predictionText: "Más de 2.5 Goles Totales (Mínimo 3 goles)",
-      odds: 1.40,
-      probability: 93.0,
-      isFree: true,
-      altitudeM: 519,
-      weatherDesc: "Clima fresco (10°C)",
-      homeAvgGoals: "2.9 por partido",
-      awayAvgGoals: "1.6 por partido",
-      explanation: `¿Por qué se eligió esta jugada?: El clásico alemán siempre es de ida y vuelta. Ambos clubes tienen delanteros top pero defensas que dejan espacios cuando van al ataque.\n\n¿Cómo se resolvió?: El primer tiempo terminó 1-1. Tras el minuto 60 llegaron tres goles más para un 3-2 final que superó con comodidad la línea requerida.`,
-      liveScore: "3 - 2",
-      matchStatus: "FINALIZADO",
-      outcome: "ACIERTO",
-    },
-    {
-      id: "20261031-03",
-      sport: "FÚTBOL",
-      matchDate: today,
-      kickoffIso: makeIso(today, "15:00"),
-      kickoffLabel: "15:00 COL",
-      league: "LaLiga (España)",
-      homeTeam: "FC Barcelona",
-      awayTeam: "Deportivo Alavés",
-      predictionText: "Barcelona Gana por 2 o más goles (Hándicap -1.5)",
-      odds: 1.50,
-      probability: 88.5,
-      isFree: true,
-      altitudeM: 120,
-      weatherDesc: "Agradable (19°C)",
-      homeAvgGoals: "3.0 por partido",
-      awayAvgGoals: "0.6 por partido",
-      explanation: `¿Por qué se eligió esta jugada?: Barcelona venía con racha perfecta de local. Alavés sufre muchísimo cuando baja al nivel del mar ante rivales que le esconden la pelota.\n\n¿Cómo se resolvió?: Dominio del 72% de posesión culé y triunfo cómodo 2-0 sin pasar apuros.`,
-      liveScore: "2 - 0",
-      matchStatus: "FINALIZADO",
-      outcome: "ACIERTO",
-    },
-    {
-      id: "20261031-04",
-      sport: "FÚTBOL",
-      matchDate: today,
-      kickoffIso: makeIso(today, "18:05"),
-      kickoffLabel: "18:05 COL",
-      league: "Liga BetPlay (Colombia)",
-      homeTeam: "Llaneros FC",
-      awayTeam: "Junior de Barranquilla",
-      predictionText: "Junior Gana o Empata (X2) + Más de 1.5 Goles",
-      odds: 1.48,
-      probability: 91.0,
-      isFree: true,
-      altitudeM: 467,
-      weatherDesc: "Calor húmedo (27°C)",
-      homeAvgGoals: "1.2 por partido",
-      awayAvgGoals: "1.7 por partido",
-      explanation: `¿Por qué se eligió esta jugada?: Villavicencio tiene 27°C y humedad alta, clima donde los jugadores costeños de Junior rinden con potencia física a diferencia de la altura andina.`,
-      liveScore: "vs",
-      matchStatus: "PROGRAMADO",
-      outcome: "PENDIENTE",
-    },
-    {
-      id: "20261031-05",
-      sport: "NBA",
-      matchDate: today,
-      kickoffIso: makeIso(today, "19:00"),
-      kickoffLabel: "19:00 COL",
-      league: "NBA (EE. UU.)",
-      homeTeam: "Minnesota Timberwolves",
-      awayTeam: "San Antonio Spurs",
-      predictionText: "Más de 214.5 Puntos Totales (Línea Protegida)",
-      odds: 1.42,
-      probability: 93.5,
-      isFree: false,
-      altitudeM: 253,
-      weatherDesc: "Coliseo Climatizado",
-      homeAvgGoals: "116 pts esperados",
-      awayAvgGoals: "105 pts esperados",
-      explanation: `¿Por qué se eligió esta jugada?: Se compraron casi 9 puntos de protección frente a la línea de 223.0 que pusieron las casas de apuestas. Minnesota llega con descanso completo.`,
-      liveScore: "vs",
-      matchStatus: "PROGRAMADO",
-      outcome: "PENDIENTE",
-    },
-
-    // --- AYER (30 DE OCTUBRE) ---
-    {
-      id: "20261030-01",
-      sport: "FÚTBOL",
-      matchDate: "2026-10-30",
-      kickoffIso: makeIso("2026-10-30", "20:05"),
-      kickoffLabel: "20:05 COL",
-      league: "Liga BetPlay (Colombia)",
-      homeTeam: "Atlético Bucaramanga",
-      awayTeam: "Deportivo Pasto",
-      predictionText: "Bucaramanga Empate No Acción (DNB)",
-      odds: 1.45,
-      probability: 91.2,
-      isFree: true,
-      altitudeM: 959,
-      weatherDesc: "Calor pesado (24°C)",
-      homeAvgGoals: "1.9 por partido",
-      awayAvgGoals: "0.7 por partido",
-      explanation: `Pasto pierde su ventaja de altura al descender a Bucaramanga. Bucaramanga atacó con intensidad en el segundo tiempo y selló el 2-0.`,
-      liveScore: "2 - 0",
-      matchStatus: "FINALIZADO",
-      outcome: "ACIERTO",
-    },
-    {
-      id: "20261030-02",
-      sport: "NBA",
-      matchDate: "2026-10-30",
-      kickoffIso: makeIso("2026-10-30", "19:00"),
-      kickoffLabel: "19:00 COL",
-      league: "NBA (EE. UU.)",
-      homeTeam: "Miami Heat",
-      awayTeam: "Indiana Pacers",
-      predictionText: "Más de 227.5 Puntos Totales Combinados",
-      odds: 1.40,
-      probability: 92.0,
-      isFree: true,
-      altitudeM: 10,
-      weatherDesc: "Coliseo Cerrado",
-      homeAvgGoals: "124 pts",
-      awayAvgGoals: "118 pts",
-      explanation: `Indiana corre la cancha en menos de 12 segundos y Miami contestó con efectividad en triples para sumar 242 puntos combinados.`,
-      liveScore: "124 - 118",
-      matchStatus: "FINALIZADO",
-      outcome: "ACIERTO",
-    },
-    {
-      id: "20261030-03-FALLO",
-      sport: "FÚTBOL",
-      matchDate: "2026-10-30",
-      kickoffIso: makeIso("2026-10-30", "18:00"),
-      kickoffLabel: "18:00 COL",
-      league: "Liga BetPlay (Colombia)",
-      homeTeam: "Jaguares de Córdoba",
-      awayTeam: "Deportivo Pereira",
-      predictionText: "Menos de 2.5 Goles Totales",
-      odds: 1.70,
-      probability: 85.5,
-      isFree: true,
-      altitudeM: 18,
-      weatherDesc: "Calor sofocante (31°C)",
-      homeAvgGoals: "1 gol",
-      awayAvgGoals: "2 goles",
-      explanation: `Estaba 1-1 en el minuto 93 cumpliendo la línea, pero un penal sancionado en el 94' quebró la jugada en la última acción.`,
-      liveScore: "1 - 2",
-      matchStatus: "FINALIZADO",
-      outcome: "FALLO",
-    },
-    {
-      id: "20261030-04-FALLO",
-      sport: "FÚTBOL",
-      matchDate: "2026-10-30",
-      kickoffIso: makeIso("2026-10-30", "14:30"),
-      kickoffLabel: "14:30 COL",
-      league: "Bundesliga (Alemania)",
-      homeTeam: "Bayer Leverkusen",
-      awayTeam: "VfB Stuttgart",
-      predictionText: "Leverkusen Gana + Más de 2.5 Goles",
-      odds: 1.55,
-      probability: 88.0,
-      isFree: true,
-      altitudeM: 60,
-      weatherDesc: "Cielo nublado (12°C)",
-      homeAvgGoals: "0 goles",
-      awayAvgGoals: "0 goles",
-      explanation: `Leverkusen estrelló 5 balones en los palos y el arquero rival tuvo 8 atajadas milagrosas, provocando un insólito 0-0.`,
-      liveScore: "0 - 0",
-      matchStatus: "FINALIZADO",
-      outcome: "FALLO",
-    },
-
-    // --- ANTEAYER (29 DE OCTUBRE) ---
-    {
-      id: "20261029-01",
-      sport: "FÚTBOL",
-      matchDate: "2026-10-29",
-      kickoffIso: makeIso("2026-10-29", "18:30"),
-      kickoffLabel: "18:30 COL",
-      league: "Liga BetPlay (Colombia)",
-      homeTeam: "América de Cali",
-      awayTeam: "Fortaleza CEIF",
-      predictionText: "América Gana o Empata (1X) + Más de 1.5 Goles",
-      odds: 1.46,
-      probability: 90.5,
-      isFree: true,
-      altitudeM: 1018,
-      weatherDesc: "Cálido (26°C)",
-      homeAvgGoals: "2.1 por partido",
-      awayAvgGoals: "0.9 por partido",
-      explanation: `Fortaleza se quedó sin fondo físico en Cali tras descender de Bogotá. América remontó en el segundo tiempo 2-1.`,
-      liveScore: "2 - 1",
-      matchStatus: "FINALIZADO",
-      outcome: "ACIERTO",
-    },
-    {
-      id: "20261029-02-FALLO",
-      sport: "NBA",
-      matchDate: "2026-10-29",
-      kickoffIso: makeIso("2026-10-29", "19:00"),
-      kickoffLabel: "19:00 COL",
-      league: "NBA (EE. UU.)",
-      homeTeam: "Utah Jazz",
-      awayTeam: "Sacramento Kings",
-      predictionText: "Sacramento Kings Hándicap -6.5",
-      odds: 1.90,
-      probability: 87.5,
-      isFree: true,
-      altitudeM: 1288,
-      weatherDesc: "Coliseo Climatizado",
-      homeAvgGoals: "110 pts",
-      awayAvgGoals: "113 pts",
-      explanation: `Kings ganaba por 14 puntos pero sentó a los titulares y Utah anotó triples finales para perder el hándicap por 3 puntos (110-113).`,
-      liveScore: "110 - 113",
-      matchStatus: "FINALIZADO",
-      outcome: "FALLO",
-    },
-    {
-      id: "20261029-03-FALLO",
-      sport: "FÚTBOL",
-      matchDate: "2026-10-29",
-      kickoffIso: makeIso("2026-10-29", "14:00"),
-      kickoffLabel: "14:00 COL",
-      league: "Copa del Rey (España)",
-      homeTeam: "SD Compostela",
-      awayTeam: "Deportivo Alavés",
-      predictionText: "Alavés Gana Descanso / Final",
-      odds: 1.80,
-      probability: 86.0,
-      isFree: true,
-      altitudeM: 260,
-      weatherDesc: "Lluvia (15°C)",
-      homeAvgGoals: "0",
-      awayAvgGoals: "1",
-      explanation: `Compostela metió a todos los jugadores debajo del arco en un campo empantanado y aguantó el 0-0 en la primera parte.`,
-      liveScore: "0 - 1",
-      matchStatus: "FINALIZADO",
-      outcome: "FALLO",
-    },
-
-    // --- MEGA-PARLEY DE 13 PARTIDOS (24 Y 25 DE OCTUBRE) ---
-    {
-      id: "PARLEY13-01",
-      sport: "NBA",
-      matchDate: "2026-10-25",
-      kickoffIso: makeIso("2026-10-25", "20:30"),
-      kickoffLabel: "20:30 COL",
-      league: "NBA",
-      homeTeam: "Phoenix Suns",
-      awayTeam: "Dallas Mavericks",
-      predictionText: "Kevin Durant Más de 24.5 Puntos",
-      odds: 1.75,
-      probability: 92.5,
-      isFree: true,
-      altitudeM: 331,
-      weatherDesc: "Coliseo Cerrado",
-      homeAvgGoals: "31 pts",
-      awayAvgGoals: "-",
-      explanation: `Durant estuvo intratable y anotó 31 puntos atacando constantemente el aro.`,
-      liveScore: "31 Puntos",
-      matchStatus: "FINALIZADO",
-      outcome: "ACIERTO",
-    },
-    {
-      id: "PARLEY13-02-FALLO",
-      sport: "NBA",
-      matchDate: "2026-10-25",
-      kickoffIso: makeIso("2026-10-25", "19:30"),
-      kickoffLabel: "19:30 COL",
-      league: "NBA",
-      homeTeam: "Golden State Warriors",
-      awayTeam: "LA Clippers",
-      predictionText: "Warriors Gana -4.5 Hándicap",
-      odds: 1.85,
-      probability: 87.0,
-      isFree: true,
-      altitudeM: 10,
-      weatherDesc: "Coliseo Cerrado",
-      homeAvgGoals: "104",
-      awayAvgGoals: "112",
-      explanation: `Stephen Curry se lesionó el tobillo en el 3Q y Clippers remontó el partido.`,
-      liveScore: "104 - 112",
-      matchStatus: "FINALIZADO",
-      outcome: "FALLO",
-    },
-    {
-      id: "PARLEY13-03",
-      sport: "FÚTBOL",
-      matchDate: "2026-10-25",
-      kickoffIso: makeIso("2026-10-25", "17:15"),
-      kickoffLabel: "17:15 COL",
-      league: "Liga BetPlay",
-      homeTeam: "Junior de Barranquilla",
-      awayTeam: "América de Cali",
-      predictionText: "Junior Más de 0.5 Goles en Casa",
-      odds: 1.30,
-      probability: 91.0,
-      isFree: true,
-      altitudeM: 18,
-      weatherDesc: "Calor de Barranquilla",
-      homeAvgGoals: "3",
-      awayAvgGoals: "1",
-      explanation: `Junior fue una aplanadora en el Metropolitano ganando 3-1.`,
-      liveScore: "3 - 1",
-      matchStatus: "FINALIZADO",
-      outcome: "ACIERTO",
-    },
-    {
-      id: "PARLEY13-04",
-      sport: "FÚTBOL",
-      matchDate: "2026-10-25",
-      kickoffIso: makeIso("2026-10-25", "14:45"),
-      kickoffLabel: "14:45 COL",
-      league: "Ligue 1",
-      homeTeam: "Olympique Marsella",
-      awayTeam: "PSG",
-      predictionText: "Victoria Directa PSG",
-      odds: 1.55,
-      probability: 89.5,
-      isFree: true,
-      altitudeM: 35,
-      weatherDesc: "Templado",
-      homeAvgGoals: "0",
-      awayAvgGoals: "3",
-      explanation: `Superioridad total parisina con goleada 0-3 en el clásico francés.`,
-      liveScore: "0 - 3",
-      matchStatus: "FINALIZADO",
-      outcome: "ACIERTO",
-    },
-    {
-      id: "PARLEY13-05",
-      sport: "FÚTBOL",
-      matchDate: "2026-10-25",
-      kickoffIso: makeIso("2026-10-25", "12:00"),
-      kickoffLabel: "12:00 COL",
-      league: "Serie A",
-      homeTeam: "Inter de Milán",
-      awayTeam: "Juventus",
-      predictionText: "Más de 2.5 Goles Totales",
-      odds: 1.85,
-      probability: 88.0,
-      isFree: true,
-      altitudeM: 122,
-      weatherDesc: "Despejado",
-      homeAvgGoals: "4",
-      awayAvgGoals: "4",
-      explanation: `Partidazo en Milán con 8 goles en total para un empate 4-4.`,
-      liveScore: "4 - 4",
-      matchStatus: "FINALIZADO",
-      outcome: "ACIERTO",
-    },
-    {
-      id: "PARLEY13-06",
-      sport: "FÚTBOL",
-      matchDate: "2026-10-25",
-      kickoffIso: makeIso("2026-10-25", "11:30"),
-      kickoffLabel: "11:30 COL",
-      league: "Premier League",
-      homeTeam: "Arsenal",
-      awayTeam: "Liverpool",
-      predictionText: "Más de 1.5 Goles Totales",
-      odds: 1.35,
-      probability: 91.5,
-      isFree: true,
-      altitudeM: 40,
-      weatherDesc: "Lluvia",
-      homeAvgGoals: "2",
-      awayAvgGoals: "2",
-      explanation: `Duelo con llegadas en ambas áreas que finalizó 2-2.`,
-      liveScore: "2 - 2",
-      matchStatus: "FINALIZADO",
-      outcome: "ACIERTO",
-    },
-    {
-      id: "PARLEY13-07-FALLO",
-      sport: "FÚTBOL",
-      matchDate: "2026-10-25",
-      kickoffIso: makeIso("2026-10-25", "10:00"),
-      kickoffLabel: "10:00 COL",
-      league: "Premier League",
-      homeTeam: "Chelsea",
-      awayTeam: "Newcastle",
-      predictionText: "Más de 9.5 Córners Totales",
-      odds: 1.70,
-      probability: 86.0,
-      isFree: true,
-      altitudeM: 15,
-      weatherDesc: "Frío",
-      homeAvgGoals: "9 córners",
-      awayAvgGoals: "-",
-      explanation: `Se quedó en 9 tiros de esquina en el minuto 75 y no hubo más llegadas.`,
-      liveScore: "9 Córners",
-      matchStatus: "FINALIZADO",
-      outcome: "FALLO",
-    },
-    {
-      id: "PARLEY13-08",
-      sport: "NBA",
-      matchDate: "2026-10-24",
-      kickoffIso: makeIso("2026-10-24", "19:00"),
-      kickoffLabel: "19:00 COL",
-      league: "NBA",
-      homeTeam: "Denver Nuggets",
-      awayTeam: "LA Clippers",
-      predictionText: "Nikola Jokic Más de 23.5 Puntos",
-      odds: 1.80,
-      probability: 92.0,
-      isFree: true,
-      altitudeM: 1609,
-      weatherDesc: "Coliseo Cerrado",
-      homeAvgGoals: "41 pts",
-      awayAvgGoals: "-",
-      explanation: `Jokic anotó 41 puntos en la altura de Denver destrozando la línea.`,
-      liveScore: "41 Puntos",
-      matchStatus: "FINALIZADO",
-      outcome: "ACIERTO",
-    },
-    {
-      id: "PARLEY13-09",
-      sport: "FÚTBOL",
-      matchDate: "2026-10-24",
-      kickoffIso: makeIso("2026-10-24", "18:30"),
-      kickoffLabel: "18:30 COL",
-      league: "Liga BetPlay",
-      homeTeam: "Deportes Tolima",
-      awayTeam: "Once Caldas",
-      predictionText: "Tolima Empate No Acción (DNB)",
-      odds: 1.45,
-      probability: 90.0,
-      isFree: true,
-      altitudeM: 1285,
-      weatherDesc: "Templado",
-      homeAvgGoals: "1",
-      awayAvgGoals: "1",
-      explanation: `Tolima empató 1-1 y la selección se protegió sin pérdidas.`,
-      liveScore: "1 - 1",
-      matchStatus: "FINALIZADO",
-      outcome: "ACIERTO",
-    },
-    {
-      id: "PARLEY13-10",
-      sport: "FÚTBOL",
-      matchDate: "2026-10-24",
-      kickoffIso: makeIso("2026-10-24", "16:15"),
-      kickoffLabel: "16:15 COL",
-      league: "Liga BetPlay",
-      homeTeam: "Independiente Medellín",
-      awayTeam: "Jaguares de Córdoba",
-      predictionText: "Más de 1.5 Goles Totales",
-      odds: 1.38,
-      probability: 89.0,
-      isFree: true,
-      altitudeM: 1495,
-      weatherDesc: "Agradable",
-      homeAvgGoals: "4",
-      awayAvgGoals: "1",
-      explanation: `Jaguares acusó la subida a Medellín y el DIM goleó 4-1.`,
-      liveScore: "4 - 1",
-      matchStatus: "FINALIZADO",
-      outcome: "ACIERTO",
-    },
-    {
-      id: "PARLEY13-11-FALLO",
-      sport: "FÚTBOL",
-      matchDate: "2026-10-24",
-      kickoffIso: makeIso("2026-10-24", "14:00"),
-      kickoffLabel: "14:00 COL",
-      league: "LaLiga",
-      homeTeam: "Real Madrid",
-      awayTeam: "FC Barcelona",
-      predictionText: "Ambos Marcan Gol (Sí)",
-      odds: 1.50,
-      probability: 87.5,
-      isFree: true,
-      altitudeM: 660,
-      weatherDesc: "Fresco",
-      homeAvgGoals: "0",
-      awayAvgGoals: "4",
-      explanation: `Madrid cayó 8 veces en fuera de juego y Barcelona ganó 0-4 sin encajar.`,
-      liveScore: "0 - 4",
-      matchStatus: "FINALIZADO",
-      outcome: "FALLO",
-    },
-    {
-      id: "PARLEY13-12",
-      sport: "FÚTBOL",
-      matchDate: "2026-10-24",
-      kickoffIso: makeIso("2026-10-24", "11:30"),
-      kickoffLabel: "11:30 COL",
-      league: "Bundesliga",
-      homeTeam: "RB Leipzig",
-      awayTeam: "SC Freiburg",
-      predictionText: "Victoria Directa RB Leipzig",
-      odds: 1.65,
-      probability: 91.0,
-      isFree: true,
-      altitudeM: 113,
-      weatherDesc: "Frío",
-      homeAvgGoals: "3",
-      awayAvgGoals: "1",
-      explanation: `Remontada de Leipzig en el segundo tiempo con tres goles seguidos.`,
-      liveScore: "3 - 1",
-      matchStatus: "FINALIZADO",
-      outcome: "ACIERTO",
-    },
-    {
-      id: "PARLEY13-13",
-      sport: "FÚTBOL",
-      matchDate: "2026-10-24",
-      kickoffIso: makeIso("2026-10-24", "09:00"),
-      kickoffLabel: "09:00 COL",
-      league: "Premier League",
-      homeTeam: "Aston Villa",
-      awayTeam: "Bournemouth",
-      predictionText: "Aston Villa Gana o Empata (1X)",
-      odds: 1.30,
-      probability: 89.0,
-      isFree: true,
-      altitudeM: 110,
-      weatherDesc: "Nublado",
-      homeAvgGoals: "1",
-      awayAvgGoals: "1",
-      explanation: `El equipo del 'Dibu' sostuvo el invicto en casa con empate 1-1.`,
-      liveScore: "1 - 1",
-      matchStatus: "FINALIZADO",
-      outcome: "ACIERTO",
-    },
-
-    // --- HITO FUNDADOR ($150.000 COP EN MONTERÍA) ---
-    {
-      id: "FOUNDER-JAGUARES",
-      sport: "FÚTBOL",
-      matchDate: "2026-10-23",
-      kickoffIso: makeIso("2026-10-23", "18:00"),
-      kickoffLabel: "18:00 COL",
-      league: "Liga BetPlay (Colombia)",
-      homeTeam: "Jaguares de Córdoba",
-      awayTeam: "Llaneros FC",
-      predictionText: "Jaguares Gana o Empata (1X) + Más de 1.5 Goles",
-      odds: 2.20,
-      probability: 93.0,
-      isFree: true,
-      altitudeM: 18,
-      weatherDesc: "Calor sofocante (33°C y 86% de humedad)",
-      homeAvgGoals: "2",
-      awayAvgGoals: "1",
-      explanation: `EL COBRO FUNDADOR DE $150.000 PESOS: En el calor del Jaraguay de Montería, Llaneros se quedó sin piernas por deshidratación en el 2T y Jaguares selló la victoria 2-1.`,
-      liveScore: "2 - 1",
-      matchStatus: "FINALIZADO",
-      outcome: "ACIERTO",
-    },
-  ];
-
-  localStorage.setItem(DB_KEY, JSON.stringify(records));
-  return records;
 }
-
-export function getAllMasterFeed() {
-  return seedMasterRecords();
-}
-
-function formatCountdown(iso, st) {
-  if (st === "FINALIZADO") return "FINALIZADO";
-  if (st === "EN_VIVO") return "🔴 EN JUEGO AHORA";
-  const diff = new Date(iso).getTime() - Date.now();
-  if (diff <= 0) return "🔴 INICIANDO...";
-  const h = Math.floor(diff / 3600000);
-  const m = Math.floor((diff % 3600000) / 60000);
-  const s = Math.floor((diff % 60000) / 1000);
-  return `INICIA EN ${String(h).padStart(2, "0")}h:${String(m).padStart(2, "0")}m:${String(s).padStart(2, "0")}s`;
-}
-
-function startColombiaClock() {
-  function tick() {
-    const now = new Date();
-    const timeStr = new Intl.DateTimeFormat("es-CO", {
-      timeZone: CONFIG.BRAND.TIMEZONE,
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hour12: false,
-    }).format(now);
-
-    const clockEl = document.getElementById("colombia-live-clock");
-    if (clockEl) clockEl.textContent = `HORA COLOMBIA: ${timeStr}`;
-
-    document.querySelectorAll(".countdown-timer").forEach((el) => {
-      el.textContent = formatCountdown(el.dataset.kickoff, el.dataset.status);
-    });
-  }
-  tick();
-  setInterval(tick, 1000);
-}
-
-function injectWhatsAppFloatingButton() {
-  if (document.getElementById("btn-wa-floating")) return;
-  const btn = document.createElement("a");
-  btn.id = "btn-wa-floating";
-  btn.href = CONFIG.NOTIFICATIONS.WHATSAPP_LINK;
-  btn.target = "_blank";
-  btn.className = "fixed bottom-5 right-5 z-50 px-4 py-2 bg-[#10b981] hover:bg-emerald-400 text-slate-950 font-black font-mono text-xs uppercase tracking-wider rounded-sm shadow-[0_0_20px_rgba(16,185,129,0.4)] flex items-center gap-2 border border-emerald-300 transition-all";
-  btn.innerHTML = `<span>💬 WhatsApp VIP (+57 333 286 1551)</span>`;
-  document.body.appendChild(btn);
-}
-
-// Curva acumulada
-export function renderPerformanceChart() {
-  const chartBox = document.getElementById("performance-chart-box");
-  if (!chartBox) return;
-
-  const all = getAllMasterFeed();
-  const settled = all.filter((p) => p.outcome === "ACIERTO" || p.outcome === "FALLO");
-  if (settled.length === 0) return;
-
-  const chron = [...settled].reverse();
-  let wins = 0;
-  const totalGames = chron.length;
-
-  const points = chron.map((it, idx) => {
-    if (it.outcome === "ACIERTO") wins++;
-    const hitRate = (wins / (idx + 1)) * 100;
-    const x = 30 + (idx / Math.max(1, totalGames - 1)) * 530;
-    const y = 140 - (hitRate / 100) * 110;
-    return { x: x.toFixed(1), y: y.toFixed(1), rate: hitRate.toFixed(1), res: it.outcome };
-  });
-
-  const polylinePoints = points.map((p) => `${p.x},${p.y}`).join(" ");
-
-  chartBox.innerHTML = `
-    <svg viewBox="0 0 600 160" class="w-full h-full font-mono overflow-visible">
-      <defs>
-        <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#10b981" stop-opacity="0.3" />
-          <stop offset="100%" stop-color="#10b981" stop-opacity="0.0" />
-        </linearGradient>
-      </defs>
-
-      <line x1="30" y1="30" x2="570" y2="30" stroke="#1b2432" stroke-dasharray="3 3" />
-      <text x="32" y="26" fill="#8b9bb4" font-size="9">100% Acierto</text>
-
-      <line x1="30" y1="52" x2="570" y2="52" stroke="#10b981" stroke-opacity="0.3" stroke-dasharray="3 3" />
-      <text x="32" y="49" fill="#10b981" font-size="9">80% Zona de Ganancia</text>
-
-      <line x1="30" y1="85" x2="570" y2="85" stroke="#1b2432" stroke-dasharray="3 3" />
-      <text x="32" y="82" fill="#8b9bb4" font-size="9">50% Equilibrio</text>
-
-      <polygon fill="url(#chartGrad)" points="30,140 ${polylinePoints} 570,140" />
-      <polyline fill="none" stroke="#06b6d4" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="${polylinePoints}" />
-
-      ${points
-        .map(
-          (p) => `
-        <circle cx="${p.x}" cy="${p.y}" r="${p.res === "ACIERTO" ? "3.5" : "3"}" fill="${p.res === "ACIERTO" ? "#10b981" : "#ef4444"}" stroke="#05070a" stroke-width="1.5" />
-      `
-        )
-        .join("")}
-    </svg>
-  `;
-}
-
-// Modal Emergente
-window.openMatchModal = (matchId) => {
-  const match = getAllMasterFeed().find((m) => m.id === matchId);
-  if (!match) return;
-
-  let modal = document.getElementById("match-telemetry-modal");
-  if (!modal) {
-    modal = document.createElement("div");
-    modal.id = "match-telemetry-modal";
-    modal.className = "fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 font-mono";
-    document.body.appendChild(modal);
-  }
-
-  const stars = getStars(match.probability);
-  const homeLogo = getLogo(match.homeTeam);
-  const awayLogo = getLogo(match.awayTeam);
-
-  modal.innerHTML = `
-    <div class="quant-card max-w-2xl w-full p-4 md:p-6 space-y-4 max-h-[92vh] overflow-y-auto border-cyan-500/60 shadow-[0_0_30px_rgba(6,182,212,0.2)]">
-      <div class="flex items-center justify-between border-b border-[#1b2432] pb-2 text-xs">
-        <span class="px-2 py-0.5 text-[10px] font-bold uppercase border ${stars.badge}">
-          ${stars.stars} ${stars.tag}
-        </span>
-        <button onclick="document.getElementById('match-telemetry-modal').classList.add('hidden')" class="px-2.5 py-1 text-slate-300 hover:text-white border border-[#1b2432] bg-[#05070a] font-bold">
-          ✕ CERRAR
-        </button>
-      </div>
-
-      <div class="p-3 bg-[#05070a] border border-[#1b2432] grid grid-cols-12 items-center gap-2">
-        <div class="col-span-5 flex items-center gap-2">
-          <img src="${homeLogo}" alt="${match.homeTeam}" class="w-9 h-9 md:w-11 md:h-11 object-contain shrink-0" />
-          <div class="min-w-0">
-            <div class="text-xs md:text-sm font-black text-white truncate">${match.homeTeam}</div>
-            <span class="text-[10px] text-cyan-300 block">Ataque: ${match.homeAvgGoals}</span>
-          </div>
-        </div>
-
-        <div class="col-span-2 text-center">
-          <div class="text-lg md:text-2xl font-black text-white font-mono">${match.liveScore}</div>
-          <span class="text-[9px] uppercase px-1.5 py-0.5 bg-[#161f2c] text-cyan-400 font-bold block">${match.matchStatus}</span>
-        </div>
-
-        <div class="col-span-5 flex items-center justify-end gap-2 text-right">
-          <div class="min-w-0">
-            <div class="text-xs md:text-sm font-black text-white truncate">${match.awayTeam}</div>
-            <span class="text-[10px] text-emerald-300 block">Ataque: ${match.awayAvgGoals}</span>
-          </div>
-          <img src="${awayLogo}" alt="${match.awayTeam}" class="w-9 h-9 md:w-11 md:h-11 object-contain shrink-0" />
-        </div>
-      </div>
-
-      <div class="p-3 bg-[#061210] border border-[#10b981]/50 flex items-center justify-between text-xs">
-        <div>
-          <span class="text-[10px] text-slate-400 block uppercase">JUGADA OFICIAL:</span>
-          <span class="text-sm md:text-base font-bold text-[#10b981]">${match.predictionText}</span>
-          <span class="text-[11px] text-slate-400 block pt-0.5">Cuota asignada: <strong>@${(match.odds || 1.45).toFixed(2)}</strong></span>
-        </div>
-        <div class="text-right">
-          <span class="text-[10px] text-slate-400 block">CONFIANZA</span>
-          <span class="text-lg md:text-xl font-black text-white">${match.probability}%</span>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 bg-[#05070a] p-3 border border-[#1b2432] text-xs">
-        <div>
-          <span class="text-[10px] text-slate-400 block">ALTURA / VIAJE</span>
-          <span class="text-white font-bold">${match.altitudeM} metros</span>
-        </div>
-        <div>
-          <span class="text-[10px] text-slate-400 block">CLIMA EN CANCHA</span>
-          <span class="text-cyan-300 font-bold">${match.weatherDesc}</span>
-        </div>
-        <div class="col-span-2 sm:col-span-1">
-          <span class="text-[10px] text-slate-400 block">ESTADO</span>
-          <span class="text-[#10b981] font-bold">${match.outcome === "ACIERTO" ? "Ganada con éxito" : match.outcome === "FALLO" ? "Jugada caída" : "En juego"}</span>
-        </div>
-      </div>
-
-      <div class="p-3.5 bg-[#070a0f] border border-[#1b2432] space-y-2 text-xs">
-        <span class="text-cyan-300 font-bold block uppercase text-[11px] border-b border-[#1b2432] pb-1">
-          ANÁLISIS DEL PARTIDO:
-        </span>
-        <div class="text-slate-300 leading-relaxed text-xs space-y-2 whitespace-pre-line font-sans">
-          ${match.explanation}
-        </div>
-      </div>
-    </div>
-  `;
-  modal.classList.remove("hidden");
+const STATIC_I18N = {
+  "PRONÓSTICOS DE ALTA PROBABILIDAD": "HIGH PROBABILITY PREDICTIONS",
+  "FÚTBOL & NBA": "FOOTBALL & NBA",
+  "Pronósticos Hoy": "Today's Picks",
+  "Resultados Hoy": "Today's Results",
+  "Historial & Aciertos": "History & Win Rate",
+  "Planes VIP & Cuentas": "VIP Plans & Accounts",
+  "Mi Licencia & Referidos": "My License & Referrals",
+  "⚙️ Panel Admin": "⚙️ Admin Panel",
+  "🔑 Canjear Llave": "🔑 Redeem Key",
+  "Prueba 24h": "24h Trial",
+  "Registrarse": "Sign Up",
+  "Entrar": "Log In",
+  "Salir": "Log Out",
+  "💰 Calculadora de Ganancia en Tiempo Real": "💰 Real-Time Profit Calculator",
+  "Ingresa cuánto deseas invertir para ver el cobro exacto en cada tarjeta:": "Enter your stake amount to see the exact payout on every card:",
+  "Inversión ($ COP):": "Stake ($ COP):",
+  "Cartelera Oficial del Día": "Official Daily Matchday Card",
+  "Todos": "All",
+  "⚽ Solo Fútbol": "⚽ Football Only",
+  "🏀 Solo NBA": "🏀 NBA Only",
+  "🔓 Solo Gratis": "🔓 Free Only",
+  "🔴 En Vivo Ahora": "🔴 Live Now",
+  "Auditoría de Resultados del Día": "Daily Results Audit",
+  "Calificación transparente de los partidos finalizados y generador de tickets de victoria.": "Transparent grading of finished matches and win ticket generator.",
+  "Curva de Rendimiento Acumulado": "Cumulative Performance Curve",
+  "AUDITORÍA CRONOLÓGICA": "CHRONOLOGICAL AUDIT",
+  "Historial de Partidos (Desde el Más Reciente)": "Match History (Newest First)",
+  "Toca cualquier fila para ver el análisis completo o generar Ticket": "Tap any row to view full analysis or generate Win Ticket",
+  "Fecha": "Date",
+  "Deporte / Liga": "Sport / League",
+  "Partido": "Match",
+  "Pronóstico": "Prediction",
+  "Cuota": "Odds",
+  "Marcador": "Score",
+  "Resultado": "Outcome",
+  "Acción": "Action",
+  "Planes de Membresía VIP": "VIP Membership Plans",
+  "Precios en COP y USDT.": "Prices in COP and USDT.",
+  "🎟️ ¿Tienes código de promotor (-20%)?": "🎟️ Have a promoter code (-20%)?",
+  "Sin aplicar": "Not applied",
+  "Aplicar": "Apply",
+  "Medios de Pago Oficiales": "Official Payment Methods",
+  "Activación Inmediata": "Instant Activation",
+  "Transfiere a Nequi, Bancolombia o Binance y reporta el comprobante por WhatsApp:": "Transfer via Nequi, Bancolombia or Binance and send your receipt via WhatsApp:",
+  "WHATSAPP OFICIAL:": "OFFICIAL WHATSAPP:",
+  "Enviar Comprobante por WhatsApp": "Send Receipt via WhatsApp",
+  "Estado de tu Licencia": "Your License Status",
+  "🔑 CANJEAR LLAVE DE ACCESO": "🔑 REDEEM ACCESS KEY",
+  "Ingresa tu llave de cortesía para activar tus días de acceso VIP:": "Enter your courtesy key to activate your VIP access days:",
+  "CÓDIGO DE LA LLAVE": "KEY CODE",
+  "CANJEAR Y ACTIVAR DÍAS VIP": "REDEEM & ACTIVATE VIP DAYS",
+  "REGISTRO DE USUARIO": "USER REGISTRATION",
+  "INICIAR SESIÓN": "LOG IN",
+  "CORREO ELECTRÓNICO OFICIAL": "OFFICIAL EMAIL ADDRESS",
+  "CONTRASEÑA (MÍNIMO 6 CARACTERES)": "PASSWORD (MIN. 6 CHARACTERS)",
+  "CREAR CUENTA": "CREATE ACCOUNT",
+  "CREAR MI CUENTA": "CREATE MY ACCOUNT",
+  "ENTRAR A MI CUENTA": "LOG INTO MY ACCOUNT",
+  "¿Ya tienes cuenta? Inicia sesión aquí": "Already have an account? Log in here",
+  "¿No tienes cuenta aún? Regístrate aquí": "Don't have an account yet? Sign up here",
+  "OPTACORE.QUANT © 2026 — Inteligencia Estadística para Pronósticos Deportivos (+18).": "OPTACORE.QUANT © 2026 — Statistical Intelligence for Sports Predictions (+18).",
+  "⚙️ Consola de Administración en Vivo": "⚙️ Live Admin Console",
+  "Actualiza marcadores, sincroniza resultados en lote, agrega partidos y promotores.": "Update scores, batch-sync results, add matches and promoters.",
+  "⚡ Sincronizar API (1 Crédito)": "⚡ Sync API (1 Credit)",
+  "Restaurar Base": "Reset Database",
+  "+ Generar Llave de Acceso": "+ Generate Access Key",
+  "Guardar Llave Activa": "Save Active Key",
+  "+ Registrar Promotor (-20%)": "+ Register Promoter (-20%)",
+  "Activar Promotor": "Activate Promoter",
+  "Auditoría de Ventas por Promotor": "Promoter Sales Audit",
+  "+ Agregar Nuevo Pronóstico": "+ Add New Prediction",
+  "Publicar Pronóstico Ahora": "Publish Prediction Now",
+  "Editar Marcadores y Estados": "Edit Scores & Statuses",
+  "Cartelera": "Picks",
+  "Resultados": "Results",
+  "Historial": "History",
+  "Planes": "Plans",
+  "Cuenta": "Account"
 };
 
 // MEJORA #4: Filtro Rápido
@@ -1069,339 +323,222 @@ export function renderTodayPredictions() {
       </article>
     `;
   }).join("");
-}
-
-// Resultados de Hoy (1 unidad fija por fallo)
-export function renderTodayResults() {
-  const box = document.getElementById("today-results-container");
-  const summaryBox = document.getElementById("today-financial-summary");
-  if (!box) return;
-
-  const today = getColombiaDateString();
-  const todayList = getAllMasterFeed().filter((p) => p.matchDate === today);
-
-  let totalOddsWon = 0;
-  let countWon = 0;
-  let countLost = 0;
-
-  todayList.forEach((p) => {
-    const o = p.odds || 1.45;
-    if (p.outcome === "ACIERTO") {
-      totalOddsWon += o;
-      countWon++;
-    } else if (p.outcome === "FALLO") {
-      countLost++; // 1 apuesta = 1 unidad de pérdida
-    }
-  });
-
-  const totalOddsLost = countLost * 1.0;
-  const netDiff = totalOddsWon - totalOddsLost;
-
-  if (summaryBox) {
-    summaryBox.innerHTML = `
-      <div class="quant-card p-3 border-emerald-500/40 font-mono">
-        <span class="text-[10px] text-slate-400 block uppercase font-bold">MULTIPLICADOR COBRADO</span>
-        <span class="text-lg font-black text-[#10b981]">+${totalOddsWon.toFixed(2)}x</span>
-        <span class="text-[10px] text-slate-400 block">${countWon} jugada(s) ganada(s)</span>
-      </div>
-      <div class="quant-card p-3 border-red-500/40 font-mono">
-        <span class="text-[10px] text-slate-400 block uppercase font-bold">PÉRDIDA REAL</span>
-        <span class="text-lg font-black text-red-400">-${totalOddsLost.toFixed(2)}x</span>
-        <span class="text-[10px] text-slate-400 block">${countLost} jugada(s) caída(s)</span>
-      </div>
-      <div class="quant-card p-3 font-mono ${netDiff >= 0 ? "border-cyan-500/40" : "border-amber-500/40"}">
-        <span class="text-[10px] text-slate-400 block uppercase font-bold">BALANCE DEL DÍA</span>
-        <span class="text-lg font-black ${netDiff >= 0 ? "text-cyan-400" : "text-amber-400"}">${netDiff >= 0 ? "+" : ""}${netDiff.toFixed(2)}x</span>
-        <span class="text-[10px] text-slate-400 block">Rendimiento neto</span>
-      </div>
-    `;
-  }
-
-  box.innerHTML = todayList.map((p) => {
-    const badge = p.outcome === "ACIERTO"
-      ? "border-emerald-500 bg-emerald-500/20 text-emerald-300"
-      : p.outcome === "FALLO"
-      ? "border-red-500 bg-red-500/20 text-red-300"
-      : "border-cyan-500 bg-cyan-500/20 text-cyan-300";
-
-    return `
-      <div class="quant-card p-3 flex flex-wrap items-center justify-between gap-2 font-mono text-xs cursor-pointer hover:border-cyan-400/50" onclick="window.openMatchModal('${p.id}')">
-        <div class="space-y-0.5">
-          <span class="text-[10px] text-slate-400">${p.kickoffLabel} • ${p.league}</span>
-          <div class="text-xs md:text-sm font-bold text-white">${p.homeTeam} vs ${p.awayTeam}</div>
-          <div class="text-cyan-300 text-[11px]">Pronóstico: ${p.predictionText} (@${(p.odds || 1.45).toFixed(2)})</div>
-        </div>
-        <div class="flex items-center gap-3">
-          <div class="text-right">
-            <span class="text-[9px] text-slate-400 block">${p.matchStatus}</span>
-            <span class="text-sm md:text-base font-black text-white">${p.liveScore}</span>
-          </div>
-          <span class="px-2 py-0.5 text-[10px] font-bold uppercase border ${badge}">${p.outcome}</span>
-        </div>
-      </div>
-    `;
-  }).join("");
-}
-
-// Historial Completo (1 unidad fija por cada fallo)
-export function renderFullPublicHistory() {
-  const all = getAllMasterFeed();
-  const settled = all.filter((p) => p.outcome === "ACIERTO" || p.outcome === "FALLO");
-
-  let totalOddsWon = 0;
-  let countWins = 0;
-  let countLosses = 0;
-
-  settled.forEach((p) => {
-    const o = p.odds || 1.45;
-    if (p.outcome === "ACIERTO") {
-      totalOddsWon += o;
-      countWins++;
-    } else if (p.outcome === "FALLO") {
-      countLosses++; // Exactamente 1 unidad de banca perdida por fallo
-    }
-  });
-
-  const totalOddsLost = countLosses * 1.0;
-  const netBalance = totalOddsWon - totalOddsLost;
-
-  const financialSummaryBox = document.getElementById("history-financial-summary");
-  if (financialSummaryBox) {
-    financialSummaryBox.innerHTML = `
-      <div class="quant-card p-4 border-emerald-500/50 font-mono">
-        <span class="text-[10px] text-slate-400 uppercase block font-bold">MULTIPLICADOR TOTAL COBRADO</span>
-        <span class="text-2xl font-black text-[#10b981]">+${totalOddsWon.toFixed(2)}x</span>
-        <span class="text-[11px] text-slate-400 block">${countWins} cuotas acertadas acumuladas</span>
-      </div>
-      <div class="quant-card p-4 border-red-500/50 font-mono">
-        <span class="text-[10px] text-slate-400 uppercase block font-bold">PÉRDIDA REGISTRADA</span>
-        <span class="text-2xl font-black text-red-400">-${totalOddsLost.toFixed(2)}x</span>
-        <span class="text-[11px] text-slate-400 block">${countLosses} partidos no completados (1x c/u)</span>
-      </div>
-      <div class="quant-card p-4 border-cyan-500/50 font-mono">
-        <span class="text-[10px] text-cyan-300 uppercase block font-bold">BALANCE NETO AUDITADO</span>
-        <span class="text-2xl font-black ${netBalance >= 0 ? "text-white" : "text-amber-400"}">${netBalance >= 0 ? "+" : ""}${netBalance.toFixed(2)}x</span>
-        <span class="text-[11px] text-[#10b981] block font-bold">Rendimiento positivo real</span>
-      </div>
-    `;
-  }
-
-  const calc = (arr) => {
-    const valids = arr.filter((x) => x.outcome === "ACIERTO" || x.outcome === "FALLO");
-    if (valids.length === 0) return { pct: "0.0", w: 0, tot: 0 };
-    const w = valids.filter((x) => x.outcome === "ACIERTO").length;
-    return { pct: ((w / valids.length) * 100).toFixed(1), w, tot: valids.length };
+const REVERSE_STATIC_I18N = Object.fromEntries(Object.entries(STATIC_I18N).map(([k, v]) => [v, k]));
+function trText(str) {
+  if (!str || currentLang === "ES") return str || "";
+  let s = String(str);
+  const exactMap = {
+    "FÚTBOL": "FOOTBALL",
+    "FINALIZADO": "FINISHED",
+    "PROGRAMADO": "SCHEDULED",
+    "EN_VIVO": "LIVE",
+    "ACIERTO": "WIN",
+    "FALLO": "LOSS",
+    "PENDIENTE": "PENDING",
+    "EXIGENCIA MEDIA": "MEDIUM STRAIN",
+    "🔥 CALOR EXTREMO / DESGASTE RIVAL": "🔥 EXTREME HEAT / RIVAL FATIGUE",
+    "⛰️ AHOGO POR ALTURA (+1.400m)": "⛰️ HIGH ALTITUDE HYPOXIA (+1,400m)",
+    "⚡ CÉSPED RÁPIDO / ALTA VELOCIDAD": "⚡ FAST PITCH / HIGH PACE",
+    "5 ESTRELLAS": "5 STARS",
+    "4 ESTRELLAS": "4 STARS",
+    "3 ESTRELLAS": "3 STARS"
   };
-
-  const totalStats = calc(settled);
-  const fbStats = calc(settled.filter((p) => p.sport === "FÚTBOL"));
-  const nbaStats = calc(settled.filter((p) => p.sport === "NBA"));
-  const fiveStars = calc(settled.filter((p) => p.probability >= 90));
-
-  const kpiEl = document.getElementById("history-kpi-cards");
-  if (kpiEl) {
-    kpiEl.innerHTML = `
-      <div class="quant-card p-3 font-mono">
-        <span class="text-[9px] text-slate-400 block">EFECTIVIDAD REAL</span>
-        <span class="text-xl font-black text-[#10b981]">${totalStats.pct}%</span>
-        <span class="text-[10px] text-slate-400 block">${totalStats.w} de ${totalStats.tot} aciertos</span>
-      </div>
-      <div class="quant-card p-3 font-mono">
-        <span class="text-[9px] text-slate-400 block">FÚTBOL</span>
-        <span class="text-xl font-black text-cyan-400">${fbStats.pct}%</span>
-        <span class="text-[10px] text-slate-400 block">${fbStats.w}/${fbStats.tot} acertados</span>
-      </div>
-      <div class="quant-card p-3 font-mono">
-        <span class="text-[9px] text-slate-400 block">NBA</span>
-        <span class="text-xl font-black text-white">${nbaStats.pct}%</span>
-        <span class="text-[10px] text-slate-400 block">${nbaStats.w}/${nbaStats.tot} acertados</span>
-      </div>
-      <div class="quant-card p-3 font-mono">
-        <span class="text-[9px] text-slate-400 block">⭐⭐⭐⭐⭐ (5★)</span>
-        <span class="text-xl font-black text-cyan-300">${fiveStars.pct}%</span>
-        <span class="text-[10px] text-slate-400 block">${fiveStars.w} de ${fiveStars.tot} acertados</span>
-      </div>
-    `;
+  if (exactMap[s]) return exactMap[s];
+  const replacements = [
+    ["Liverpool Gana o Empata (1X) + Más de 1.5 Goles Totales", "Liverpool Wins or Draws (1X) + Over 1.5 Total Goals"],
+    ["Doble Oportunidad (Liverpool o Empate) + Total Goles Más de 1.5", "Double Chance (Liverpool or Draw) + Over 1.5 Total Goals"],
+    ["Real Madrid Gana Directo + Más de 1.5 Goles Totales", "Real Madrid Direct Win + Over 1.5 Total Goals"],
+    ["Resultado del partido (Gana Real Madrid) y Más de 1.5 Goles", "Match Winner (Real Madrid) & Over 1.5 Goals"],
+    ["Total de Goles: Menos de 2.5 (Máximo 2 goles en el partido)", "Total Goals: Under 2.5 (Max 2 goals in match)"],
+    ["Boston Celtics Gana Directo (Moneyline)", "Boston Celtics Direct Win (Moneyline)"],
+    ["Ganador del Partido (Incluye Prórroga): Boston Celtics", "Match Winner (Incl. OT): Boston Celtics"],
+    ["Independiente Medellín Gana Directo (1X2)", "Independiente Medellin Direct Win (1X2)"],
+    ["Tiempo Reglamentario: Gana Independiente Medellín", "Regular Time: Independiente Medellin Wins"],
+    ["Lazio Gana o Empata (1X) + Más de 1.5 Goles Totales", "Lazio Wins or Draws (1X) + Over 1.5 Total Goals"],
+    ["Doble Oportunidad Lazio/Empate y Total de Goles Más de 1.5", "Double Chance Lazio/Draw & Over 1.5 Total Goals"],
+    ["Athletic Club Gana o Empata (1X) + Menos de 3.5 Goles", "Athletic Club Wins or Draws (1X) + Under 3.5 Goals"],
+    ["Doble Oportunidad (Athletic o Empate) y Menos de 3.5 Goles", "Double Chance (Athletic or Draw) & Under 3.5 Goals"],
+    ["Menos de 232.5 Puntos Totales (Línea Protegida)", "Under 232.5 Total Points (Protected Line)"],
+    ["Total de Puntos (Incluye Prórroga): Menos de 232.5", "Total Points (Incl. OT): Under 232.5"],
+    ["Golden State Warriors Hándicap -2.5 (Línea Corta)", "Golden State Warriors Handicap -2.5 (Short Line)"],
+    ["Hándicap del Partido (Incluye Prórroga): Warriors -2.5", "Match Handicap (Incl. OT): Warriors -2.5"],
+    ["Los Angeles Lakers Gana Directo + Más de 215.5 Puntos", "LA Lakers Direct Win + Over 215.5 Points"],
+    ["Gana LA Lakers y Total de Puntos Más de 215.5", "LA Lakers Win & Total Points Over 215.5"],
+    ["⚡ EN ESPERA DE INICIO", "⚡ WAITING FOR KICKOFF"],
+    ["🔒 EXCLUSIVO MIEMBROS VIP", "🔒 VIP MEMBERS EXCLUSIVE"],
+    ["Gana Manchester City + Total Goles Más de 1.5", "Man City Wins + Over 1.5 Total Goals"],
+    ["Manchester City Gana + Más de 1.5 Goles Totales", "Manchester City Wins + Over 1.5 Total Goals"],
+    ["Línea de Goles: Más de 2.5 (3 goles o más en total)", "Goal Line: Over 2.5 (3 or more total goals)"],
+    ["Más de 2.5 Goles Totales (Mínimo 3 goles)", "Over 2.5 Total Goals (Min. 3 goals)"],
+    ["Hándicap -1.5 (Barcelona gana por 2 o más goles)", "Handicap -1.5 (Barcelona wins by 2+ goals)"],
+    ["Barcelona Gana por 2 o más goles (Hándicap -1.5)", "Barcelona Wins by 2+ goals (Handicap -1.5)"],
+    ["Doble Oportunidad X2 (Empate o Junior) + Más de 1.5 Goles", "Double Chance X2 (Draw or Junior) + Over 1.5 Goals"],
+    ["Junior Gana o Empata (X2) + Más de 1.5 Goles", "Junior Wins or Draws (X2) + Over 1.5 Goals"],
+    ["Línea Alternativa de Puntos Totales: Más de 214.5", "Alt Total Points Line: Over 214.5"],
+    ["Más de 214.5 Puntos Totales (Línea Protegida)", "Over 214.5 Total Points (Protected Line)"],
+    ["Apuesta Sin Empate (DNB Bucaramanga)", "Draw No Bet (DNB Bucaramanga)"],
+    ["Bucaramanga Empate No Acción (DNB)", "Bucaramanga Draw No Bet (DNB)"],
+    ["Total Puntos Combinados: Más de 227.5", "Combined Total Points: Over 227.5"],
+    ["Más de 227.5 Puntos Totales Combinados", "Over 227.5 Combined Total Points"],
+    ["Menos de 2.5 Goles Totales", "Under 2.5 Total Goals"],
+    ["Leverkusen Gana + Más de 2.5 Goles", "Leverkusen Wins + Over 2.5 Goals"],
+    ["Doble Oportunidad 1X + Más de 1.5 Goles", "Double Chance 1X + Over 1.5 Goals"],
+    ["América Gana o Empata (1X) + Más de 1.5 Goles", "America Wins or Draws (1X) + Over 1.5 Goals"],
+    ["Hándicap Sacramento Kings -6.5", "Sacramento Kings Handicap -6.5"],
+    ["Sacramento Kings Hándicap -6.5", "Sacramento Kings Handicap -6.5"],
+    ["Alavés Gana 1T / Final", "Alaves Wins HT / FT"],
+    ["Alavés Gana Descanso / Final", "Alaves Wins HT / FT"],
+    ["Puntos Jugador: Kevin Durant Más de 24.5", "Player Points: Kevin Durant Over 24.5"],
+    ["Kevin Durant Más de 24.5 Puntos", "Kevin Durant Over 24.5 Points"],
+    ["Hándicap Warriors -4.5", "Warriors Handicap -4.5"],
+    ["Warriors Gana -4.5 Hándicap", "Warriors Win -4.5 Handicap"],
+    ["Total Goles Junior: Más de 0.5", "Junior Total Goals: Over 0.5"],
+    ["Junior Más de 0.5 Goles en Casa", "Junior Over 0.5 Home Goals"],
+    ["Ganador 1X2: PSG", "1X2 Winner: PSG"],
+    ["Victoria Directa PSG", "PSG Direct Win"],
+    ["Más de 2.5 Goles Totales", "Over 2.5 Total Goals"],
+    ["Más de 1.5 Goles Totales", "Over 1.5 Total Goals"],
+    ["Total Córners: Más de 9.5", "Total Corners: Over 9.5"],
+    ["Más de 9.5 Córners Totales", "Over 9.5 Total Corners"],
+    ["Puntos Nikola Jokic Más de 23.5", "Nikola Jokic Points Over 23.5"],
+    ["Nikola Jokic Más de 23.5 Puntos", "Nikola Jokic Over 23.5 Points"],
+    ["Apuesta Sin Empate DNB Tolima", "Draw No Bet DNB Tolima"],
+    ["Tolima Empate No Acción (DNB)", "Tolima Draw No Bet (DNB)"],
+    ["Ambos Equipos Anotan Gol (Sí)", "Both Teams To Score (Yes)"],
+    ["Ambos Marcan Gol (Sí)", "Both Teams To Score (Yes)"],
+    ["Victoria Directa RB Leipzig", "RB Leipzig Direct Win"],
+    ["Doble Oportunidad 1X (Villa o Empate)", "Double Chance 1X (Villa or Draw)"],
+    ["Aston Villa Gana o Empata (1X)", "Aston Villa Wins or Draws (1X)"],
+    ["Jaguares Gana o Empata (1X) + Más de 1.5 Goles", "Jaguares Wins or Draws (1X) + Over 1.5 Goals"],
+    ["✔ OBJETIVO CUMPLIDO: Ganó 3-1", "✔ TARGET HIT: Won 3-1"],
+    ["✔ OBJETIVO CUMPLIDO: 5 goles (3-2)", "✔ TARGET HIT: 5 goals (3-2)"],
+    ["✔ OBJETIVO CUMPLIDO: Ganó 2-0", "✔ TARGET HIT: Won 2-0"],
+    ["✖ NO SE COMPLETÓ (Llaneros ganó 3-2)", "✖ MISSED (Llaneros won 3-2)"],
+    ["✔ OBJETIVO CUMPLIDO: 232 puntos anotados", "✔ TARGET HIT: 232 points scored"],
+    ["por partido", "per match"],
+    ["pts esperados", "expected pts"],
+    ["al arco", "on target"],
+    ["Ritmo rápido", "Fast pace"],
+    ["Puntos", "Points"],
+    ["Córners", "Corners"]
+  ];
+  for (const [es, en] of replacements) {
+    if (s.includes(es)) s = s.replaceAll(es, en);
   }
-
-  renderPerformanceChart();
-
-  const tbody = document.getElementById("history-table-body");
-  if (tbody) {
-    tbody.innerHTML = all.map((p) => {
-      const badge = p.outcome === "ACIERTO"
-        ? "border-emerald-500 bg-emerald-500/20 text-emerald-300"
-        : p.outcome === "FALLO"
-        ? "border-red-500 bg-red-500/20 text-red-300"
-        : "border-cyan-500 bg-cyan-500/20 text-cyan-300";
-
-      return `
-        <tr class="hover:bg-[#0f151f] text-xs font-mono cursor-pointer" onclick="window.openMatchModal('${p.id}')">
-          <td class="py-2.5 px-3 text-slate-400 whitespace-nowrap">${p.matchDate}</td>
-          <td class="py-2.5 px-3 text-slate-300 whitespace-nowrap">${p.sport} // ${p.league}</td>
-          <td class="py-2.5 px-3 font-bold text-white whitespace-nowrap">${p.homeTeam} vs ${p.awayTeam}</td>
-          <td class="py-2.5 px-3 text-cyan-300 whitespace-nowrap">${p.predictionText}</td>
-          <td class="py-2.5 px-3 font-bold text-white whitespace-nowrap">@${(p.odds || 1.45).toFixed(2)}</td>
-          <td class="py-2.5 px-3 font-bold text-white whitespace-nowrap">${p.liveScore}</td>
-          <td class="py-2.5 px-3 whitespace-nowrap"><span class="px-2 py-0.5 text-[9px] font-bold uppercase border ${badge}">${p.outcome}</span></td>
-          <td class="py-2.5 px-3 text-right whitespace-nowrap"><span class="text-cyan-400 underline text-[10px]">Ver Análisis →</span></td>
-        </tr>
-      `;
-    }).join("");
+  return s;
+}
+function applyStaticDomTranslation() {
+  const dict = currentLang === "EN" ? STATIC_I18N : REVERSE_STATIC_I18N;
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
+  let node;
+  while ((node = walker.nextNode())) {
+    const raw = node.nodeValue.trim();
+    if (raw && dict[raw]) {
+      node.nodeValue = node.nodeValue.replace(raw, dict[raw]);
+    }
+  }
+  const searchIn = document.getElementById("search-input");
+  if (searchIn) searchIn.placeholder = currentLang === "EN" ? "Search team or league..." : "Buscar equipo o liga...";
+  const promoIn = document.getElementById("input-promo-code");
+  if (promoIn) promoIn.placeholder = currentLang === "EN" ? "Ex: PROMO20" : "Ej: PROMO20";
+  const keyIn = document.getElementById("input-license-key");
+  if (keyIn) keyIn.placeholder = currentLang === "EN" ? "Ex: PRUEBA3D" : "Ej: PRUEBA3D";
+  const emailIn = document.getElementById("auth-email");
+  if (emailIn) emailIn.placeholder = currentLang === "EN" ? "you@email.com" : "tu@correo.com";
+  const timerEl = document.getElementById("cart-closing-timer");
+  if (timerEl) timerEl.textContent = currentLang === "EN" ? "⏳ Free card closes in: 02h:14m" : "⏳ Cierre cartelera libre: 02h:14m";
+}
+function injectLanguageSwitcher() {
+  if (document.getElementById("optacore-lang-switcher")) return;
+  const box = document.createElement("div");
+  box.id = "optacore-lang-switcher";
+  box.className = "fixed top-1.5 right-3 z-50 flex items-center gap-1 bg-[#05070a]/95 border border-[#1b2432] p-1 shadow-[0_0_15px_rgba(6,182,212,0.25)] font-mono text-[10px]";
+  box.innerHTML = `
+    <button id="btn-lang-es" onclick="window.setAppLanguage('ES')" class="px-2 py-0.5 font-black uppercase transition flex items-center gap-1">
+      <span>🇪🇸</span><span>ES</span>
+    </button>
+    <button id="btn-lang-en" onclick="window.setAppLanguage('EN')" class="px-2 py-0.5 font-black uppercase transition flex items-center gap-1">
+      <span>🇺🇸</span><span>EN</span>
+    </button>
+  `;
+  document.body.appendChild(box);
+  updateLangButtonsStyle();
+}
+function updateLangButtonsStyle() {
+  const btnEs = document.getElementById("btn-lang-es");
+  const btnEn = document.getElementById("btn-lang-en");
+  if (!btnEs || !btnEn) return;
+  if (currentLang === "ES") {
+    btnEs.className = "px-2 py-0.5 font-black uppercase transition flex items-center gap-1 bg-[#10b981] text-slate-950 border border-[#10b981]";
+    btnEn.className = "px-2 py-0.5 font-bold uppercase transition flex items-center gap-1 bg-[#0a0e14] text-slate-400 hover:text-white border border-transparent";
+  } else {
+    btnEn.className = "px-2 py-0.5 font-black uppercase transition flex items-center gap-1 bg-[#06b6d4] text-slate-950 border border-[#06b6d4]";
+    btnEs.className = "px-2 py-0.5 font-bold uppercase transition flex items-center gap-1 bg-[#0a0e14] text-slate-400 hover:text-white border border-transparent";
   }
 }
-
-function refreshAllViews() {
-  renderLiveWinTicker();
-  renderHotStreakBadge();
+window.setAppLanguage = (lang) => {
+  currentLang = lang === "EN" ? "EN" : "ES";
+  localStorage.setItem("optacore_lang", currentLang);
+  updateLangButtonsStyle();
+  applyStaticDomTranslation();
+  renderLiveTickerAndStreak();
   renderTodayPredictions();
   renderTodayResults();
   renderFullPublicHistory();
   if (window.renderAdminPanel) window.renderAdminPanel();
-}
-
-// MEJORA #9: PANEL DE ADMINISTRACIÓN
-window.resetLocalDatabase = () => {
-  if (confirm("¿Estás seguro de restaurar los datos base originales? Se borrarán los cambios locales.")) {
-    localStorage.removeItem(DB_KEY);
-    seedMasterRecords();
-    refreshAllViews();
-    alert("Datos restaurados correctamente a su estado inicial.");
+  const waBtn = document.getElementById("btn-wa-floating");
+  if (waBtn) {
+    waBtn.innerHTML = `<span>💬 ${currentLang === "EN" ? "VIP WhatsApp (+57 333 286 1551)" : "WhatsApp VIP (+57 333 286 1551)"}</span>`;
   }
 };
-
-window.renderAdminPanel = () => {
-  const container = document.getElementById("admin-matches-list");
-  if (!container) return;
-
-  const matches = getAllMasterFeed();
-
-  container.innerHTML = matches.map((m) => `
-    <div class="p-3 bg-[#05070a] border border-[#1b2432] flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs font-mono">
-      <div class="space-y-1 min-w-0">
-        <div class="flex items-center gap-2">
-          <span class="text-[10px] text-slate-400">${m.matchDate} (${m.kickoffLabel})</span>
-          <span class="text-[10px] px-1.5 py-0.2 bg-[#161f2c] text-cyan-300 font-bold">${m.sport}</span>
-          <span class="text-[10px] text-slate-400 truncate">${m.league}</span>
-        </div>
-        <div class="font-bold text-white">${m.homeTeam} vs ${m.awayTeam}</div>
-        <div class="text-[11px] text-cyan-300">${m.predictionText} (@${(m.odds || 1.45).toFixed(2)})</div>
-      </div>
-
-      <div class="flex flex-wrap items-center gap-2 shrink-0">
-        <div class="flex items-center gap-1">
-          <span class="text-[10px] text-slate-400">Marcador:</span>
-          <input
-            type="text"
-            id="adm-score-${m.id}"
-            value="${m.liveScore}"
-            class="w-20 bg-[#0a0e14] border border-[#1b2432] px-2 py-1 text-white text-xs text-center font-bold"
-          />
-        </div>
-
-        <div class="flex items-center gap-1">
-          <span class="text-[10px] text-slate-400">Estado:</span>
-          <select id="adm-status-${m.id}" class="bg-[#0a0e14] border border-[#1b2432] px-2 py-1 text-white text-xs">
-            <option value="PROGRAMADO" ${m.matchStatus === "PROGRAMADO" ? "selected" : ""}>PROGRAMADO</option>
-            <option value="EN_VIVO" ${m.matchStatus === "EN_VIVO" ? "selected" : ""}>EN VIVO</option>
-            <option value="FINALIZADO" ${m.matchStatus === "FINALIZADO" ? "selected" : ""}>FINALIZADO</option>
-          </select>
-        </div>
-
-        <div class="flex items-center gap-1">
-          <span class="text-[10px] text-slate-400">Resultado:</span>
-          <select id="adm-outcome-${m.id}" class="bg-[#0a0e14] border border-[#1b2432] px-2 py-1 text-white text-xs">
-            <option value="PENDIENTE" ${m.outcome === "PENDIENTE" ? "selected" : ""}>PENDIENTE</option>
-            <option value="ACIERTO" ${m.outcome === "ACIERTO" ? "selected" : ""}>ACIERTO</option>
-            <option value="FALLO" ${m.outcome === "FALLO" ? "selected" : ""}>FALLO</option>
-          </select>
-        </div>
-
-        <button
-          onclick="window.saveAdminMatchUpdate('${m.id}')"
-          class="px-3 py-1 bg-[#06b6d4] hover:bg-cyan-300 text-slate-950 font-black text-xs uppercase"
-        >
-          Guardar
-        </button>
-      </div>
-    </div>
-  `).join("");
-};
-
-window.saveAdminMatchUpdate = (id) => {
-  const matches = getAllMasterFeed();
-  const target = matches.find((m) => m.id === id);
-  if (!target) return;
-
-  const scoreEl = document.getElementById(`adm-score-${id}`);
-  const statusEl = document.getElementById(`adm-status-${id}`);
-  const outcomeEl = document.getElementById(`adm-outcome-${id}`);
-
-  if (scoreEl) target.liveScore = scoreEl.value.trim();
-  if (statusEl) target.matchStatus = statusEl.value;
-  if (outcomeEl) target.outcome = outcomeEl.value;
-
-  localStorage.setItem(DB_KEY, JSON.stringify(matches));
-  refreshAllViews();
-  alert(`Pronóstico "${target.homeTeam} vs ${target.awayTeam}" actualizado correctamente.`);
-};
-
-document.addEventListener("DOMContentLoaded", () => {
-  startColombiaClock();
-  injectWhatsAppFloatingButton();
-  renderLiveWinTicker();
-  renderHotStreakBadge();
-  renderTodayPredictions();
-  renderTodayResults();
-  renderFullPublicHistory();
-
-  document.getElementById("search-input")?.addEventListener("input", renderTodayPredictions);
-  document.getElementById("stake-calculator-input")?.addEventListener("input", renderTodayPredictions);
-
-  // Formulario de agregar nuevo pronóstico
-  document.getElementById("admin-add-match-form")?.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const today = getColombiaDateString();
-    const home = document.getElementById("adm-home").value.trim();
-    const away = document.getElementById("adm-away").value.trim();
-    const league = document.getElementById("adm-league").value.trim();
-    const pick = document.getElementById("adm-pick").value.trim();
-    const odds = parseFloat(document.getElementById("adm-odds").value) || 1.45;
-    const prob = parseFloat(document.getElementById("adm-prob").value) || 90.0;
-    const sport = document.getElementById("adm-sport").value;
-    const isFree = document.getElementById("adm-free").value === "true";
-    const time = document.getElementById("adm-time").value.trim();
-    const exp = document.getElementById("adm-exp").value.trim();
-
-    const newMatch = {
-      id: "OPTA-" + Date.now(),
-      sport: sport,
-      matchDate: today,
-      kickoffIso: `${today}T${time}:00-05:00`,
-      kickoffLabel: `${time} COL`,
-      league: league,
-      homeTeam: home,
-      awayTeam: away,
-      predictionText: pick,
-      odds: odds,
-      probability: prob,
-      isFree: isFree,
-      altitudeM: 100,
-      weatherDesc: "Monitoreado en vivo",
-      homeAvgGoals: "Top rendimiento",
-      awayAvgGoals: "Estadística calculada",
-      explanation: exp || `Pronóstico calculado por el motor cuantitativo de OptaCore. Probabilidad asignada: ${prob}%.`,
-      liveScore: "vs",
-      matchStatus: "PROGRAMADO",
-      outcome: "PENDIENTE",
-    };
-
-    const matches = getAllMasterFeed();
-    matches.unshift(newMatch);
-    localStorage.setItem(DB_KEY, JSON.stringify(matches));
-
-    e.target.reset();
-    refreshAllViews();
-    alert(`Nuevo pronóstico "${home} vs ${away}" publicado con éxito.`);
-  });
-});
+function getStars(prob = 90) {
+  const tag5 = currentLang === "EN" ? "5 STARS" : "5 ESTRELLAS";
+  const tag4 = currentLang === "EN" ? "4 STARS" : "4 ESTRELLAS";
+  const tag3 = currentLang === "EN" ? "3 STARS" : "3 ESTRELLAS";
+  if (prob >= 90) return { stars: "⭐⭐⭐⭐⭐", tag: tag5, badge: "border-cyan-400 bg-cyan-500/15 text-cyan-300" };
+  if (prob >= 85) return { stars: "⭐⭐⭐⭐", tag: tag4, badge: "border-emerald-400 bg-emerald-500/15 text-emerald-300" };
+  return { stars: "⭐⭐⭐", tag: tag3, badge: "border-slate-600 bg-slate-800 text-slate-300" };
+}
+function getPitchFeverBar(altitudeM = 100, weatherDesc = "") {
+  const w = String(weatherDesc || "").toLowerCase();
+  let stressScore = 45;
+  let label = currentLang === "EN" ? "MEDIUM STRAIN" : "EXIGENCIA MEDIA";
+  let color = "bg-cyan-400";
+  if (w.includes("31°c") || w.includes("33°c") || w.includes("30°c") || w.includes("27°c") || w.includes("calor") || w.includes("humed")) {
+    stressScore = 92;
+    label = currentLang === "EN" ? "🔥 EXTREME HEAT / RIVAL FATIGUE" : "🔥 CALOR EXTREMO / DESGASTE RIVAL";
+    color = "bg-amber-500";
+  } else if (Number(altitudeM) >= 1400) {
+    stressScore = 88;
+    label = currentLang === "EN" ? "⛰️ HIGH ALTITUDE HYPOXIA (+1,400m)" : "⛰️ AHOGO POR ALTURA (+1.400m)";
+    color = "bg-emerald-400";
+  } else if (w.includes("10°c") || w.includes("11°c") || w.includes("12°c") || w.includes("frío") || w.includes("frio") || w.includes("fresco")) {
+    stressScore = 65;
+    label = currentLang === "EN" ? "⚡ FAST PITCH / HIGH PACE" : "⚡ CÉSPED RÁPIDO / ALTA VELOCIDAD";
+    color = "bg-[#06b6d4]";
+  }
+  return { stressScore, label, color };
+}
+const LOGOS = {
+  "Liverpool FC": "https://media.api-sports.io/football/teams/40.png",
+  "Arsenal FC": "https://media.api-sports.io/football/teams/42.png",
+  "Racing de Santander": "https://media.api-sports.io/football/teams/726.png",
+  "Getafe CF": "https://media.api-sports.io/football/teams/546.png",
+  "Sevilla FC": "https://media.api-sports.io/football/teams/536.png",
+  "Orlando Magic": "https://cdn.nba.com/logos/nba/1610612753/primary/L/logo.svg",
+  "Boston Celtics": "https://cdn.nba.com/logos/nba/1610612738/primary/L/logo.svg",
+  "Alianza FC": "https://media.api-sports.io/football/teams/1128.png",
+  "SS Lazio": "https://media.api-sports.io/football/teams/487.png",
+  "Cagliari Calcio": "https://media.api-sports.io/football/teams/490.png",
+  "Athletic Club": "https://media.api-sports.io/football/teams/531.png",
+  "Real Sociedad": "https://media.api-sports.io/football/teams/548.png",
+  "Brooklyn Nets": "https://cdn.nba.com/logos/nba/1610612751/primary/L/logo.svg",
+  "Los Angeles Lakers": "https://cdn.nba.com/logos/nba/1610612747/primary/L/logo.svg",
+  "Toronto Raptors": "https://cdn.nba.com/logos/nba/1610612761/primary/L/logo.svg",
+  "Manchester City": "https://media.api-sports.io/football/teams/50.png",
+  "Brighton": "https://media.api-sports.io/football/teams/51.png",
+  "Bayern Múnich": "https://media.api-sports.io/football/teams/157.png",
+  "Borussia Dortmund": "https://media.api-sports.io/football/teams/165.png",
+  "FC Barcelona": "https://media.api-sports.io/football/teams/529.png",
+  "Deportivo Alavés": "https://media.api-sports.io/football/teams/542.png",
+  "Llaneros FC": "https://media.api-sports.io/football/teams/
