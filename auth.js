@@ -1,14 +1,4 @@
 // ============================================================================
-// ARCHIVO: auth.js
-// Autenticación Real, Huella de Dispositivo, Bloqueo de Multicuentas y Admin
-// ============================================================================
-
-import { CONFIG } from "./config.js";
-
-const supabase = window.supabase
-  ? window.supabase.createClient(CONFIG.KEYS.SUPABASE_URL, CONFIG.KEYS.SUPABASE_ANON_KEY)
-  : null;
-
 // ARCHIVO: auth.js - Auditado, Sin Errores de Sintaxis y Con Blindaje Try/Catch
 // ============================================================================
 const AUTH_CONFIG = window.CONFIG || {
@@ -114,20 +104,9 @@ export function updateHeaderStatus() {
   const btnRegister = document.getElementById("btn-open-register");
   const btnAuth = document.getElementById("btn-open-auth");
   const btnLogout = document.getElementById("btn-logout");
-  const btnNavAdmin = document.getElementById("btn-nav-admin");
   const btnAdminNav = document.getElementById("btn-nav-admin");
   const referralCardContainer = document.getElementById("referral-card-container");
   const email = localStorage.getItem("optacore_user_email");
-  const userRole = localStorage.getItem("optacore_user_role");
-  const isAdmin = userRole === "ADMIN" || (email && email.toLowerCase() === CONFIG.KEYS.ADMIN_EMAIL.toLowerCase());
-
-  if (btnNavAdmin) {
-    if (isAdmin) {
-      btnNavAdmin.classList.remove("hidden");
-    } else {
-      btnNavAdmin.classList.add("hidden");
-    }
-  }
   const remaining = getRemainingTrialTime();
   const isLoggedIn = !!email;
   if (btnAdminNav) {
@@ -141,33 +120,6 @@ export function updateHeaderStatus() {
         refCode = generateUniqueReferralCode(email);
         localStorage.setItem("optacore_user_referral_code", refCode);
       }
-
-      const totalEarnedDays = Number(localStorage.getItem("optacore_referral_days_earned") || 0);
-
-      referralCardContainer.innerHTML = `
-        <div class="quant-card p-4 space-y-3 font-mono text-xs border-emerald-500/40">
-          <div class="flex items-center justify-between border-b border-[#1b2432] pb-2">
-            <h3 class="text-xs font-bold uppercase text-[#10b981]">Billetera de Referidos (+20% Días VIP)</h3>
-            <span class="text-[10px] text-emerald-400 font-bold bg-[#10b981]/15 px-2 py-0.5 border border-[#10b981]/30">ACTIVO</span>
-          </div>
-          <p class="text-slate-300 text-[11px] leading-relaxed">
-            Comparte tu enlace. Si un amigo activa un plan con tu código, recibes el <strong>20% en días VIP</strong> redondeado hacia arriba (Ej: Semanal = +2 días, Mensual = +6 días, Anual = +73 días).
-          </p>
-          <div class="p-2.5 bg-[#05070a] border border-[#1b2432] flex flex-wrap items-center justify-between gap-2">
-            <div>
-              <span class="text-[9px] text-slate-400 block">TU CÓDIGO ÚNICO:</span>
-              <span class="text-sm font-black text-cyan-400 tracking-wider">${refCode}</span>
-            </div>
-            <button onclick="navigator.clipboard.writeText('${window.location.origin}?ref=${refCode}'); alert('Enlace copiado al portapapeles')" class="px-3 py-1.5 bg-cyan-500/20 hover:bg-cyan-400 hover:text-black border border-cyan-400 text-cyan-300 text-[11px] font-bold uppercase transition">
-              📋 Copiar Mi Enlace
-            </button>
-          </div>
-          <div class="p-2.5 bg-[#070e17] border border-cyan-500/30 flex items-center justify-between">
-            <span class="text-slate-400 text-[11px]">Días acumulados ganados por referidos:</span>
-            <span class="text-sm font-black text-[#10b981]">+${totalEarnedDays} Días</span>
-          </div>
-        </div>
-      `;
       const totalEarnedDays = Number(localStorage.getItem("optacore_referral_days_earned") || 0);
       referralCardContainer.innerHTML = [
         '<div class="quant-card p-4 space-y-3 font-mono text-xs border-emerald-500/40">',
@@ -262,8 +214,6 @@ async function handleUserRegister(email, password) {
   localStorage.setItem("optacore_user_email", email);
   localStorage.setItem("optacore_user_role", email.toLowerCase() === (AUTH_CONFIG?.KEYS?.ADMIN_EMAIL || "admin@optacore.com").toLowerCase() ? "ADMIN" : "USER");
   localStorage.setItem("optacore_user_referral_code", userRefCode);
-
-  alert(`¡Cuenta creada con éxito para ${email}! Ya puedes pulsar en 'Prueba 24h' para activar tu acceso.`);
   alert("Cuenta creada con exito para " + email);
   window.location.reload();
 }
@@ -305,31 +255,6 @@ async function handleUserLogin(email, password) {
 async function handleClaimTrial() {
   const email = localStorage.getItem("optacore_user_email");
   if (!email) {
-    alert("🔒 REGISTRO REQUERIDO:\nDebes registrarte e iniciar sesión antes de activar tus 24 horas de prueba VIP.");
-    document.getElementById("btn-open-register")?.click();
-    return;
-  }
-
-  const deviceClaimed = localStorage.getItem("optacore_device_trial_claimed");
-  const fp = getDeviceFingerprint();
-  if (deviceClaimed) {
-    alert(`⛔ CONTROL ANTIFRAUDE (${fp}):\nEste dispositivo ya reclamó una prueba de 24 horas con la cuenta ${deviceClaimed}. Solo se permite una prueba por dispositivo.`);
-    return;
-  }
-
-  if (!supabase) return;
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("trial_used")
-    .eq("email", email)
-    .maybeSingle();
-
-  if (profile && profile.trial_used) {
-    alert("Tu correo ya utilizó sus 24 horas de prueba VIP gratuitas.");
-    return;
-  }
-
     alert("REGISTRO REQUERIDO: Primero registrate o inicia sesion para activar tus 24 horas de prueba VIP.");
     document.getElementById("btn-open-register")?.click();
     return;
