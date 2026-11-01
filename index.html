@@ -30,7 +30,326 @@
     }
   </style>
   <script>
-    localStorage.removeItem('optacore_maintenance_mode');
+    window.OPTACORE_LANG = localStorage.getItem('optacore_lang') || 'es';
+    window.I18N_DICT = {
+      es: {
+        live_sys: "SISTEMA EN VIVO",
+        closing_timer: "⏳ Cierre cartelera libre: 02h:14m",
+        badge_sport: "FÚTBOL & NBA",
+        tagline: "PRONÓSTICOS DE ALTA PROBABILIDAD",
+        nav_today: "Pronósticos Hoy",
+        nav_results: "Resultados Hoy",
+        nav_history: "Historial & Aciertos",
+        nav_plans: "Planes VIP & Cuentas",
+        nav_account: "Mi Licencia & Referidos",
+        nav_admin: "⚙️ Panel Admin",
+        btn_redeem: "🔑 Canjear Llave",
+        btn_trial: "Prueba 24h",
+        btn_register: "Registrarse",
+        btn_login: "Entrar",
+        btn_logout: "Salir",
+        calc_title: "💰 Calculadora de Ganancia en Tiempo Real",
+        calc_sub: "Ingresa cuánto deseas invertir para ver el cobro exacto en cada tarjeta:",
+        calc_label: "Inversión ($ COP):",
+        board_title: "Cartelera Oficial del Día",
+        search_ph: "Buscar equipo o liga...",
+        qf_all: "Todos",
+        qf_fb: "⚽ Solo Fútbol",
+        qf_nba: "🏀 Solo NBA",
+        qf_free: "🔓 Solo Gratis",
+        qf_live: "🔴 En Vivo Ahora",
+        res_title: "Auditoría de Resultados del Día",
+        res_sub: "Calificación transparente de los partidos finalizados y generador de tickets de victoria.",
+        chart_title: "Curva de Rendimiento Acumulado",
+        chart_sub: "AUDITORÍA CRONOLÓGICA",
+        hist_title: "Historial de Partidos (Desde el Más Reciente)",
+        hist_sub: "Toca cualquier fila para ver el análisis completo o generar Ticket",
+        th_date: "Fecha",
+        th_league: "Deporte / Liga",
+        th_match: "Partido",
+        th_pick: "Pronóstico",
+        th_odds: "Cuota",
+        th_score: "Marcador",
+        th_res: "Resultado",
+        th_act: "Acción",
+        plans_title: "Planes de Membresía VIP",
+        plans_sub: "Precios en COP y USDT.",
+        promo_ask: "🎟️ ¿Tienes código de promotor (-20%)?",
+        promo_none: "Sin aplicar",
+        btn_apply: "Aplicar",
+        pay_methods: "Medios de Pago Oficiales",
+        act_imm: "Activación Inmediata",
+        act_desc: "Transfiere a Nequi, Bancolombia o Binance y reporta el comprobante por WhatsApp:",
+        wa_off: "WHATSAPP OFICIAL:",
+        btn_send_wa: "Enviar Comprobante por WhatsApp",
+        lic_status: "Estado de tu Licencia",
+        lic_email: "Correo vinculado:",
+        lic_role: "Estado de membresía:",
+        lic_exp: "Vigencia:",
+        adm_title: "⚙️ Consola de Administración en Vivo",
+        adm_sub: "Actualiza marcadores, sincroniza resultados en lote, agrega partidos y promotores.",
+        btn_sync_api: "⚡ Sincronizar API (1 Crédito)",
+        btn_reset_db: "Restaurar Base",
+        adm_key_title: "+ Generar Llave de Acceso",
+        adm_key_btn: "Guardar Llave Activa",
+        adm_promo_title: "+ Registrar Promotor (-20%)",
+        adm_promo_btn: "Activar Promotor",
+        adm_audit_title: "Auditoría de Ventas por Promotor",
+        adm_add_match: "+ Agregar Nuevo Pronóstico",
+        adm_pub_btn: "Publicar Pronóstico Ahora",
+        adm_edit_scores: "Editar Marcadores y Estados",
+        bnav_board: "Cartelera",
+        bnav_res: "Resultados",
+        bnav_hist: "Historial",
+        bnav_plans: "Planes",
+        bnav_acc: "Cuenta",
+        mod_redeem_title: "🔑 CANJEAR LLAVE DE ACCESO",
+        mod_redeem_sub: "Ingresa tu llave de cortesía para activar tus días de acceso VIP:",
+        mod_redeem_lbl: "CÓDIGO DE LA LLAVE",
+        mod_redeem_btn: "CANJEAR Y ACTIVAR DÍAS VIP",
+        mod_auth_email: "CORREO ELECTRÓNICO OFICIAL",
+        mod_auth_pass: "CONTRASEÑA (MÍNIMO 6 CARACTERES)",
+        footer_txt: "OPTACORE.QUANT © 2026 — Inteligencia Estadística para Pronósticos Deportivos (+18).",
+        maint_title: "Calibrando Algoritmos Cuantitativos",
+        maint_sub: "Estamos cargando la cartelera oficial y procesando métricas en vivo. Disponible en unos minutos.",
+        maint_tag: "OPTACORE.QUANT — ACTUALIZACIÓN EN CURSO"
+      },
+      en: {
+        live_sys: "SYSTEM LIVE",
+        closing_timer: "⏳ Free board closes in: 02h:14m",
+        badge_sport: "FOOTBALL & NBA",
+        tagline: "HIGH PROBABILITY SPORTS PREDICTIONS",
+        nav_today: "Today's Picks",
+        nav_results: "Today's Results",
+        nav_history: "History & Hit Rate",
+        nav_plans: "VIP Plans & Accounts",
+        nav_account: "My License & Referrals",
+        nav_admin: "⚙️ Admin Panel",
+        btn_redeem: "🔑 Redeem Key",
+        btn_trial: "24h Trial",
+        btn_register: "Sign Up",
+        btn_login: "Log In",
+        btn_logout: "Log Out",
+        calc_title: "💰 Real-Time Profit Calculator",
+        calc_sub: "Enter your stake amount to see exact payouts on every card:",
+        calc_label: "Stake ($ COP):",
+        board_title: "Official Daily Matchday Board",
+        search_ph: "Search team or league...",
+        qf_all: "All",
+        qf_fb: "⚽ Football Only",
+        qf_nba: "🏀 NBA Only",
+        qf_free: "🔓 Free Only",
+        qf_live: "🔴 Live Now",
+        res_title: "Daily Results Audit",
+        res_sub: "Transparent grading of finished matches and win ticket generator.",
+        chart_title: "Cumulative Performance Curve",
+        chart_sub: "CHRONOLOGICAL AUDIT",
+        hist_title: "Match History (Newest First)",
+        hist_sub: "Tap any row to view full analysis or generate Win Ticket",
+        th_date: "Date",
+        th_league: "Sport / League",
+        th_match: "Match",
+        th_pick: "Prediction",
+        th_odds: "Odds",
+        th_score: "Score",
+        th_res: "Outcome",
+        th_act: "Action",
+        plans_title: "VIP Membership Plans",
+        plans_sub: "Prices in COP and USDT.",
+        promo_ask: "🎟️ Have a promoter code (-20%)?",
+        promo_none: "Not applied",
+        btn_apply: "Apply",
+        pay_methods: "Official Payment Methods",
+        act_imm: "Instant Activation",
+        act_desc: "Transfer via Nequi, Bancolombia or Binance and send your receipt on WhatsApp:",
+        wa_off: "OFFICIAL WHATSAPP:",
+        btn_send_wa: "Send Receipt via WhatsApp",
+        lic_status: "Your License Status",
+        lic_email: "Linked email:",
+        lic_role: "Membership status:",
+        lic_exp: "Validity:",
+        adm_title: "⚙️ Live Admin Console",
+        adm_sub: "Update scores, batch sync API results, add matches and manage promoters.",
+        btn_sync_api: "⚡ Sync API (1 Credit)",
+        btn_reset_db: "Reset Database",
+        adm_key_title: "+ Generate Access Key",
+        adm_key_btn: "Save Active Key",
+        adm_promo_title: "+ Register Promoter (-20%)",
+        adm_promo_btn: "Activate Promoter",
+        adm_audit_title: "Promoter Sales Audit",
+        adm_add_match: "+ Add New Prediction",
+        adm_pub_btn: "Publish Prediction Now",
+        adm_edit_scores: "Edit Scores & Statuses",
+        bnav_board: "Board",
+        bnav_res: "Results",
+        bnav_hist: "History",
+        bnav_plans: "Plans",
+        bnav_acc: "Account",
+        mod_redeem_title: "🔑 REDEEM ACCESS KEY",
+        mod_redeem_sub: "Enter your courtesy key to activate your VIP access days:",
+        mod_redeem_lbl: "LICENSE KEY CODE",
+        mod_redeem_btn: "REDEEM & ACTIVATE VIP DAYS",
+        mod_auth_email: "OFFICIAL EMAIL ADDRESS",
+        mod_auth_pass: "PASSWORD (MIN. 6 CHARACTERS)",
+        footer_txt: "OPTACORE.QUANT © 2026 — Statistical Intelligence for Sports Predictions (+18).",
+        maint_title: "Calibrating Quantitative Algorithms",
+        maint_sub: "Loading official matchday board and live metrics. Available in a few minutes.",
+        maint_tag: "OPTACORE.QUANT — UPDATE IN PROGRESS"
+      }
+    };
+    window.t = function(key) {
+      var lang = window.OPTACORE_LANG || 'es';
+      return (window.I18N_DICT[lang] && window.I18N_DICT[lang][key]) || window.I18N_DICT['es'][key] || key;
+    };
+    window.tx = function(str) {
+      if (!str || window.OPTACORE_LANG !== 'en') return str;
+      var s = String(str);
+      var pairs = [
+        ["FÚTBOL", "FOOTBALL"],
+        ["Inglaterra", "England"],
+        ["Alemania", "Germany"],
+        ["España", "Spain"],
+        ["EE. UU.", "USA"],
+        ["por partido", "per match"],
+        ["pts esperados", "expected pts"],
+        ["pts", "pts"],
+        ["goles", "goals"],
+        ["gol", "goal"],
+        ["córners", "corners"],
+        ["Córners", "Corners"],
+        ["Puntos", "Points"],
+        ["Manchester City Gana + Más de 1.5 Goles Totales", "Manchester City Wins + Over 1.5 Total Goals"],
+        ["Más de 2.5 Goles Totales (Mínimo 3 goles)", "Over 2.5 Total Goals (Min. 3 goals)"],
+        ["Barcelona Gana por 2 o más goles (Hándicap -1.5)", "Barcelona Wins by 2+ goals (Handicap -1.5)"],
+        ["Junior Gana o Empata (X2) + Más de 1.5 Goles", "Junior Wins or Draws (X2) + Over 1.5 Goals"],
+        ["Más de 214.5 Puntos Totales (Línea Protegida)", "Over 214.5 Total Points (Protected Line)"],
+        ["Bucaramanga Empate No Acción (DNB)", "Bucaramanga Draw No Bet (DNB)"],
+        ["Más de 227.5 Puntos Totales Combinados", "Over 227.5 Combined Total Points"],
+        ["Menos de 2.5 Goles Totales", "Under 2.5 Total Goals"],
+        ["Leverkusen Gana + Más de 2.5 Goles", "Leverkusen Wins + Over 2.5 Goals"],
+        ["América Gana o Empata (1X) + Más de 1.5 Goles", "America Wins or Draws (1X) + Over 1.5 Goals"],
+        ["Sacramento Kings Hándicap -6.5", "Sacramento Kings Handicap -6.5"],
+        ["Alavés Gana Descanso / Final", "Alaves Wins Halftime / Fulltime"],
+        ["Kevin Durant Más de 24.5 Puntos", "Kevin Durant Over 24.5 Points"],
+        ["Warriors Gana -4.5 Hándicap", "Warriors Win -4.5 Handicap"],
+        ["Junior Más de 0.5 Goles en Casa", "Junior Over 0.5 Home Goals"],
+        ["Victoria Directa PSG", "PSG Direct Win"],
+        ["Más de 2.5 Goles Totales", "Over 2.5 Total Goals"],
+        ["Más de 1.5 Goles Totales", "Over 1.5 Total Goals"],
+        ["Más de 9.5 Córners Totales", "Over 9.5 Total Corners"],
+        ["Nikola Jokic Más de 23.5 Puntos", "Nikola Jokic Over 23.5 Points"],
+        ["Tolima Empate No Acción (DNB)", "Tolima Draw No Bet (DNB)"],
+        ["Ambos Marcan Gol (Sí)", "Both Teams To Score (Yes)"],
+        ["Victoria Directa RB Leipzig", "RB Leipzig Direct Win"],
+        ["Aston Villa Gana o Empata (1X)", "Aston Villa Wins or Draws (1X)"],
+        ["Jaguares Gana o Empata (1X) + Más de 1.5 Goles", "Jaguares Wins or Draws (1X) + Over 1.5 Goals"],
+        ["Gana Manchester City + Total Goles Más de 1.5", "Man City Wins + Total Goals Over 1.5"],
+        ["Línea de Goles: Más de 2.5 (3 goles o más en total)", "Goal Line: Over 2.5 (3+ total goals)"],
+        ["Hándicap -1.5 (Barcelona gana por 2 o más goles)", "Handicap -1.5 (Barcelona wins by 2+ goals)"],
+        ["Doble Oportunidad X2 (Empate o Junior) + Más de 1.5 Goles", "Double Chance X2 (Draw or Junior) + Over 1.5 Goals"],
+        ["Línea Alternativa de Puntos Totales: Más de 214.5", "Alternate Total Points Line: Over 214.5"],
+        ["Apuesta Sin Empate (DNB Bucaramanga)", "Draw No Bet (DNB Bucaramanga)"],
+        ["Total Puntos Combinados: Más de 227.5", "Combined Total Points: Over 227.5"],
+        ["Doble Oportunidad 1X + Más de 1.5 Goles", "Double Chance 1X + Over 1.5 Goals"],
+        ["Hándicap Sacramento Kings -6.5", "Handicap Sacramento Kings -6.5"],
+        ["Alavés Gana 1T / Final", "Alaves Wins 1H / FT"],
+        ["Puntos Jugador: Kevin Durant Más de 24.5", "Player Points: Kevin Durant Over 24.5"],
+        ["Hándicap Warriors -4.5", "Handicap Warriors -4.5"],
+        ["Total Goles Junior: Más de 0.5", "Junior Total Goals: Over 0.5"],
+        ["Ganador 1X2: PSG", "1X2 Winner: PSG"],
+        ["Total Córners: Más de 9.5", "Total Corners: Over 9.5"],
+        ["Puntos Nikola Jokic Más de 23.5", "Nikola Jokic Points Over 23.5"],
+        ["Apuesta Sin Empate DNB Tolima", "Draw No Bet DNB Tolima"],
+        ["Ambos Equipos Anotan Gol (Sí)", "Both Teams To Score (Yes)"],
+        ["Doble Oportunidad 1X (Villa o Empate)", "Double Chance 1X (Villa or Draw)"],
+        ["✔ OBJETIVO CUMPLIDO: Ganó 3-1", "✔ TARGET HIT: Won 3-1"],
+        ["✔ OBJETIVO CUMPLIDO: 5 goles (3-2)", "✔ TARGET HIT: 5 goals (3-2)"],
+        ["✔ OBJETIVO CUMPLIDO: Ganó 2-0", "✔ TARGET HIT: Won 2-0"],
+        ["✖ NO SE COMPLETÓ (Llaneros ganó 3-2)", "✖ MISSED PICK (Llaneros won 3-2)"],
+        ["✔ OBJETIVO CUMPLIDO: 232 puntos anotados", "✔ TARGET HIT: 232 points scored"],
+        ["Frío húmedo", "Cold & humid"],
+        ["Clima fresco", "Cool weather"],
+        ["Agradable", "Pleasant"],
+        ["Calor húmedo", "Humid heat"],
+        ["Coliseo Climatizado", "Climate-Controlled Arena"],
+        ["Coliseo Cerrado", "Indoor Arena"],
+        ["Calor pesado", "Heavy heat"],
+        ["Calor sofocante", "Sweltering heat"],
+        ["Cielo nublado", "Cloudy sky"],
+        ["Cálido", "Warm"],
+        ["Lluvia", "Rain"],
+        ["Templado", "Mild"],
+        ["Despejado", "Clear"],
+        ["Frío", "Cold"],
+        ["Fresco", "Cool"],
+        ["Nublado", "Cloudy"],
+        ["Condición Estándar", "Standard Condition"],
+        ["y 86% de humedad", "& 86% humidity"],
+        ["Calor de Barranquilla", "Barranquilla Heat"],
+        ["al arco", "on target"],
+        ["Ritmo rápido", "Fast pace"],
+        ["El City dominó el trámite con 68% de posesión y cerró la victoria 3-1 en casa asegurando la cuota.", "City dominated with 68% possession and sealed a 3-1 home victory, securing the odds easily."],
+        ["Duelo de ida y vuelta con 35 remates totales; tras el 1-1 inicial, tres tantos sellaron el 3-2.", "End-to-end clash with 35 total shots; after an early 1-1, three second-half goals sealed the 3-2."],
+        ["Control absoluto de posesión culé (72%) sin permitir remates peligrosos de Alavés para sellar el 2-0.", "Complete Barcelona possession control (72%) allowing no dangerous shots from Alaves to seal a 2-0 win."],
+        ["Llaneros aprovechó desatenciones defensivas en Villavicencio para adelantarse. Pese al descuento de Junior, el penal al 80' sentenció el 3-2.", "Llaneros capitalized on defensive lapses in Villavicencio. Despite Junior's goals, an 80th-minute penalty sealed the 3-2."],
+        ["Ritmo frenético de posesiones que derivó en un 121-111 (232 puntos totales), superando con holgura los 214.5 puntos requeridos.", "Frenetic pace led to a 121-111 finish (232 total points), comfortably clearing the 214.5 required line."],
+        ["Pasto perdió su ventaja de altitud y Bucaramanga resolvió 2-0.", "Pasto lost its altitude advantage and Bucaramanga won 2-0."],
+        ["Indiana impuso posesiones de menos de 12 segundos y selló 242 puntos combinados.", "Indiana pushed sub-12 second possessions to seal 242 combined points."],
+        ["Estaba 1-1 en el minuto 93, pero un penal sancionado al 94' quebró la línea.", "It was 1-1 at minute 93, but a 94th-minute penalty broke the under line."],
+        ["Cinco remates a los postes derivaron en un atípico 0-0.", "Five shots hit the woodwork resulting in an unusual 0-0 draw."],
+        ["América remontó en el segundo tiempo con dos goles seguidos (2-1).", "America came back in the second half with two quick goals (2-1)."],
+        ["Kings sentó titulares ganando por 14 y Utah descontó hasta el 110-113.", "Kings rested starters while up 14 and Utah cut the lead to 110-113."],
+        ["Cancha anegada que derivó en un 0-0 al descanso.", "Waterlogged pitch led to a 0-0 halftime score."],
+        ["Durant estuvo intratable y anotó 31 puntos atacando constantemente el aro.", "Durant was unstoppable, scoring 31 points attacking the rim."],
+        ["Stephen Curry se lesionó el tobillo en el 3Q y Clippers remontó el partido.", "Stephen Curry injured his ankle in the 3Q and the Clippers came back."],
+        ["Junior fue una aplanadora en el Metropolitano ganando 3-1.", "Junior dominated at the Metropolitano winning 3-1."],
+        ["Superioridad total parisina con goleada 0-3 en el clásico francés.", "Total Parisian superiority with a 0-3 rout in the French classic."],
+        ["Partidazo en Milán con 8 goles en total para un empate 4-4.", "Thriller in Milan with 8 total goals for a 4-4 draw."],
+        ["Duelo con llegadas en ambas áreas que finalizó 2-2.", "Back-and-forth match with chances in both boxes ending 2-2."],
+        ["Se quedó en 9 tiros de esquina en el minuto 75 y no hubo más llegadas.", "Stuck at 9 corners at minute 75 with no further corner kicks."],
+        ["Jokic anotó 41 puntos en la altura de Denver destrozando la línea.", "Jokic scored 41 points in Denver's altitude, crushing the line."],
+        ["Tolima empató 1-1 y la selección se protegió sin pérdidas.", "Tolima drew 1-1 and the Draw No Bet selection was protected."],
+        ["Jaguares acusó la subida a Medellín y el DIM goleó 4-1.", "Jaguares struggled with the altitude in Medellin and DIM won 4-1."],
+        ["Madrid cayó 8 veces en fuera de juego y Barcelona ganó 0-4 sin encajar.", "Madrid was caught offside 8 times and Barcelona won 0-4 clean."],
+        ["Remontada de Leipzig en el segundo tiempo con tres goles seguidos.", "Leipzig second-half comeback with three unanswered goals."],
+        ["El equipo del 'Dibu' sostuvo el invicto en casa con empate 1-1.", "Aston Villa kept their home unbeaten streak with a 1-1 draw."],
+        ["En el Jaraguay de Montería, Llaneros acusó el calor y Jaguares se impuso 2-1.", "In Monteria's heat, Llaneros faded in the 2H and Jaguares won 2-1."]
+      ];
+      for (var i = 0; i < pairs.length; i++) {
+        s = s.split(pairs[i][0]).join(pairs[i][1]);
+      }
+      return s;
+    };
+    window.applyStaticTranslations = function() {
+      var lang = window.OPTACORE_LANG || 'es';
+      document.documentElement.lang = lang;
+      document.querySelectorAll('[data-i18n]').forEach(function(el) {
+        var k = el.getAttribute('data-i18n');
+        el.textContent = window.t(k);
+      });
+      document.querySelectorAll('[data-i18n-placeholder]').forEach(function(el) {
+        var k = el.getAttribute('data-i18n-placeholder');
+        el.setAttribute('placeholder', window.t(k));
+      });
+      var btnEs = document.getElementById('btn-lang-es');
+      var btnEn = document.getElementById('btn-lang-en');
+      if (btnEs && btnEn) {
+        if (lang === 'es') {
+          btnEs.className = "px-2 py-0.5 text-[10px] font-mono font-black border border-cyan-400 bg-cyan-500/20 text-white flex items-center gap-1 shadow-[0_0_10px_rgba(6,182,212,0.3)]";
+          btnEn.className = "px-2 py-0.5 text-[10px] font-mono font-bold border border-[#1b2432] bg-[#0a0e14] text-slate-400 hover:text-white flex items-center gap-1";
+        } else {
+          btnEn.className = "px-2 py-0.5 text-[10px] font-mono font-black border border-cyan-400 bg-cyan-500/20 text-white flex items-center gap-1 shadow-[0_0_10px_rgba(6,182,212,0.3)]";
+          btnEs.className = "px-2 py-0.5 text-[10px] font-mono font-bold border border-[#1b2432] bg-[#0a0e14] text-slate-400 hover:text-white flex items-center gap-1";
+        }
+      }
+    };
+    window.setAppLang = function(lang) {
+      window.OPTACORE_LANG = lang;
+      localStorage.setItem('optacore_lang', lang);
+      window.applyStaticTranslations();
+      if (window.updateHeaderStatus) window.updateHeaderStatus();
+      if (window.refreshAllPronosticosViews) window.refreshAllPronosticosViews();
+    };
     function switchTab(tabId) {
       document.querySelectorAll('.tab-panel').forEach(function(panel) {
         panel.classList.add('hidden');
@@ -53,23 +372,25 @@
           btn.className = "bottom-nav-btn flex flex-col items-center justify-center text-slate-400 font-bold text-[10px]";
         }
       });
-      if (tabId === 'tab-pronosticos' && window.renderTodayPredictions) {
-        window.renderTodayPredictions();
-      }
-      if (tabId === 'tab-resultados' && window.renderTodayResults) {
-        window.renderTodayResults();
-      }
-      if (tabId === 'tab-historial') {
-        if (window.renderFullPublicHistory) window.renderFullPublicHistory();
-        if (window.renderPerformanceChart) setTimeout(window.renderPerformanceChart, 50);
+      if (tabId === 'tab-historial' && window.renderPerformanceChart) {
+        setTimeout(window.renderPerformanceChart, 50);
       }
       if (tabId === 'tab-admin' && window.renderAdminPanel) {
         window.renderAdminPanel();
       }
     }
+    document.addEventListener('DOMContentLoaded', function() {
+      window.applyStaticTranslations();
+    });
   </script>
 </head>
 <body class="min-h-screen flex flex-col justify-between bg-[#05070a] text-slate-100 font-sans pb-16 md:pb-0">
+  <div id="maintenance-overlay" class="hidden fixed inset-0 z-50 bg-[#05070a] flex flex-col items-center justify-center p-6 text-center font-mono space-y-4">
+    <div class="w-16 h-16 border-4 border-cyan-400 border-t-transparent animate-spin rounded-full"></div>
+    <h1 data-i18n="maint_title" class="text-xl font-black text-white uppercase tracking-wider">Calibrando Algoritmos Cuantitativos</h1>
+    <p data-i18n="maint_sub" class="text-xs text-slate-400 max-w-md">Estamos cargando la cartelera oficial y procesando métricas en vivo. Disponible en unos minutos.</p>
+    <span data-i18n="maint_tag" class="text-[10px] text-[#10b981] font-bold">OPTACORE.QUANT — ACTUALIZACIÓN EN CURSO</span>
+  </div>
   <div class="bg-[#020406] border-b border-[#1b2432] py-1 text-[10px] font-mono">
     <div class="ticker-wrap">
       <div id="live-win-ticker" class="ticker-move text-slate-300"></div>
@@ -78,14 +399,23 @@
   <div class="border-b border-[#1b2432] bg-[#030508] px-3 py-1.5 text-[11px] font-mono text-[#8b9bb4]">
     <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
       <div class="flex items-center gap-3">
+        <!-- BOTONES DE IDIOMA CON BANDERAS EN ESQUINA SUPERIOR IZQUIERDA -->
+        <div class="flex items-center gap-1">
+          <button id="btn-lang-es" onclick="window.setAppLang('es')" title="Español" class="px-2 py-0.5 text-[10px] font-mono font-black border border-cyan-400 bg-cyan-500/20 text-white flex items-center gap-1">
+            <span>🇨🇴</span><span>ES</span>
+          </button>
+          <button id="btn-lang-en" onclick="window.setAppLang('en')" title="English" class="px-2 py-0.5 text-[10px] font-mono font-bold border border-[#1b2432] bg-[#0a0e14] text-slate-400 hover:text-white flex items-center gap-1">
+            <span>🇺🇸</span><span>EN</span>
+          </button>
+        </div>
         <span class="flex items-center gap-1.5 text-[#10b981] font-bold">
           <span class="w-2 h-2 bg-[#10b981] inline-block animate-pulse"></span>
-          SISTEMA EN VIVO
+          <span data-i18n="live_sys">SISTEMA EN VIVO</span>
         </span>
         <span id="colombia-live-clock" class="text-cyan-400 font-bold">HORA COLOMBIA: --:--:--</span>
       </div>
-      <div class="flex items-center gap-2 pr-20 sm:pr-24">
-        <span id="cart-closing-timer" class="text-[10px] text-amber-300 font-bold hidden sm:inline-block">⏳ Cierre cartelera libre: 02h:14m</span>
+      <div class="flex items-center gap-2">
+        <span id="cart-closing-timer" data-i18n="closing_timer" class="text-[10px] text-amber-300 font-bold hidden sm:inline-block">⏳ Cierre cartelera libre: 02h:14m</span>
         <span id="hot-streak-badge" class="px-2 py-0.5 bg-amber-500/15 border border-amber-400/50 text-amber-300 font-black text-[10px]">
           🔥 RACHA ACTIVA
         </span>
@@ -104,49 +434,49 @@
             <span class="text-lg md:text-xl font-black text-white font-mono tracking-wide">
               OPTACORE<span class="text-[#06b6d4]">.QUANT</span>
             </span>
-            <span class="text-[9px] font-mono uppercase px-1.5 py-0.5 bg-[#10b981]/15 text-[#10b981] border border-[#10b981]/30 font-bold">
+            <span data-i18n="badge_sport" class="text-[9px] font-mono uppercase px-1.5 py-0.5 bg-[#10b981]/15 text-[#10b981] border border-[#10b981]/30 font-bold">
               FÚTBOL & NBA
             </span>
           </div>
-          <p class="text-[11px] font-mono text-slate-400">
+          <p data-i18n="tagline" class="text-[11px] font-mono text-slate-400">
             PRONÓSTICOS DE ALTA PROBABILIDAD
           </p>
         </div>
       </div>
       <nav class="hidden md:flex items-center gap-1 overflow-x-auto py-1">
-        <button onclick="switchTab('tab-pronosticos')" data-tab="tab-pronosticos" class="nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#06b6d4] bg-[#06b6d4]/15 text-white shrink-0">
+        <button onclick="switchTab('tab-pronosticos')" data-tab="tab-pronosticos" data-i18n="nav_today" class="nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#06b6d4] bg-[#06b6d4]/15 text-white shrink-0">
           Pronósticos Hoy
         </button>
-        <button onclick="switchTab('tab-resultados')" data-tab="tab-resultados" class="nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#1b2432] bg-[#0a0e14] text-[#8b9bb4] hover:text-white shrink-0">
+        <button onclick="switchTab('tab-resultados')" data-tab="tab-resultados" data-i18n="nav_results" class="nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#1b2432] bg-[#0a0e14] text-[#8b9bb4] hover:text-white shrink-0">
           Resultados Hoy
         </button>
-        <button onclick="switchTab('tab-historial')" data-tab="tab-historial" class="nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#1b2432] bg-[#0a0e14] text-[#8b9bb4] hover:text-white shrink-0">
+        <button onclick="switchTab('tab-historial')" data-tab="tab-historial" data-i18n="nav_history" class="nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#1b2432] bg-[#0a0e14] text-[#8b9bb4] hover:text-white shrink-0">
           Historial & Aciertos
         </button>
-        <button onclick="switchTab('tab-planes')" data-tab="tab-planes" class="nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#10b981]/50 bg-[#10b981]/10 text-[#10b981] hover:bg-[#10b981] hover:text-black shrink-0">
+        <button onclick="switchTab('tab-planes')" data-tab="tab-planes" data-i18n="nav_plans" class="nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#10b981]/50 bg-[#10b981]/10 text-[#10b981] hover:bg-[#10b981] hover:text-black shrink-0">
           Planes VIP & Cuentas
         </button>
-        <button onclick="switchTab('tab-cuenta')" data-tab="tab-cuenta" class="nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#1b2432] bg-[#0a0e14] text-[#8b9bb4] hover:text-white shrink-0">
+        <button onclick="switchTab('tab-cuenta')" data-tab="tab-cuenta" data-i18n="nav_account" class="nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#1b2432] bg-[#0a0e14] text-[#8b9bb4] hover:text-white shrink-0">
           Mi Licencia & Referidos
         </button>
-        <button id="btn-nav-admin" onclick="switchTab('tab-admin')" data-tab="tab-admin" class="hidden nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-amber-400 bg-amber-500/20 text-amber-300 shrink-0">
+        <button id="btn-nav-admin" onclick="switchTab('tab-admin')" data-tab="tab-admin" data-i18n="nav_admin" class="hidden nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-amber-400 bg-amber-500/20 text-amber-300 shrink-0">
           ⚙️ Panel Admin
         </button>
       </nav>
       <div class="flex items-center gap-1.5">
-        <button id="btn-open-redeem-key" class="px-2.5 py-1.5 text-xs font-mono font-bold uppercase border border-amber-500/60 bg-amber-500/10 text-amber-300 hover:bg-amber-500 hover:text-black transition">
+        <button id="btn-open-redeem-key" data-i18n="btn_redeem" class="px-2.5 py-1.5 text-xs font-mono font-bold uppercase border border-amber-500/60 bg-amber-500/10 text-amber-300 hover:bg-amber-500 hover:text-black transition">
           🔑 Canjear Llave
         </button>
-        <button id="btn-trial-24h" class="px-2.5 py-1.5 text-xs font-mono font-bold uppercase bg-[#06b6d4] text-slate-950 hover:bg-cyan-300">
+        <button id="btn-trial-24h" data-i18n="btn_trial" class="px-2.5 py-1.5 text-xs font-mono font-bold uppercase bg-[#06b6d4] text-slate-950 hover:bg-cyan-300">
           Prueba 24h
         </button>
-        <button id="btn-open-register" class="px-2.5 py-1.5 text-xs font-mono font-bold uppercase bg-[#10b981] text-slate-950 hover:bg-emerald-400 font-black transition">
+        <button id="btn-open-register" data-i18n="btn_register" class="px-2.5 py-1.5 text-xs font-mono font-bold uppercase bg-[#10b981] text-slate-950 hover:bg-emerald-400 font-black transition">
           Registrarse
         </button>
-        <button id="btn-open-auth" class="px-2.5 py-1.5 text-xs font-mono font-bold uppercase border border-[#1b2432] bg-[#0f151f] text-white hover:border-slate-500">
+        <button id="btn-open-auth" data-i18n="btn_login" class="px-2.5 py-1.5 text-xs font-mono font-bold uppercase border border-[#1b2432] bg-[#0f151f] text-white hover:border-slate-500">
           Entrar
         </button>
-        <button id="btn-logout" class="hidden px-2.5 py-1.5 text-xs font-mono font-bold uppercase border border-[#ef4444] text-[#ef4444]">
+        <button id="btn-logout" data-i18n="btn_logout" class="hidden px-2.5 py-1.5 text-xs font-mono font-bold uppercase border border-[#ef4444] text-[#ef4444]">
           Salir
         </button>
       </div>
@@ -156,11 +486,11 @@
     <section id="tab-pronosticos" class="tab-panel space-y-4">
       <div class="quant-card p-3.5 border-[#10b981]/40 bg-[#06100e] flex flex-col md:flex-row md:items-center justify-between gap-3 font-mono text-xs">
         <div>
-          <span class="text-[#10b981] font-black uppercase block">💰 Calculadora de Ganancia en Tiempo Real</span>
-          <span class="text-[11px] text-slate-400">Ingresa cuánto deseas invertir para ver el cobro exacto en cada tarjeta:</span>
+          <span data-i18n="calc_title" class="text-[#10b981] font-black uppercase block">💰 Calculadora de Ganancia en Tiempo Real</span>
+          <span data-i18n="calc_sub" class="text-[11px] text-slate-400">Ingresa cuánto deseas invertir para ver el cobro exacto en cada tarjeta:</span>
         </div>
         <div class="flex items-center gap-2">
-          <span class="text-slate-400 font-bold">Inversión ($ COP):</span>
+          <span data-i18n="calc_label" class="text-slate-400 font-bold">Inversión ($ COP):</span>
           <input id="stake-calculator-input" type="number" step="5000" min="5000" value="50000" class="w-32 bg-[#05070a] border border-[#10b981] px-2.5 py-1.5 text-white font-black text-sm focus:outline-none" />
           <div class="flex gap-1">
             <button onclick="window.setQuickStake(20000)" class="px-2 py-1 bg-[#0a0e14] border border-[#1b2432] text-[10px] hover:border-cyan-400">$20k</button>
@@ -172,25 +502,25 @@
       <div class="quant-card p-3.5 space-y-3">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h1 class="text-base font-black uppercase text-white font-mono">Cartelera Oficial del Día</h1>
+            <h1 data-i18n="board_title" class="text-base font-black uppercase text-white font-mono">Cartelera Oficial del Día</h1>
             <span id="daily-counter-badge" class="text-xs font-mono text-cyan-400">4 Pronósticos Destacados Abiertos</span>
           </div>
-          <input id="search-input" type="text" placeholder="Buscar equipo o liga..." class="w-full sm:w-64 bg-[#05070a] border border-[#1b2432] px-3 py-1.5 text-xs font-mono text-white focus:outline-none focus:border-cyan-400" />
+          <input id="search-input" type="text" data-i18n-placeholder="search_ph" placeholder="Buscar equipo o liga..." class="w-full sm:w-64 bg-[#05070a] border border-[#1b2432] px-3 py-1.5 text-xs font-mono text-white focus:outline-none focus:border-cyan-400" />
         </div>
         <div class="flex items-center gap-1.5 overflow-x-auto pb-1 font-mono text-[11px]">
-          <button onclick="window.setQuickFilter('ALL')" data-qfilter="ALL" class="qfilter-btn px-3 py-1 font-bold uppercase border border-cyan-400 bg-cyan-500/20 text-white shrink-0">
+          <button onclick="window.setQuickFilter('ALL')" data-qfilter="ALL" data-i18n="qf_all" class="qfilter-btn px-3 py-1 font-bold uppercase border border-cyan-400 bg-cyan-500/20 text-white shrink-0">
             Todos
           </button>
-          <button onclick="window.setQuickFilter('FÚTBOL')" data-qfilter="FÚTBOL" class="qfilter-btn px-3 py-1 font-bold uppercase border border-[#1b2432] bg-[#05070a] text-slate-400 hover:text-white shrink-0">
+          <button onclick="window.setQuickFilter('FÚTBOL')" data-qfilter="FÚTBOL" data-i18n="qf_fb" class="qfilter-btn px-3 py-1 font-bold uppercase border border-[#1b2432] bg-[#05070a] text-slate-400 hover:text-white shrink-0">
             ⚽ Solo Fútbol
           </button>
-          <button onclick="window.setQuickFilter('NBA')" data-qfilter="NBA" class="qfilter-btn px-3 py-1 font-bold uppercase border border-[#1b2432] bg-[#05070a] text-slate-400 hover:text-white shrink-0">
+          <button onclick="window.setQuickFilter('NBA')" data-qfilter="NBA" data-i18n="qf_nba" class="qfilter-btn px-3 py-1 font-bold uppercase border border-[#1b2432] bg-[#05070a] text-slate-400 hover:text-white shrink-0">
             🏀 Solo NBA
           </button>
-          <button onclick="window.setQuickFilter('FREE')" data-qfilter="FREE" class="qfilter-btn px-3 py-1 font-bold uppercase border border-[#1b2432] bg-[#05070a] text-slate-400 hover:text-white shrink-0">
+          <button onclick="window.setQuickFilter('FREE')" data-qfilter="FREE" data-i18n="qf_free" class="qfilter-btn px-3 py-1 font-bold uppercase border border-[#1b2432] bg-[#05070a] text-slate-400 hover:text-white shrink-0">
             🔓 Solo Gratis
           </button>
-          <button onclick="window.setQuickFilter('LIVE')" data-qfilter="LIVE" class="qfilter-btn px-3 py-1 font-bold uppercase border border-[#1b2432] bg-[#05070a] text-slate-400 hover:text-white shrink-0">
+          <button onclick="window.setQuickFilter('LIVE')" data-qfilter="LIVE" data-i18n="qf_live" class="qfilter-btn px-3 py-1 font-bold uppercase border border-[#1b2432] bg-[#05070a] text-slate-400 hover:text-white shrink-0">
             🔴 En Vivo Ahora
           </button>
         </div>
@@ -199,10 +529,10 @@
     </section>
     <section id="tab-resultados" class="tab-panel hidden space-y-4">
       <div class="quant-card p-4">
-        <h2 class="text-base font-black uppercase text-white font-mono">Auditoría de Resultados del Día</h2>
-        <p class="text-xs text-slate-400">Calificación transparente de los partidos finalizados y generador de tickets de victoria.</p>
+        <h2 data-i18n="res_title" class="text-base font-black uppercase text-white font-mono">Auditoría de Resultados del Día</h2>
+        <p data-i18n="res_sub" class="text-xs text-slate-400">Calificación transparente de los partidos finalizados y generador de tickets de victoria.</p>
       </div>
-      <div id="today-financial-summary" class="grid grid-cols-1 sm:grid-cols-3 gap-3 font-mono text-xs"></div>
+      <div id="today-financial-summary" class="grid grid-cols-3 gap-3 font-mono text-xs"></div>
       <div id="today-results-container" class="space-y-3"></div>
     </section>
     <section id="tab-historial" class="tab-panel hidden space-y-5">
@@ -210,28 +540,28 @@
       <div id="history-kpi-cards" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
       <div class="quant-card p-4 space-y-3">
         <div class="flex items-center justify-between border-b border-[#1b2432] pb-2">
-          <h3 class="text-xs font-mono uppercase font-bold text-white">Curva de Rendimiento Acumulado</h3>
-          <span class="text-[11px] font-mono text-[#10b981]">AUDITORÍA CRONOLÓGICA</span>
+          <h3 data-i18n="chart_title" class="text-xs font-mono uppercase font-bold text-white">Curva de Rendimiento Acumulado</h3>
+          <span data-i18n="chart_sub" class="text-[11px] font-mono text-[#10b981]">AUDITORÍA CRONOLÓGICA</span>
         </div>
         <div id="performance-chart-box" class="h-44 w-full flex items-end pt-3"></div>
       </div>
       <div class="quant-card p-4 space-y-3">
         <div class="flex items-center justify-between">
-          <h3 class="text-xs font-mono font-bold uppercase text-white">Historial de Partidos (Desde el Más Reciente)</h3>
-          <span class="text-[11px] font-mono text-slate-400">Toca cualquier fila para ver el análisis completo o generar Ticket</span>
+          <h3 data-i18n="hist_title" class="text-xs font-mono font-bold uppercase text-white">Historial de Partidos (Desde el Más Reciente)</h3>
+          <span data-i18n="hist_sub" class="text-[11px] font-mono text-slate-400">Toca cualquier fila para ver el análisis completo o generar Ticket</span>
         </div>
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse font-mono text-xs">
             <thead>
               <tr class="border-b border-[#1b2432] text-slate-400 text-[10px] uppercase">
-                <th class="py-2.5 px-3">Fecha</th>
-                <th class="py-2.5 px-3">Deporte / Liga</th>
-                <th class="py-2.5 px-3">Partido</th>
-                <th class="py-2.5 px-3">Pronóstico</th>
-                <th class="py-2.5 px-3">Cuota</th>
-                <th class="py-2.5 px-3">Marcador</th>
-                <th class="py-2.5 px-3">Resultado</th>
-                <th class="py-2.5 px-3 text-right">Acción</th>
+                <th data-i18n="th_date" class="py-2.5 px-3">Fecha</th>
+                <th data-i18n="th_league" class="py-2.5 px-3">Deporte / Liga</th>
+                <th data-i18n="th_match" class="py-2.5 px-3">Partido</th>
+                <th data-i18n="th_pick" class="py-2.5 px-3">Pronóstico</th>
+                <th data-i18n="th_odds" class="py-2.5 px-3">Cuota</th>
+                <th data-i18n="th_score" class="py-2.5 px-3">Marcador</th>
+                <th data-i18n="th_res" class="py-2.5 px-3">Resultado</th>
+                <th data-i18n="th_act" class="py-2.5 px-3 text-right">Acción</th>
               </tr>
             </thead>
             <tbody id="history-table-body" class="divide-y divide-[#1b2432]/60"></tbody>
@@ -241,17 +571,17 @@
     </section>
     <section id="tab-planes" class="tab-panel hidden space-y-6">
       <div class="text-center max-w-xl mx-auto space-y-1">
-        <h2 class="text-xl font-black uppercase text-white font-mono">Planes de Membresía VIP</h2>
-        <p class="text-xs text-slate-400">Precios en COP y USDT.</p>
+        <h2 data-i18n="plans_title" class="text-xl font-black uppercase text-white font-mono">Planes de Membresía VIP</h2>
+        <p data-i18n="plans_sub" class="text-xs text-slate-400">Precios en COP y USDT.</p>
       </div>
       <div class="max-w-md mx-auto quant-card p-3.5 border-cyan-500/40 bg-[#070e17] font-mono text-xs space-y-2">
         <div class="flex items-center justify-between">
-          <span class="font-bold text-cyan-300 uppercase">🎟️ ¿Tienes código de promotor (-20%)?</span>
-          <span id="promo-status-badge" class="text-[10px] text-slate-400">Sin aplicar</span>
+          <span data-i18n="promo_ask" class="font-bold text-cyan-300 uppercase">🎟️ ¿Tienes código de promotor (-20%)?</span>
+          <span id="promo-status-badge" data-i18n="promo_none" class="text-[10px] text-slate-400">Sin aplicar</span>
         </div>
         <div class="flex gap-2">
           <input id="input-promo-code" type="text" placeholder="Ej: PROMO20" class="flex-1 bg-[#05070a] border border-[#1b2432] px-3 py-1.5 uppercase text-white font-bold focus:border-cyan-400 focus:outline-none" />
-          <button id="btn-apply-promo" class="px-4 py-1.5 bg-[#06b6d4] hover:bg-cyan-300 text-slate-950 font-black uppercase text-xs">
+          <button id="btn-apply-promo" data-i18n="btn_apply" class="px-4 py-1.5 bg-[#06b6d4] hover:bg-cyan-300 text-slate-950 font-black uppercase text-xs">
             Aplicar
           </button>
         </div>
@@ -260,7 +590,7 @@
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 pt-2">
         <div class="lg:col-span-7 quant-card p-5 space-y-4">
           <div class="flex items-center justify-between border-b border-[#1b2432] pb-3">
-            <h3 class="text-xs font-mono font-bold uppercase text-white">Medios de Pago Oficiales</h3>
+            <h3 data-i18n="pay_methods" class="text-xs font-mono font-bold uppercase text-white">Medios de Pago Oficiales</h3>
             <div class="flex border border-[#1b2432] bg-[#05070a] p-0.5">
               <button id="btn-reg-col" class="px-3 py-1 text-xs font-mono font-bold bg-[#10b981] text-slate-950">
                 🇨🇴 COLOMBIA
@@ -273,17 +603,17 @@
           <div id="payment-methods-list" class="space-y-3"></div>
         </div>
         <div class="lg:col-span-5 quant-card p-5 space-y-3 font-mono text-xs">
-          <h3 class="text-xs font-bold uppercase text-[#10b981] border-b border-[#1b2432] pb-2">
+          <h3 data-i18n="act_imm" class="text-xs font-bold uppercase text-[#10b981] border-b border-[#1b2432] pb-2">
             Activación Inmediata
           </h3>
-          <p class="text-slate-300 text-[11px] leading-relaxed">
+          <p data-i18n="act_desc" class="text-slate-300 text-[11px] leading-relaxed">
             Transfiere a Nequi, Bancolombia o Binance y reporta el comprobante por WhatsApp:
           </p>
           <div class="p-3 bg-[#05070a] border border-[#1b2432] space-y-1">
-            <span class="text-[10px] text-slate-400 block">WHATSAPP OFICIAL:</span>
+            <span data-i18n="wa_off" class="text-[10px] text-slate-400 block">WHATSAPP OFICIAL:</span>
             <span class="text-sm font-black text-white">+57 333 286 1551</span>
           </div>
-          <a id="btn-general-whatsapp-pay" href="https://wa.me/573332861551?text=Hola%20equipo%20OptaCore,%20acabo%20de%20transferir%20para%20activar%20mi%20VIP.%20Adjunto%20el%20comprobante:" target="_blank" class="block w-full py-2.5 text-center bg-[#10b981] hover:bg-emerald-400 text-slate-950 font-black uppercase tracking-wider text-xs transition">
+          <a id="btn-general-whatsapp-pay" data-i18n="btn_send_wa" href="https://wa.me/573332861551?text=Hola%20equipo%20OptaCore,%20acabo%20de%20transferir%20para%20activar%20mi%20VIP.%20Adjunto%20el%20comprobante:" target="_blank" class="block w-full py-2.5 text-center bg-[#10b981] hover:bg-emerald-400 text-slate-950 font-black uppercase tracking-wider text-xs transition">
             Enviar Comprobante por WhatsApp
           </a>
         </div>
@@ -292,11 +622,11 @@
     <section id="tab-cuenta" class="tab-panel hidden space-y-4 font-mono text-xs">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="quant-card p-4 space-y-2">
-          <h3 class="text-xs font-bold uppercase text-white border-b border-[#1b2432] pb-2">Estado de tu Licencia</h3>
+          <h3 data-i18n="lic_status" class="text-xs font-bold uppercase text-white border-b border-[#1b2432] pb-2">Estado de tu Licencia</h3>
           <div id="account-license-details" class="space-y-1.5 text-slate-300">
-            <p>Correo vinculado: <strong class="text-white" id="account-email-text">No registrado</strong></p>
-            <p>Estado de membresía: <strong class="text-cyan-400" id="account-role-text">ACCESO LIBRE</strong></p>
-            <p>Vigencia: <span class="text-slate-400" id="account-expires-text">Sin límite en jugadas gratuitas</span></p>
+            <p><span data-i18n="lic_email">Correo vinculado:</span> <strong class="text-white" id="account-email-text">No registrado</strong></p>
+            <p><span data-i18n="lic_role">Estado de membresía:</span> <strong class="text-cyan-400" id="account-role-text">ACCESO LIBRE</strong></p>
+            <p><span data-i18n="lic_exp">Vigencia:</span> <span class="text-slate-400" id="account-expires-text">Sin límite en jugadas gratuitas</span></p>
           </div>
         </div>
         <div id="referral-card-container"></div>
@@ -305,28 +635,154 @@
     <section id="tab-admin" class="tab-panel hidden space-y-5 font-mono text-xs">
       <div class="quant-card p-4 border-amber-400/50 bg-[#120e05] flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 class="text-sm font-black uppercase text-amber-300">⚙️ Consola de Administración en Vivo</h2>
-          <p class="text-[11px] text-slate-300">Actualiza marcadores, sincroniza resultados en lote, agrega partidos y promotores.</p>
+          <h2 data-i18n="adm_title" class="text-sm font-black uppercase text-amber-300">⚙️ Consola de Administración en Vivo</h2>
+          <p data-i18n="adm_sub" class="text-[11px] text-slate-300">Actualiza marcadores, sincroniza resultados en lote, agrega partidos y promotores.</p>
         </div>
         <div class="flex items-center gap-2">
-          <button onclick="window.syncLiveHtFtResults(true); alert('Sincronizando medio tiempo y final de partidos en API-Sports...');" class="px-2.5 py-1 bg-cyan-500/20 border border-cyan-400 text-cyan-300 text-[10px] font-bold uppercase">
+          <button onclick="window.syncLiveHtFtResults(true); alert('API-Sports Sync OK');" data-i18n="btn_sync_api" class="px-2.5 py-1 bg-cyan-500/20 border border-cyan-400 text-cyan-300 text-[10px] font-bold uppercase">
             ⚡ Sincronizar API (1 Crédito)
           </button>
-          <button onclick="window.resetLocalDatabase()" class="px-2.5 py-1 bg-red-500/20 border border-red-500 text-red-300 text-[10px] font-bold uppercase">
+          <button id="btn-toggle-maintenance" onclick="window.toggleMaintenanceMode()" class="px-2.5 py-1 bg-amber-500/20 border border-amber-400 text-amber-300 text-[10px] font-bold uppercase">
+            Modo Mantenimiento: OFF
+          </button>
+          <button onclick="window.resetLocalDatabase()" data-i18n="btn_reset_db" class="px-2.5 py-1 bg-red-500/20 border border-red-500 text-red-300 text-[10px] font-bold uppercase">
             Restaurar Base
           </button>
         </div>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="quant-card p-4 space-y-3">
-          <h3 class="text-xs font-bold uppercase text-cyan-300 border-b border-[#1b2432] pb-2">+ Generar Llave de Acceso</h3>
+          <h3 data-i18n="adm_key_title" class="text-xs font-bold uppercase text-cyan-300 border-b border-[#1b2432] pb-2">+ Generar Llave de Acceso</h3>
           <form id="admin-create-key-form" class="space-y-2">
             <input id="adm-key-code" type="text" required placeholder="Código Llave (Ej: CORTESIA5D)" class="w-full bg-[#05070a] border border-[#1b2432] p-2 text-white uppercase font-bold" />
             <input id="adm-key-days" type="number" required min="1" placeholder="Días de acceso (Ej: 5)" class="w-full bg-[#05070a] border border-[#1b2432] p-2 text-white" />
-            <button type="submit" class="w-full py-2 bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-black uppercase">
+            <button type="submit" data-i18n="adm_key_btn" class="w-full py-2 bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-black uppercase">
               Guardar Llave Activa
             </button>
           </form>
         </div>
         <div class="quant-card p-4 space-y-3">
-          <h3 class="text-xs font-bold uppercase text-[#10b981] border-b border-[#1b2432] p
+          <h3 data-i18n="adm_promo_title" class="text-xs font-bold uppercase text-[#10b981] border-b border-[#1b2432] pb-2">+ Registrar Promotor (-20%)</h3>
+          <form id="admin-create-promo-form" class="space-y-2">
+            <input id="adm-promo-code" type="text" required placeholder="Código Cupón (Ej: MIGUEL20)" class="w-full bg-[#05070a] border border-[#1b2432] p-2 text-white uppercase font-bold" />
+            <input id="adm-promo-name" type="text" required placeholder="Nombre Promotor (Ej: Miguel Ángel)" class="w-full bg-[#05070a] border border-[#1b2432] p-2 text-white" />
+            <button type="submit" data-i18n="adm_promo_btn" class="w-full py-2 bg-[#10b981] hover:bg-emerald-400 text-slate-950 font-black uppercase">
+              Activar Promotor
+            </button>
+          </form>
+        </div>
+      </div>
+      <div class="quant-card p-4 space-y-3">
+        <h3 data-i18n="adm_audit_title" class="text-xs font-bold uppercase text-white border-b border-[#1b2432] pb-2">Auditoría de Ventas por Promotor</h3>
+        <div id="admin-promoters-audit-list" class="space-y-2"></div>
+      </div>
+      <div class="quant-card p-4 space-y-3">
+        <h3 data-i18n="adm_add_match" class="text-xs font-bold uppercase text-[#10b981] border-b border-[#1b2432] pb-2">+ Agregar Nuevo Pronóstico</h3>
+        <form id="admin-add-match-form" class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+          <input id="adm-home" type="text" required placeholder="Equipo Local (Ej: Real Madrid)" class="bg-[#05070a] border border-[#1b2432] p-2 text-white" />
+          <input id="adm-away" type="text" required placeholder="Equipo Visitante (Ej: Milan)" class="bg-[#05070a] border border-[#1b2432] p-2 text-white" />
+          <input id="adm-league" type="text" required placeholder="Liga (Ej: Champions League)" class="bg-[#05070a] border border-[#1b2432] p-2 text-white" />
+          <input id="adm-pick" type="text" required placeholder="Pronóstico (Ej: Real Madrid Gana)" class="bg-[#05070a] border border-[#1b2432] p-2 text-white" />
+          <input id="adm-odds" type="number" step="0.01" required placeholder="Cuota (Ej: 1.55)" class="bg-[#05070a] border border-[#1b2432] p-2 text-white" />
+          <input id="adm-prob" type="number" step="0.1" required placeholder="% Probabilidad (Ej: 91.5)" class="bg-[#05070a] border border-[#1b2432] p-2 text-white" />
+          <select id="adm-sport" class="bg-[#05070a] border border-[#1b2432] p-2 text-white">
+            <option value="FÚTBOL">⚽ FÚTBOL</option>
+            <option value="NBA">🏀 NBA</option>
+          </select>
+          <select id="adm-free" class="bg-[#05070a] border border-[#1b2432] p-2 text-white">
+            <option value="true">🔓 Abierto Gratis</option>
+            <option value="false">🔒 Exclusivo VIP</option>
+          </select>
+          <input id="adm-time" type="text" required placeholder="Hora (Ej: 15:00)" class="bg-[#05070a] border border-[#1b2432] p-2 text-white" />
+          <input id="adm-apifix" type="number" placeholder="API Fixture ID (Opcional)" class="bg-[#05070a] border border-[#1b2432] p-2 text-white" />
+          <textarea id="adm-exp" rows="2" placeholder="Explicación táctica del pronóstico..." class="sm:col-span-3 bg-[#05070a] border border-[#1b2432] p-2 text-white"></textarea>
+          <button type="submit" data-i18n="adm_pub_btn" class="sm:col-span-3 py-2 bg-[#10b981] text-slate-950 font-black uppercase">
+            Publicar Pronóstico Ahora
+          </button>
+        </form>
+      </div>
+      <div class="quant-card p-4 space-y-3">
+        <h3 data-i18n="adm_edit_scores" class="text-xs font-bold uppercase text-cyan-300 border-b border-[#1b2432] pb-2">Editar Marcadores y Estados</h3>
+        <div id="admin-matches-list" class="space-y-2"></div>
+      </div>
+    </section>
+  </main>
+  <nav class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#05070a]/95 backdrop-blur-md border-t border-[#1b2432] py-2 px-3 flex items-center justify-around font-mono">
+    <button onclick="switchTab('tab-pronosticos')" data-tab="tab-pronosticos" class="bottom-nav-btn flex flex-col items-center justify-center text-cyan-400 font-bold text-[10px]">
+      <span class="text-base">📋</span>
+      <span data-i18n="bnav_board">Cartelera</span>
+    </button>
+    <button onclick="switchTab('tab-resultados')" data-tab="tab-resultados" class="bottom-nav-btn flex flex-col items-center justify-center text-slate-400 font-bold text-[10px]">
+      <span class="text-base">📊</span>
+      <span data-i18n="bnav_res">Resultados</span>
+    </button>
+    <button onclick="switchTab('tab-historial')" data-tab="tab-historial" class="bottom-nav-btn flex flex-col items-center justify-center text-slate-400 font-bold text-[10px]">
+      <span class="text-base">📈</span>
+      <span data-i18n="bnav_hist">Historial</span>
+    </button>
+    <button onclick="switchTab('tab-planes')" data-tab="tab-planes" class="bottom-nav-btn flex flex-col items-center justify-center text-slate-400 font-bold text-[10px]">
+      <span class="text-base">💎</span>
+      <span data-i18n="bnav_plans">Planes</span>
+    </button>
+    <button onclick="switchTab('tab-cuenta')" data-tab="tab-cuenta" class="bottom-nav-btn flex flex-col items-center justify-center text-slate-400 font-bold text-[10px]">
+      <span class="text-base">👤</span>
+      <span data-i18n="bnav_acc">Cuenta</span>
+    </button>
+  </nav>
+  <div id="redeem-key-modal" class="fixed inset-0 z-50 hidden bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 font-mono text-xs">
+    <div class="quant-card max-w-sm w-full p-5 space-y-3 border-amber-500/60 shadow-[0_0_25px_rgba(245,158,11,0.2)]">
+      <div class="flex items-center justify-between border-b border-[#1b2432] pb-2">
+        <h3 data-i18n="mod_redeem_title" class="text-xs font-bold uppercase text-amber-300">🔑 CANJEAR LLAVE DE ACCESO</h3>
+        <button id="btn-close-redeem" class="text-slate-400 hover:text-white font-bold">✕</button>
+      </div>
+      <p data-i18n="mod_redeem_sub" class="text-[11px] text-slate-300 leading-relaxed">
+        Ingresa tu llave de cortesía para activar tus días de acceso VIP:
+      </p>
+      <form id="redeem-key-form" class="space-y-3 pt-1">
+        <div>
+          <label data-i18n="mod_redeem_lbl" class="text-[10px] text-slate-400 block mb-1">CÓDIGO DE LA LLAVE</label>
+          <input id="input-license-key" type="text" required placeholder="Ej: PRUEBA3D" class="w-full bg-[#05070a] border border-[#1b2432] p-2 text-white text-xs uppercase font-bold focus:border-amber-400 focus:outline-none" />
+        </div>
+        <button type="submit" data-i18n="mod_redeem_btn" class="w-full py-2.5 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black uppercase text-xs transition">
+          CANJEAR Y ACTIVAR DÍAS VIP
+        </button>
+      </form>
+    </div>
+  </div>
+  <div id="auth-modal" class="fixed inset-0 z-50 hidden bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 font-mono text-xs">
+    <div class="quant-card max-w-sm w-full p-5 space-y-3 border-cyan-500/50 shadow-[0_0_25px_rgba(6,182,212,0.2)]">
+      <div class="flex items-center justify-between border-b border-[#1b2432] pb-2">
+        <h3 id="auth-modal-title" class="text-xs font-bold uppercase text-white">REGISTRO DE USUARIO</h3>
+        <button id="btn-close-auth" class="text-slate-400 hover:text-white font-bold">✕</button>
+      </div>
+      <p id="auth-modal-subtitle" class="text-[11px] text-slate-400 leading-relaxed">
+        Ingresa tu correo real y define tu contraseña segura para crear tu cuenta.
+      </p>
+      <form id="auth-form" class="space-y-3 pt-1">
+        <div>
+          <label data-i18n="mod_auth_email" class="text-[10px] text-slate-400 block mb-1">CORREO ELECTRÓNICO OFICIAL</label>
+          <input id="auth-email" type="email" required placeholder="tu@correo.com" class="w-full bg-[#05070a] border border-[#1b2432] p-2 text-white text-xs focus:border-cyan-400 focus:outline-none" />
+        </div>
+        <div>
+          <label data-i18n="mod_auth_pass" class="text-[10px] text-slate-400 block mb-1">CONTRASEÑA (MÍNIMO 6 CARACTERES)</label>
+          <input id="auth-pass" type="password" required minlength="6" placeholder="••••••••" class="w-full bg-[#05070a] border border-[#1b2432] p-2 text-white text-xs focus:border-cyan-400 focus:outline-none" />
+        </div>
+        <button id="auth-submit-btn" type="submit" class="w-full py-2.5 bg-[#10b981] hover:bg-emerald-400 text-slate-950 font-black uppercase transition text-xs">
+          CREAR CUENTA
+        </button>
+      </form>
+      <div class="pt-2 text-center border-t border-[#1b2432]">
+        <button id="btn-toggle-auth-mode" type="button" class="text-[10px] text-cyan-400 hover:underline">
+          ¿Ya tienes cuenta? Inicia sesión aquí
+        </button>
+      </div>
+    </div>
+  </div>
+  <footer data-i18n="footer_txt" class="border-t border-[#1b2432] bg-[#030508] px-4 py-4 mt-8 text-[11px] font-mono text-slate-400 text-center">
+    OPTACORE.QUANT © 2026 — Inteligencia Estadística para Pronósticos Deportivos (+18).
+  </footer>
+  <script type="module" src="./auth.js"></script>
+  <script type="module" src="./pronosticos.js"></script>
+  <script type="module" src="./pagos.js"></script>
+</body>
+</html>
