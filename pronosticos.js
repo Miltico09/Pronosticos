@@ -400,11 +400,22 @@ function getLogo(name) {
 }
 function seedMasterRecords() {
   const today = getColombiaDateString();
+  // Limpieza automática de claves obsoletas de caché para forzar la cartelera fresca en móviles
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith("optacore_master_feed_") && k !== DB_KEY) {
+        localStorage.removeItem(k);
+      }
+    }
+  } catch (e) {}
+
   const cached = localStorage.getItem(DB_KEY);
   if (cached) {
     try {
       const list = JSON.parse(cached);
-      if (Array.isArray(list) && list.length >= 24) return list;
+      const hasToday = Array.isArray(list) && list.some((m) => m.matchDate === today);
+      if (hasToday && list.length >= 24) return list;
     } catch (e) {
       console.warn("Restableciendo lista:", e);
     }
