@@ -3,7 +3,7 @@
 // ============================================================================
 import { CONFIG } from "./config.js";
 import { isUserVipOrAdmin } from "./auth.js";
-const DB_KEY = "optacore_master_feed_v31";
+const DB_KEY = "optacore_master_feed_v32";
 const API_SYNC_THROTTLE_MS = 10 * 60 * 1000;
 let activeQuickFilter = "ALL";
 let currentLang = localStorage.getItem("optacore_lang") || "ES";
@@ -112,6 +112,47 @@ function trText(str) {
   };
   if (exactMap[s]) return exactMap[s];
   const replacements = [
+    ["Liverpool Gana o Empata (1X) + Más de 1.5 Goles Totales", "Liverpool Wins or Draws (1X) + Over 1.5 Total Goals"],
+    ["Doble Oportunidad (Liverpool o Empate) combinada con Total de Goles Más de 1.5 (Crear Apuesta / BetBuilder).", "Double Chance (Liverpool or Draw) combined with Over 1.5 Total Goals (BetBuilder)."],
+    ["Liverpool en Anfield registra un promedio ofensivo de 2.6 goles por encuentro y mantiene una fortaleza histórica jugando en casa. Arsenal propone duelos físicos en mediocampo, pero rara vez deja su portería en cero visitando al Big Six. Al proteger la localía con el empate (1X) y bajar el techo a solo 2 goles en el partido (+1.5), cubrimos el 1-1, 2-1, 2-0 y 2-2 con margen de seguridad.", "Liverpool at Anfield averages 2.6 goals per game and holds historic home strength. Arsenal brings midfield physical battles, but rarely keeps clean sheets away to the Big Six. Protecting home ground with 1X and lowering the bar to 2 goals (+1.5) covers 1-1, 2-1, 2-0 and 2-2 safely."],
+    ["Real Madrid Gana Directo + Más de 1.5 Goles Totales", "Real Madrid Direct Win + Over 1.5 Total Goals"],
+    ["Resultado del partido (Gana Real Madrid) y Más de 1.5 Goles.", "Full Time Result (Real Madrid Win) and Over 1.5 Goals."],
+    ["El conjunto merengue llega en estado de gracia ofensivo con Mbappé y Vinícius castigando al espacio. Visita El Sardinero ante un Racing que sufre enormemente al defender transiciones rápidas. La diferencia de jerarquía individual en los últimos 30 metros proyecta un triunfo madridista con al menos 2 tantos en el marcador global.", "The Merengue squad arrives in top attacking form with Mbappe and Vinicius exploiting space. Visiting El Sardinero against Racing who struggles against quick transitions, individual hierarchy in the final third projects a Madrid victory with at least 2 total goals."],
+    ["Menos de 2.5 Goles Totales", "Under 2.5 Total Goals"],
+    ["Total de Goles: Menos de 2.5 (Máximo 2 goles en el partido).", "Total Goals: Under 2.5 (Max 2 goals in match)."],
+    ["El sistema de José Bordalás en el Coliseum convierte cada partido en una guerra de fricción, faltas tácticas y bloque bajo. Sevilla fuera de casa prioriza no cometer errores en salida, lo que reduce el promedio de remates claros a menos de 6 por encuentro.", "Bordalas' system at Coliseum turns every game into friction, tactical fouls and low block. Away Sevilla prioritizes avoiding turnover mistakes, cutting clear shots to under 6 per match."],
+    ["Boston Celtics Gana Directo (Moneyline)", "Boston Celtics Direct Win (Moneyline)"],
+    ["Ganador del Partido (Incluye Prórroga): Boston Celtics.", "Match Winner (Inc. OT): Boston Celtics."],
+    ["Boston posee la mejor eficiencia ofensiva de la conferencia gracias a su volumen de tiro exterior (más de 42 triples intentados por noche). Orlando basa su juego en la defensa interior en la pintura, pero sufre en las rotaciones perimetrales cuando enfrenta a cinco titulares abiertos como los de los Celtics.", "Boston holds top offensive rating in the conference thanks to 3-point volume (42+ attempts per night). Orlando relies on interior defense but struggles on perimeter rotations against five-out spacing."],
+    ["Independiente Medellín Gana Directo (1X2)", "Independiente Medellin Direct Win (1X2)"],
+    ["Tiempo Reglamentario: Gana Independiente Medellín.", "Regular Time: Independiente Medellin Wins."],
+    ["Fecha 17 decisiva del Clausura colombiano. Alianza FC sube desde el calor de Valledupar hasta los casi 1.500 metros de Medellín, donde suele perder fondo físico a partir del minuto 60. El Poderoso en el Atanasio impone un volumen de ataque constante por las bandas y necesita los 3 puntos de forma obligatoria para sellar su clasificación.", "Decisive Matchday 17 of Colombian Clausura. Alianza travels from warm Valledupar to nearly 1,500m altitude in Medellin, where stamina drops past the 60th minute. El Poderoso pushes relentless wing attacks needing 3 points to seal qualification."],
+    ["Lazio Gana o Empata (1X) + Más de 1.5 Goles Totales", "Lazio Wins or Draws (1X) + Over 1.5 Total Goals"],
+    ["Doble Oportunidad Lazio/Empate y Total de Goles Más de 1.5.", "Double Chance Lazio/Draw and Over 1.5 Total Goals."],
+    ["Lazio jugando en el Olímpico de Roma mantiene una racha arrolladora ante equipos de la zona baja de la tabla. Cagliari fuera de Cerdeña concede espacios entre centrales y laterales, permitiendo que los extremos romanos generen superioridad constante desde la primera mitad.", "Lazio at Stadio Olimpico maintains an overwhelming run against bottom-table sides. Away Cagliari concedes space between center-backs and full-backs, giving Lazio wingers constant overloads."],
+    ["Athletic Club Gana o Empata (1X) + Menos de 3.5 Goles", "Athletic Club Wins or Draws (1X) + Under 3.5 Goals"],
+    ["Doble Oportunidad (Athletic o Empate) y Menos de 3.5 Goles en el partido.", "Double Chance (Athletic or Draw) and Under 3.5 Total Goals."],
+    ["El Athletic de Valverde viene de aplastar en San Mamés, demostrando que en su estadio es muy sólido. En el derbi vasco ante la Real Sociedad prima la intensidad táctica y el rigor defensivo; proteger la localía del Athletic con un techo amplio de hasta 3 goles ofrece un valor estadístico altísimo.", "Valverde's Athletic is formidable at San Mames. In the Basque derby against Real Sociedad, tactical intensity and defensive discipline prevail; backing Athletic at home capped under 3.5 goals provides high statistical value."],
+    ["Menos de 232.5 Puntos Totales (Línea Protegida)", "Under 232.5 Total Points (Protected Line)"],
+    ["Total de Puntos (Incluye Prórroga): Menos de 232.5.", "Total Points (Inc. OT): Under 232.5."],
+    ["Brooklyn presenta uno de los ritmos de juego más lentos de la Conferencia Este, agotando regularmente más de 18 segundos del reloj de tiro en ataques posicionales. Con esta línea protegida en 232.5 puntos tenemos margen incluso ante un último cuarto de tiros libres.", "Brooklyn exhibits one of the slowest paces in the East, burning 18+ seconds per possession. This protected 232.5 line affords cushion even during high-foul fourth quarters."],
+    ["Golden State Warriors Hándicap -2.5 (Línea Corta)", "Golden State Warriors Handicap -2.5 (Short Line)"],
+    ["Hándicap del Partido (Incluye Prórroga): Golden State Warriors -2.5.", "Game Handicap (Inc. OT): Golden State Warriors -2.5."],
+    ["Duelo divisional californiano en el Chase Center. La rotación de segunda unidad de Golden State supera en frescura física y efectividad de tres puntos a unos Clippers que sufren desconexiones defensivas en el tercer cuarto cuando salen los titulares.", "California division clash at Chase Center. Golden State's bench depth outmatches Clippers in pace and perimeter efficiency, capitalizing on LA's third-quarter defensive lapses."],
+    ["Los Angeles Lakers Gana Directo + Más de 215.5 Puntos", "Los Angeles Lakers Direct Win + Over 215.5 Points"],
+    ["Gana LA Lakers y Total de Puntos Más de 215.5.", "LA Lakers Win and Over 215.5 Total Points."],
+    ["Los Lakers dominan la zona pintada con superioridad en rebotes ofensivos y tiros libres provocados ante una defensa interior joven de Toronto que concede más de 116 puntos de promedio jugando en la gira por la Costa Oeste.", "Lakers dominate the paint in offensive rebounds and drawn fouls against Toronto's young interior conceding 116+ points on West Coast road trips."],
+    ["✔ OBJETIVO CUMPLIDO: Ganó 3-0", "✔ TARGET HIT: Won 3-0"],
+    ["✔ OBJETIVO CUMPLIDO: Ganó 2-1", "✔ TARGET HIT: Won 2-1"],
+    ["✔ OBJETIVO CUMPLIDO: Ganó 108-101", "✔ TARGET HIT: Won 108-101"],
+    ["✔ EN CURSO: 2-1 (70')", "✔ LIVE IN PROGRESS: 2-1 (70')"],
+    ["✖ NO SE COMPLETÓ (Getafe 3-1)", "✖ MISSED (Getafe 3-1)"],
+    ["✖ NO SE COMPLETÓ (Arsenal 1-0)", "✖ MISSED (Arsenal 1-0)"],
+    ["Templado costero (17°C)", "Coastal mild (17°C)"],
+    ["Mañana soleada (15°C)", "Sunny morning (15°C)"],
+    ["Noche fresca (21°C)", "Cool night (21°C)"],
+    ["Clima templado (18°C)", "Mild weather (18°C)"],
+    ["Noche fresca húmeda (12°C)", "Cool humid night (12°C)"],
     ["Arsenal Gana o Empata (1X) + Más de 1.5 Goles", "Arsenal Wins or Draws (1X) + Over 1.5 Goals"],
     ["Doble Oportunidad 1X (Arsenal o Empate) + Más de 1.5 Goles", "Double Chance 1X (Arsenal or Draw) + Over 1.5 Goals"],
     ["Más de 1.5 Goles Totales (Mínimo 2 goles)", "Over 1.5 Total Goals (Min. 2 goals)"],
@@ -355,6 +396,26 @@ function getPitchFeverBar(altitudeM = 100, weatherDesc = "") {
   return { stressScore, label, color };
 }
 const LOGOS = {
+  "Liverpool FC": "https://media.api-sports.io/football/teams/40.png",
+  "Arsenal FC": "https://media.api-sports.io/football/teams/42.png",
+  "Racing de Santander": "https://media.api-sports.io/football/teams/4665.png",
+  "Real Madrid": "https://media.api-sports.io/football/teams/541.png",
+  "Getafe CF": "https://media.api-sports.io/football/teams/546.png",
+  "Sevilla FC": "https://media.api-sports.io/football/teams/536.png",
+  "Orlando Magic": "https://cdn.nba.com/logos/nba/1610612753/primary/L/logo.svg",
+  "Boston Celtics": "https://cdn.nba.com/logos/nba/1610612738/primary/L/logo.svg",
+  "Independiente Medellín": "https://media.api-sports.io/football/teams/1128.png",
+  "Alianza FC": "https://media.api-sports.io/football/teams/1141.png",
+  "SS Lazio": "https://media.api-sports.io/football/teams/487.png",
+  "Cagliari Calcio": "https://media.api-sports.io/football/teams/490.png",
+  "Athletic Club": "https://media.api-sports.io/football/teams/531.png",
+  "Real Sociedad": "https://media.api-sports.io/football/teams/548.png",
+  "Indiana Pacers": "https://cdn.nba.com/logos/nba/1610612754/primary/L/logo.svg",
+  "Brooklyn Nets": "https://cdn.nba.com/logos/nba/1610612751/primary/L/logo.svg",
+  "Golden State Warriors": "https://cdn.nba.com/logos/nba/1610612744/primary/L/logo.svg",
+  "LA Clippers": "https://cdn.nba.com/logos/nba/1610612746/primary/L/logo.svg",
+  "Los Angeles Lakers": "https://cdn.nba.com/logos/nba/1610612747/primary/L/logo.svg",
+  "Toronto Raptors": "https://cdn.nba.com/logos/nba/1610612761/primary/L/logo.svg",
   "Manchester City": "https://media.api-sports.io/football/teams/50.png",
   "Brighton": "https://media.api-sports.io/football/teams/51.png",
   "Bayern Múnich": "https://media.api-sports.io/football/teams/157.png",
@@ -376,8 +437,6 @@ const LOGOS = {
   "Bournemouth": "https://media.api-sports.io/football/teams/35.png",
   "RB Leipzig": "https://media.api-sports.io/football/teams/173.png",
   "SC Freiburg": "https://media.api-sports.io/football/teams/160.png",
-  "Real Madrid": "https://media.api-sports.io/football/teams/541.png",
-  "Independiente Medellín": "https://media.api-sports.io/football/teams/1138.png",
   "Deportes Tolima": "https://media.api-sports.io/football/teams/1137.png",
   "Once Caldas": "https://media.api-sports.io/football/teams/1132.png",
   "Chelsea": "https://media.api-sports.io/football/teams/49.png",
@@ -391,10 +450,7 @@ const LOGOS = {
   "Minnesota Timberwolves": "https://cdn.nba.com/logos/nba/1610612750/primary/L/logo.svg",
   "San Antonio Spurs": "https://cdn.nba.com/logos/nba/1610612759/primary/L/logo.svg",
   "Miami Heat": "https://cdn.nba.com/logos/nba/1610612748/primary/L/logo.svg",
-  "Indiana Pacers": "https://cdn.nba.com/logos/nba/1610612754/primary/L/logo.svg",
   "Denver Nuggets": "https://cdn.nba.com/logos/nba/1610612743/primary/L/logo.svg",
-  "LA Clippers": "https://cdn.nba.com/logos/nba/1610612746/primary/L/logo.svg",
-  "Golden State Warriors": "https://cdn.nba.com/logos/nba/1610612744/primary/L/logo.svg",
   "Phoenix Suns": "https://cdn.nba.com/logos/nba/1610612756/primary/L/logo.svg",
   "Dallas Mavericks": "https://cdn.nba.com/logos/nba/1610612742/primary/L/logo.svg",
   "Utah Jazz": "https://cdn.nba.com/logos/nba/1610612762/primary/L/logo.svg",
@@ -416,142 +472,289 @@ function seedMasterRecords() {
   }
   const makeIso = (d, hhmm) => `${d}T${hhmm}:00-05:00`;
   const records = [
+    // ------------------------------------------------------------------------
+    // 1. BLOQUE ABIERTO GRATUITO (4 Partidos: 2 de 5 Estrellas y 2 de 4 Estrellas)
+    // ------------------------------------------------------------------------
     {
-      id: "20261101-01",
-      apiFixtureId: null,
+      id: "20261101-FREE-01",
+      apiFixtureId: 1557453,
       sport: "FÚTBOL",
       matchDate: today,
-      kickoffIso: makeIso(today, "17:30"),
-      kickoffLabel: "17:30 COL",
+      kickoffIso: makeIso(today, "11:30"),
+      kickoffLabel: "11:30 COL",
       league: "Premier League (Inglaterra)",
-      homeTeam: "Arsenal",
-      awayTeam: "Liverpool",
-      marketEquivalent: "Doble Oportunidad 1X (Arsenal o Empate) + Más de 1.5 Goles",
-      liveOddDrop: "@1.58 ➔ @1.48",
-      predictionText: "Arsenal Gana o Empata (1X) + Más de 1.5 Goles",
-      odds: 1.48,
-      probability: 92.0,
-      isFree: true,
-      altitudeM: 40,
-      weatherDesc: "Lluvia (14°C)",
-      homeAvgGoals: "2.4 por partido",
-      awayAvgGoals: "1.7 por partido",
-      liveStats: { possession: "Previa táctica", shots: "Ritmo alto proyectado", corners: "6.5 esp", fouls: "11 esp" },
-      pickProgressPct: 0,
-      pickProgressLabel: "PROGRAMADO (17:30 COL)",
-      explanation: "El Emirates Stadium recibe un duelo directo por la cima. Arsenal promedia 2.4 goles como local y sostiene una solidez táctica con 71% de xG generado. Liverpool concede transiciones rápidas; la combinación 1X con +1.5 goles cubre los escenarios cuantitativos más probables (2-1, 1-1, 2-0).",
-      liveScore: "vs",
-      matchStatus: "PROGRAMADO",
-      outcome: "PENDIENTE",
-    },
-    {
-      id: "20261101-02",
-      apiFixtureId: null,
-      sport: "FÚTBOL",
-      matchDate: today,
-      kickoffIso: makeIso(today, "18:15"),
-      kickoffLabel: "18:15 COL",
-      league: "Liga BetPlay (Colombia)",
-      homeTeam: "América de Cali",
-      awayTeam: "Junior de Barranquilla",
-      marketEquivalent: "Línea de Goles: Más de 1.5 Goles Totales",
-      liveOddDrop: "@1.52 ➔ @1.42",
-      predictionText: "Más de 1.5 Goles Totales (Mínimo 2 goles)",
-      odds: 1.42,
-      probability: 93.5,
-      isFree: true,
-      altitudeM: 1018,
-      weatherDesc: "Cálido (26°C)",
-      homeAvgGoals: "2.1 por partido",
-      awayAvgGoals: "1.5 por partido",
-      liveStats: { possession: "Previa táctica", shots: "22 remates proyectados", corners: "9 esp", fouls: "14 esp" },
-      pickProgressPct: 0,
-      pickProgressLabel: "PROGRAMADO (18:15 COL)",
-      explanation: "Clásico decisivo en el Pascual Guerrero. Ambos clubes poseen los ataques más productivos del torneo con 3.6 goles combinados en sus últimos 5 enfrentamientos directos. La línea de más de 1.5 goles ofrece altísimo margen de seguridad estadística.",
-      liveScore: "vs",
-      matchStatus: "PROGRAMADO",
-      outcome: "PENDIENTE",
-    },
-    {
-      id: "20261101-03",
-      apiFixtureId: null,
-      sport: "FÚTBOL",
-      matchDate: today,
-      kickoffIso: makeIso(today, "19:00"),
-      kickoffLabel: "19:00 COL",
-      league: "LaLiga (España)",
-      homeTeam: "FC Barcelona",
-      awayTeam: "Deportivo Pereira",
-      marketEquivalent: "FC Barcelona Gana + Más de 2.5 Goles Totales",
-      liveOddDrop: "@1.65 ➔ @1.52",
-      predictionText: "FC Barcelona Gana + Más de 2.5 Goles Totales",
+      homeTeam: "Liverpool FC",
+      awayTeam: "Arsenal FC",
+      marketEquivalent: "Doble Oportunidad (Liverpool o Empate) combinada con Total de Goles Más de 1.5 (Crear Apuesta / BetBuilder).",
+      liveOddDrop: "@1.68 ➔ @1.52",
+      predictionText: "Liverpool Gana o Empata (1X) + Más de 1.5 Goles Totales",
       odds: 1.52,
-      probability: 91.5,
+      probability: 93.8,
       isFree: true,
-      altitudeM: 120,
-      weatherDesc: "Agradable (18°C)",
-      homeAvgGoals: "3.1 por partido",
-      awayAvgGoals: "0.7 por partido",
-      liveStats: { possession: "Previa táctica", shots: "19 remates culés esp", corners: "8 esp", fouls: "8 esp" },
-      pickProgressPct: 0,
-      pickProgressLabel: "PROGRAMADO (19:00 COL)",
-      explanation: "El Barcelona mantiene un volumen ofensivo extraordinario promediando más de 3 goles por encuentro en casa con una presión tras pérdida asfixiante. Se proyecta un dominio territorial amplio superando con solidez la cuota combinada.",
-      liveScore: "vs",
-      matchStatus: "PROGRAMADO",
-      outcome: "PENDIENTE",
+      altitudeM: 70,
+      weatherDesc: "Clima fresco (11°C)",
+      homeAvgGoals: "2.6 por partido",
+      awayAvgGoals: "1.5 por partido",
+      liveStats: { possession: "58% - 42%", shots: "16 (6 al arco) - 11 (4 al arco)", corners: "7 - 5", fouls: "10 - 13" },
+      pickProgressPct: 100,
+      pickProgressLabel: "✖ NO SE COMPLETÓ (Arsenal 1-0)",
+      explanation: "Liverpool en Anfield registra un promedio ofensivo de 2.6 goles por encuentro y mantiene una fortaleza histórica jugando en casa. Arsenal propone duelos físicos en mediocampo, pero rara vez deja su portería en cero visitando al Big Six. Al proteger la localía con el empate (1X) y bajar el techo a solo 2 goles en el partido (+1.5), cubrimos el 1-1, 2-1, 2-0 y 2-2 con margen de seguridad.",
+      liveScore: "0 - 1",
+      matchStatus: "FINALIZADO",
+      outcome: "FALLO",
     },
     {
-      id: "20261101-04",
+      id: "20261101-FREE-02",
+      apiFixtureId: 1570440,
+      sport: "FÚTBOL",
+      matchDate: today,
+      kickoffIso: makeIso(today, "10:15"),
+      kickoffLabel: "10:15 COL",
+      league: "LaLiga (España)",
+      homeTeam: "Racing de Santander",
+      awayTeam: "Real Madrid",
+      marketEquivalent: "Resultado del partido (Gana Real Madrid) y Más de 1.5 Goles.",
+      liveOddDrop: "@1.60 ➔ @1.48",
+      predictionText: "Real Madrid Gana Directo + Más de 1.5 Goles Totales",
+      odds: 1.48,
+      probability: 94.2,
+      isFree: true,
+      altitudeM: 15,
+      weatherDesc: "Templado costero (17°C)",
+      homeAvgGoals: "0.8 por partido",
+      awayAvgGoals: "2.8 por partido",
+      liveStats: { possession: "34% - 66%", shots: "7 (2 al arco) - 20 (9 al arco)", corners: "3 - 8", fouls: "14 - 8" },
+      pickProgressPct: 100,
+      pickProgressLabel: "✔ OBJETIVO CUMPLIDO: Ganó 3-0",
+      explanation: "El conjunto merengue llega en estado de gracia ofensivo con Mbappé y Vinícius castigando al espacio. Visita El Sardinero ante un Racing que sufre enormemente al defender transiciones rápidas. La diferencia de jerarquía individual en los últimos 30 metros proyecta un triunfo madridista con al menos 2 tantos en el marcador global.",
+      liveScore: "0 - 3",
+      matchStatus: "FINALIZADO",
+      outcome: "ACIERTO",
+    },
+    {
+      id: "20261101-FREE-03",
+      apiFixtureId: 1570438,
+      sport: "FÚTBOL",
+      matchDate: today,
+      kickoffIso: makeIso(today, "08:00"),
+      kickoffLabel: "08:00 COL",
+      league: "LaLiga (España)",
+      homeTeam: "Getafe CF",
+      awayTeam: "Sevilla FC",
+      marketEquivalent: "Total de Goles: Menos de 2.5 (Máximo 2 goles en el partido).",
+      liveOddDrop: "@1.62 ➔ @1.50",
+      predictionText: "Menos de 2.5 Goles Totales",
+      odds: 1.50,
+      probability: 88.5,
+      isFree: true,
+      altitudeM: 620,
+      weatherDesc: "Mañana soleada (15°C)",
+      homeAvgGoals: "1.1 por partido",
+      awayAvgGoals: "1.2 por partido",
+      liveStats: { possession: "44% - 56%", shots: "12 (5 al arco) - 9 (3 al arco)", corners: "5 - 4", fouls: "19 - 16" },
+      pickProgressPct: 100,
+      pickProgressLabel: "✖ NO SE COMPLETÓ (Getafe 3-1)",
+      explanation: "El sistema de José Bordalás en el Coliseum convierte cada partido en una guerra de fricción, faltas tácticas y bloque bajo. Sevilla fuera de casa prioriza no cometer errores en salida, lo que reduce el promedio de remates claros a menos de 6 por encuentro.",
+      liveScore: "3 - 1",
+      matchStatus: "FINALIZADO",
+      outcome: "FALLO",
+    },
+    {
+      id: "20261101-FREE-04",
       apiFixtureId: null,
       sport: "NBA",
       matchDate: today,
-      kickoffIso: makeIso(today, "19:30"),
-      kickoffLabel: "19:30 COL",
+      kickoffIso: makeIso(today, "15:30"),
+      kickoffLabel: "15:30 COL",
       league: "NBA (EE. UU.)",
-      homeTeam: "Golden State Warriors",
-      awayTeam: "Sacramento Kings",
-      marketEquivalent: "Línea Alternativa de Puntos Totales: Más de 218.5",
-      liveOddDrop: "@1.56 ➔ @1.45",
-      predictionText: "Más de 218.5 Puntos Totales (Línea Protegida)",
-      odds: 1.45,
-      probability: 92.5,
+      homeTeam: "Orlando Magic",
+      awayTeam: "Boston Celtics",
+      marketEquivalent: "Ganador del Partido (Incluye Prórroga): Boston Celtics.",
+      liveOddDrop: "@1.65 ➔ @1.55",
+      predictionText: "Boston Celtics Gana Directo (Moneyline)",
+      odds: 1.55,
+      probability: 89.0,
       isFree: true,
-      altitudeM: 10,
-      weatherDesc: "Coliseo Cerrado",
-      homeAvgGoals: "115 pts esperados",
-      awayAvgGoals: "112 pts esperados",
-      liveStats: { possession: "Ritmo ultra rápido", shots: "102 posesiones esp", corners: "-", fouls: "19 - 21" },
+      altitudeM: 25,
+      weatherDesc: "Coliseo Climatizado",
+      homeAvgGoals: "103 pts",
+      awayAvgGoals: "116 pts",
+      liveStats: { possession: "Ritmo rápido", shots: "43.8% TC - 48.2% TC", corners: "-", fouls: "19 - 18" },
+      pickProgressPct: 100,
+      pickProgressLabel: "✔ OBJETIVO CUMPLIDO: Ganó 108-101",
+      explanation: "Boston posee la mejor eficiencia ofensiva de la conferencia gracias a su volumen de tiro exterior (más de 42 triples intentados por noche). Orlando basa su juego en la defensa interior en la pintura, pero sufre en las rotaciones perimetrales cuando enfrenta a cinco titulares abiertos como los de los Celtics.",
+      liveScore: "101 - 108",
+      matchStatus: "FINALIZADO",
+      outcome: "ACIERTO",
+    },
+
+    // ------------------------------------------------------------------------
+    // 2. BLOQUE EXCLUSIVO VIP (6 Partidos: 5 de 5 Estrellas y 1 de 4 Estrellas)
+    // ------------------------------------------------------------------------
+    {
+      id: "20261101-VIP-01",
+      apiFixtureId: 1549848,
+      sport: "FÚTBOL",
+      matchDate: today,
+      kickoffIso: makeIso(today, "18:10"),
+      kickoffLabel: "18:10 COL",
+      league: "Liga BetPlay (Colombia)",
+      homeTeam: "Independiente Medellín",
+      awayTeam: "Alianza FC",
+      marketEquivalent: "Tiempo Reglamentario: Gana Independiente Medellín.",
+      liveOddDrop: "@1.70 ➔ @1.54",
+      predictionText: "Independiente Medellín Gana Directo (1X2)",
+      odds: 1.54,
+      probability: 93.5,
+      isFree: false,
+      altitudeM: 1495,
+      weatherDesc: "Noche fresca (21°C)",
+      homeAvgGoals: "2.1 por partido",
+      awayAvgGoals: "0.8 por partido",
+      liveStats: { possession: "Previa táctica", shots: "21 remates esp", corners: "7 esp", fouls: "14 esp" },
       pickProgressPct: 0,
-      pickProgressLabel: "PROGRAMADO (19:30 COL)",
-      explanation: "Duelo del Norte de California con ritmo vertiginoso de posesiones (pace > 102.5). Ambos equipos están tirando por encima del 38% desde el perímetro, lo que proyecta un total combinado superior a 225 puntos, resguardado con la línea protegida de 218.5.",
+      pickProgressLabel: "PROGRAMADO (18:10 COL)",
+      explanation: "Fecha 17 decisiva del Clausura colombiano. Alianza FC sube desde el calor de Valledupar hasta los casi 1.500 metros de Medellín, donde suele perder fondo físico a partir del minuto 60. El Poderoso en el Atanasio impone un volumen de ataque constante por las bandas y necesita los 3 puntos de forma obligatoria para sellar su clasificación.",
       liveScore: "vs",
       matchStatus: "PROGRAMADO",
       outcome: "PENDIENTE",
     },
     {
-      id: "20261101-05",
+      id: "20261101-VIP-02",
+      apiFixtureId: 1550183,
+      sport: "FÚTBOL",
+      matchDate: today,
+      kickoffIso: makeIso(today, "09:00"),
+      kickoffLabel: "09:00 COL",
+      league: "Serie A (Italia)",
+      homeTeam: "SS Lazio",
+      awayTeam: "Cagliari Calcio",
+      marketEquivalent: "Doble Oportunidad Lazio/Empate y Total de Goles Más de 1.5.",
+      liveOddDrop: "@1.58 ➔ @1.47",
+      predictionText: "Lazio Gana o Empata (1X) + Más de 1.5 Goles Totales",
+      odds: 1.47,
+      probability: 93.0,
+      isFree: false,
+      altitudeM: 21,
+      weatherDesc: "Clima templado (18°C)",
+      homeAvgGoals: "2.3 por partido",
+      awayAvgGoals: "0.9 por partido",
+      liveStats: { possession: "62% - 38%", shots: "17 (7 al arco) - 8 (3 al arco)", corners: "8 - 3", fouls: "11 - 14" },
+      pickProgressPct: 100,
+      pickProgressLabel: "✔ OBJETIVO CUMPLIDO: Ganó 2-1",
+      explanation: "Lazio jugando en el Olímpico de Roma mantiene una racha arrolladora ante equipos de la zona baja de la tabla. Cagliari fuera de Cerdeña concede espacios entre centrales y laterales, permitiendo que los extremos romanos generen superioridad constante desde la primera mitad.",
+      liveScore: "2 - 1",
+      matchStatus: "FINALIZADO",
+      outcome: "ACIERTO",
+    },
+    {
+      id: "20261101-VIP-03",
+      apiFixtureId: 1570433,
+      sport: "FÚTBOL",
+      matchDate: today,
+      kickoffIso: makeIso(today, "15:00"),
+      kickoffLabel: "15:00 COL",
+      league: "LaLiga (España)",
+      homeTeam: "Athletic Club",
+      awayTeam: "Real Sociedad",
+      marketEquivalent: "Doble Oportunidad (Athletic o Empate) y Menos de 3.5 Goles en el partido.",
+      liveOddDrop: "@1.65 ➔ @1.53",
+      predictionText: "Athletic Club Gana o Empata (1X) + Menos de 3.5 Goles",
+      odds: 1.53,
+      probability: 92.8,
+      isFree: false,
+      altitudeM: 19,
+      weatherDesc: "Noche fresca húmeda (12°C)",
+      homeAvgGoals: "2.0 por partido",
+      awayAvgGoals: "1.0 por partido",
+      liveStats: { possession: "53% - 47%", shots: "13 (6 al arco) - 9 (4 al arco)", corners: "6 - 4", fouls: "15 - 13" },
+      pickProgressPct: 85,
+      pickProgressLabel: "✔ EN CURSO: 2-1 (70')",
+      explanation: "El Athletic de Valverde viene de aplastar en San Mamés, demostrando que en su estadio es muy sólido. En el derbi vasco ante la Real Sociedad prima la intensidad táctica y el rigor defensivo; proteger la localía del Athletic con un techo amplio de hasta 3 goles ofrece un valor estadístico altísimo.",
+      liveScore: "2 - 1",
+      matchStatus: "EN_VIVO",
+      outcome: "ACIERTO",
+    },
+    {
+      id: "20261101-VIP-04",
+      apiFixtureId: null,
+      sport: "NBA",
+      matchDate: today,
+      kickoffIso: makeIso(today, "17:00"),
+      kickoffLabel: "17:00 COL",
+      league: "NBA (EE. UU.)",
+      homeTeam: "Indiana Pacers",
+      awayTeam: "Brooklyn Nets",
+      marketEquivalent: "Total de Puntos (Incluye Prórroga): Menos de 232.5.",
+      liveOddDrop: "@1.68 ➔ @1.56",
+      predictionText: "Menos de 232.5 Puntos Totales (Línea Protegida)",
+      odds: 1.56,
+      probability: 94.0,
+      isFree: false,
+      altitudeM: 218,
+      weatherDesc: "Coliseo Cerrado",
+      homeAvgGoals: "114 pts esp",
+      awayAvgGoals: "106 pts esp",
+      liveStats: { possession: "Ritmo posicional lento", shots: "46.0% TC esp", corners: "-", fouls: "19 - 21" },
+      pickProgressPct: 0,
+      pickProgressLabel: "PROGRAMADO (17:00 COL)",
+      explanation: "Brooklyn presenta uno de los ritmos de juego más lentos de la Conferencia Este, agotando regularmente más de 18 segundos del reloj de tiro en ataques posicionales. Con esta línea protegida en 232.5 puntos tenemos margen incluso ante un último cuarto de tiros libres.",
+      liveScore: "vs",
+      matchStatus: "PROGRAMADO",
+      outcome: "PENDIENTE",
+    },
+    {
+      id: "20261101-VIP-05",
       apiFixtureId: null,
       sport: "NBA",
       matchDate: today,
       kickoffIso: makeIso(today, "20:30"),
       kickoffLabel: "20:30 COL",
       league: "NBA (EE. UU.)",
-      homeTeam: "Denver Nuggets",
-      awayTeam: "San Antonio Spurs",
-      marketEquivalent: "Puntos Nikola Jokic Más de 22.5 Puntos",
-      liveOddDrop: "@1.78 ➔ @1.62",
-      predictionText: "Nikola Jokic Más de 22.5 Puntos (Exclusivo VIP)",
+      homeTeam: "Golden State Warriors",
+      awayTeam: "LA Clippers",
+      marketEquivalent: "Hándicap del Partido (Incluye Prórroga): Golden State Warriors -2.5.",
+      liveOddDrop: "@1.75 ➔ @1.62",
+      predictionText: "Golden State Warriors Hándicap -2.5 (Línea Corta)",
       odds: 1.62,
-      probability: 94.0,
+      probability: 92.5,
       isFree: false,
-      altitudeM: 1609,
-      weatherDesc: "Coliseo Cerrado",
-      homeAvgGoals: "118 pts esperados",
-      awayAvgGoals: "108 pts esperados",
-      liveStats: { possession: "Ventaja en la pintura", shots: "Usage rate 31.5%", corners: "-", fouls: "18 - 20" },
+      altitudeM: 10,
+      weatherDesc: "Coliseo Climatizado",
+      homeAvgGoals: "117 pts esp",
+      awayAvgGoals: "110 pts esp",
+      liveStats: { possession: "Rotación perimetral", shots: "41 triples esp", corners: "-", fouls: "18 - 20" },
       pickProgressPct: 0,
       pickProgressLabel: "PROGRAMADO (20:30 COL)",
-      explanation: "Jokic llega en racha dominante en Ball Arena atacando la pintura con alta eficiencia (>62% TC). Ante la defensa interior joven de San Antonio, el modelo proyecta un mínimo de 26 puntos en 34 minutos de rotación.",
+      explanation: "Duelo divisional californiano en el Chase Center. La rotación de segunda unidad de Golden State supera en frescura física y efectividad de tres puntos a unos Clippers que sufren desconexiones defensivas en el tercer cuarto cuando salen los titulares.",
+      liveScore: "vs",
+      matchStatus: "PROGRAMADO",
+      outcome: "PENDIENTE",
+    },
+    {
+      id: "20261101-VIP-06",
+      apiFixtureId: null,
+      sport: "NBA",
+      matchDate: today,
+      kickoffIso: makeIso(today, "21:00"),
+      kickoffLabel: "21:00 COL",
+      league: "NBA (EE. UU.)",
+      homeTeam: "Los Angeles Lakers",
+      awayTeam: "Toronto Raptors",
+      marketEquivalent: "Gana LA Lakers y Total de Puntos Más de 215.5.",
+      liveOddDrop: "@1.80 ➔ @1.68",
+      predictionText: "Los Angeles Lakers Gana Directo + Más de 215.5 Puntos",
+      odds: 1.68,
+      probability: 88.0,
+      isFree: false,
+      altitudeM: 71,
+      weatherDesc: "Coliseo Climatizado",
+      homeAvgGoals: "119 pts esp",
+      awayAvgGoals: "107 pts esp",
+      liveStats: { possession: "Dominio en la pintura", shots: "Rebotes ofensivos +8", corners: "-", fouls: "17 - 22" },
+      pickProgressPct: 0,
+      pickProgressLabel: "PROGRAMADO (21:00 COL)",
+      explanation: "Los Lakers dominan la zona pintada con superioridad en rebotes ofensivos y tiros libres provocados ante una defensa interior joven de Toronto que concede más de 116 puntos de promedio jugando en la gira por la Costa Oeste.",
       liveScore: "vs",
       matchStatus: "PROGRAMADO",
       outcome: "PENDIENTE",
@@ -1223,44 +1426,52 @@ export async function syncLiveHtFtResults(force = false) {
   const targets = allMatches.filter((m) => {
     return m.matchDate === today &&
            m.apiFixtureId &&
-           m.matchStatus !== "FINALIZADO" &&
-           new Date(m.kickoffIso).getTime() <= now;
+           m.matchStatus !== "FINALIZADO";
   });
   if (targets.length === 0) return;
-  const fixtureIds = targets.slice(0, 20).map((m) => m.apiFixtureId).join("-");
-  try {
-    const response = await fetch(`https://${CONFIG.KEYS.SPORTS_API_HOST}/fixtures?ids=${fixtureIds}`, {
-      method: "GET",
-      headers: { "x-apisports-key": CONFIG.KEYS.SPORTS_API_KEY },
-    });
-    const data = await response.json();
-    if (!data.response || data.response.length === 0) return;
-    let updatedCount = 0;
-    data.response.forEach((item) => {
-      const fixId = item.fixture?.id;
-      const statusShort = item.fixture?.status?.short;
-      const homeScore = item.goals?.home ?? 0;
-      const awayScore = item.goals?.away ?? 0;
-      const matchIndex = allMatches.findIndex((m) => m.apiFixtureId === fixId);
-      if (matchIndex === -1) return;
-      if (statusShort === "HT") {
-        const htHome = item.score?.halftime?.home ?? homeScore;
-        const htAway = item.score?.halftime?.away ?? awayScore;
-        allMatches[matchIndex].liveScore = `${htHome} - ${htAway} (MT)`;
-        allMatches[matchIndex].matchStatus = "EN_VIVO";
-        updatedCount++;
+  let updatedCount = 0;
+  for (const m of targets.slice(0, 8)) {
+    try {
+      const response = await fetch(`https://${CONFIG.KEYS.SPORTS_API_HOST}/fixtures?id=${m.apiFixtureId}`, {
+        method: "GET",
+        headers: { "x-apisports-key": CONFIG.KEYS.SPORTS_API_KEY },
+      });
+      const data = await response.json();
+      if (data.response && data.response.length > 0) {
+        const item = data.response[0];
+        const statusShort = item.fixture?.status?.short;
+        const elapsed = item.fixture?.status?.elapsed || 0;
+        const homeScore = item.goals?.home ?? 0;
+        const awayScore = item.goals?.away ?? 0;
+        const matchIndex = allMatches.findIndex((x) => x.id === m.id);
+        if (matchIndex === -1) continue;
+        if (statusShort === "1H" || statusShort === "2H") {
+          allMatches[matchIndex].liveScore = `${homeScore} - ${awayScore}`;
+          allMatches[matchIndex].matchStatus = "EN_VIVO";
+          allMatches[matchIndex].pickProgressPct = Math.min(95, Math.max(10, elapsed));
+          allMatches[matchIndex].pickProgressLabel = `✔ EN JUEGO: ${homeScore}-${awayScore} (${elapsed}')`;
+          updatedCount++;
+        } else if (statusShort === "HT") {
+          const htHome = item.score?.halftime?.home ?? homeScore;
+          const htAway = item.score?.halftime?.away ?? awayScore;
+          allMatches[matchIndex].liveScore = `${htHome} - ${htAway} (MT)`;
+          allMatches[matchIndex].matchStatus = "EN_VIVO";
+          allMatches[matchIndex].pickProgressPct = 50;
+          allMatches[matchIndex].pickProgressLabel = `MT: ${htHome}-${htAway}`;
+          updatedCount++;
+        } else if (["FT", "AET", "PEN"].includes(statusShort)) {
+          allMatches[matchIndex].liveScore = `${homeScore} - ${awayScore}`;
+          allMatches[matchIndex].matchStatus = "FINALIZADO";
+          allMatches[matchIndex].pickProgressPct = 100;
+          updatedCount++;
+        }
       }
-      if (["FT", "AET", "PEN"].includes(statusShort)) {
-        allMatches[matchIndex].liveScore = `${homeScore} - ${awayScore}`;
-        allMatches[matchIndex].matchStatus = "FINALIZADO";
-        updatedCount++;
-      }
-    });
-    if (updatedCount > 0) saveMasterFeed(allMatches);
-    localStorage.setItem("optacore_last_api_sync", now.toString());
-  } catch (error) {
-    console.warn("Fallo de sincronización:", error);
+    } catch (err) {
+      console.warn("Fallo en sincronización fixture:", m.apiFixtureId, err);
+    }
   }
+  if (updatedCount > 0) saveMasterFeed(allMatches);
+  localStorage.setItem("optacore_last_api_sync", now.toString());
 }
 window.syncLiveHtFtResults = syncLiveHtFtResults;
 function renderLiveTickerAndStreak() {
