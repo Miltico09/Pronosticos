@@ -1,9 +1,9 @@
 // ============================================================================
-// ARCHIVO: pronosticos.js - Historial Completo Restaurado (24 Partidos)
+// ARCHIVO: pronosticos.js - Código Compacto (Diferenciación Visual Acierto/Fallo)
 // ============================================================================
 import { CONFIG } from "./config.js";
 import { isUserVipOrAdmin } from "./auth.js";
-const DB_KEY = "optacore_master_feed_v25";
+const DB_KEY = "optacore_master_feed_v30";
 const API_SYNC_THROTTLE_MS = 10 * 60 * 1000;
 let activeQuickFilter = "ALL";
 export function getColombiaDateString(d = new Date()) {
@@ -101,7 +101,6 @@ function seedMasterRecords() {
   }
   const makeIso = (d, hhmm) => `${d}T${hhmm}:00-05:00`;
   const records = [
-    // --- HOY (5 PARTIDOS) ---
     {
       id: "20261031-01",
       apiFixtureId: null,
@@ -207,8 +206,8 @@ function seedMasterRecords() {
       homeAvgGoals: "1.2 por partido",
       awayAvgGoals: "1.7 por partido",
       liveStats: { possession: "48% - 52%", shots: "9 (4 al arco) - 11 (2 al arco)", corners: "2 - 1", fouls: "13 - 12" },
-      pickProgressPct: 50,
-      pickProgressLabel: "✖ JUGADA NO COMPLETADA (Llaneros ganó 3-2)",
+      pickProgressPct: 100,
+      pickProgressLabel: "✖ NO SE COMPLETÓ (Llaneros ganó 3-2)",
       explanation: "Llaneros aprovechó desatenciones defensivas en Villavicencio para adelantarse. Pese al descuento de Junior, el penal al 80' sentenció el 3-2.",
       liveScore: "3 - 2",
       matchStatus: "FINALIZADO",
@@ -242,7 +241,6 @@ function seedMasterRecords() {
       matchStatus: "FINALIZADO",
       outcome: "ACIERTO",
     },
-    // --- AYER (4 PARTIDOS) ---
     {
       id: "20261030-01",
       apiFixtureId: null,
@@ -339,7 +337,6 @@ function seedMasterRecords() {
       matchStatus: "FINALIZADO",
       outcome: "FALLO",
     },
-    // --- ANTEAYER (3 PARTIDOS) ---
     {
       id: "20261029-01",
       apiFixtureId: null,
@@ -412,7 +409,6 @@ function seedMasterRecords() {
       matchStatus: "FINALIZADO",
       outcome: "FALLO",
     },
-    // --- MEGA-PARLEY DE 13 PARTIDOS RESTAURADO COMPLETO ---
     {
       id: "PARLEY13-01",
       apiFixtureId: null,
@@ -725,7 +721,6 @@ function seedMasterRecords() {
       matchStatus: "FINALIZADO",
       outcome: "ACIERTO",
     },
-    // --- HITO FUNDADOR ---
     {
       id: "FOUNDER-JAGUARES",
       apiFixtureId: null,
@@ -851,7 +846,7 @@ window.copyPickToClipboard = (matchId, ev) => {
 window.openWinTicketCard = (matchId, ev) => {
   if (ev) ev.stopPropagation();
   const match = getAllMasterFeed().find((m) => m.id === matchId);
-  if (!match) return;
+  if (!match || match.outcome !== "ACIERTO") return;
   let modal = document.getElementById("win-ticket-modal");
   if (!modal) {
     modal = document.createElement("div");
@@ -1040,10 +1035,10 @@ window.openMatchModal = (matchId) => {
       ${
         canSeePick
           ? `
-          <div class="p-3 bg-[#061210] border border-[#10b981]/50 flex items-center justify-between text-xs">
+          <div class="p-3 ${match.outcome === "FALLO" ? "bg-[#15070a] border border-red-500/50" : "bg-[#061210] border border-[#10b981]/50"} flex items-center justify-between text-xs">
             <div>
               <span class="text-[10px] text-slate-400 block uppercase">JUGADA OFICIAL:</span>
-              <span class="text-sm md:text-base font-bold text-[#10b981]">${match.predictionText}</span>
+              <span class="text-sm md:text-base font-bold ${match.outcome === "FALLO" ? "text-red-400" : "text-[#10b981]"}">${match.predictionText}</span>
               <span class="text-[11px] text-slate-400 block pt-0.5">Cuota asignada: <strong>@${Number(match.odds || 1.45).toFixed(2)}</strong></span>
             </div>
             <div class="text-right">
@@ -1191,10 +1186,12 @@ export function renderTodayPredictions() {
     const awayLogo = getLogo(item.awayTeam);
     const fever = getPitchFeverBar(item.altitudeM, item.weatherDesc);
     const odd = Number(item.odds || 1.45);
-    const totalReturn = Math.round(stake * odd);
-    const netProfit = totalReturn - stake;
+    const isLoss = item.outcome === "FALLO";
+    const totalReturn = isLoss ? 0 : Math.round(stake * odd);
+    const netProfit = isLoss ? -stake : (totalReturn - stake);
+    const cardBorder = isLoss ? "border-red-500/50 hover:border-red-400" : "border-[#1b2432] hover:border-cyan-400/50";
     return `
-      <article class="quant-card p-3.5 flex flex-col justify-between space-y-3 font-mono">
+      <article class="quant-card ${cardBorder} p-3.5 flex flex-col justify-between space-y-3 font-mono transition-all">
         <div class="flex flex-wrap items-center justify-between gap-1 border-b border-[#1b2432] pb-1.5 text-xs">
           <div class="flex items-center gap-1.5">
             <span class="px-1.5 py-0.5 font-bold uppercase text-[9px] border ${stars.badge}">
@@ -1202,8 +1199,8 @@ export function renderTodayPredictions() {
             </span>
             <span class="text-slate-400 font-semibold text-[11px]">${item.league}</span>
           </div>
-          <span class="countdown-timer text-cyan-400 font-bold text-[11px]" data-kickoff="${item.kickoffIso}" data-status="${item.matchStatus}">
-            ${formatCountdown(item.kickoffIso, item.matchStatus)}
+          <span class="countdown-timer ${isLoss ? "text-red-400" : "text-cyan-400"} font-bold text-[11px]" data-kickoff="${item.kickoffIso}" data-status="${item.matchStatus}">
+            ${item.matchStatus === "FINALIZADO" ? (isLoss ? "✖ NO SE DIO" : "✔ FINALIZADO") : formatCountdown(item.kickoffIso, item.matchStatus)}
           </span>
         </div>
         <div class="flex items-center justify-between gap-2 py-1">
@@ -1219,11 +1216,11 @@ export function renderTodayPredictions() {
         ${
           isVisible
             ? `
-            <div class="p-2.5 bg-[#05070a] border border-[#10b981]/40 space-y-2 text-xs">
+            <div class="p-2.5 ${isLoss ? "bg-[#15070a] border border-red-500/40" : "bg-[#05070a] border border-[#10b981]/40"} space-y-2 text-xs">
               <div class="flex items-center justify-between gap-2">
                 <div>
                   <span class="text-[9px] uppercase text-slate-400 block">JUGADA SUGERIDA:</span>
-                  <span class="text-xs md:text-sm font-bold text-[#10b981]">${item.predictionText}</span>
+                  <span class="text-xs md:text-sm font-bold ${isLoss ? "text-red-400" : "text-[#10b981]"}">${item.predictionText}</span>
                   <span class="text-[10px] text-slate-400 block">Cuota: @${odd.toFixed(2)}</span>
                   ${item.marketEquivalent ? `<span class="text-[9px] text-cyan-300 block">📍 Cómo buscarla: ${item.marketEquivalent}</span>` : ""}
                 </div>
@@ -1233,16 +1230,16 @@ export function renderTodayPredictions() {
                 </div>
               </div>
               <div class="pt-1.5 border-t border-[#1b2432] flex items-center justify-between text-[11px]">
-                <span class="text-slate-400">Con $${stake.toLocaleString("es-CO")} cobras:</span>
-                <span class="text-[#10b981] font-black">$${totalReturn.toLocaleString("es-CO")} (+$${netProfit.toLocaleString("es-CO")})</span>
+                <span class="text-slate-400">${isLoss ? "Pérdida registrada:" : "Con $" + stake.toLocaleString("es-CO") + " cobras:"}</span>
+                <span class="${isLoss ? "text-red-400" : "text-[#10b981]"} font-black">${isLoss ? "-$" + stake.toLocaleString("es-CO") + " (No acertado)" : "$" + totalReturn.toLocaleString("es-CO") + " (+$" + netProfit.toLocaleString("es-CO") + ")"}</span>
               </div>
               <div class="pt-1 space-y-1">
                 <div class="flex justify-between text-[9px] text-slate-400">
-                  <span>PROGRESO DE LA JUGADA:</span>
-                  <span class="font-bold ${item.pickProgressPct === 100 ? "text-[#10b981]" : "text-cyan-300"}">${item.pickProgressLabel || (item.pickProgressPct || 0) + "%"}</span>
+                  <span>ESTADO DE LA JUGADA:</span>
+                  <span class="font-bold ${isLoss ? "text-red-400" : (item.pickProgressPct === 100 ? "text-[#10b981]" : "text-cyan-300")}">${item.pickProgressLabel || (item.pickProgressPct || 0) + "%"}</span>
                 </div>
                 <div class="w-full h-1 bg-[#161f2c]">
-                  <div class="${item.pickProgressPct === 100 ? "bg-[#10b981]" : "bg-cyan-400"} h-full" style="width: ${item.pickProgressPct || 0}%"></div>
+                  <div class="${isLoss ? "bg-red-500" : (item.pickProgressPct === 100 ? "bg-[#10b981]" : "bg-cyan-400")} h-full" style="width: ${item.pickProgressPct || 0}%"></div>
                 </div>
               </div>
             </div>
@@ -1341,7 +1338,7 @@ export function renderTodayResults() {
         <div class="space-y-0.5">
           <span class="text-[10px] text-slate-400">${p.kickoffLabel} • ${p.league}</span>
           <div class="text-xs md:text-sm font-bold text-white">${p.homeTeam} vs ${p.awayTeam}</div>
-          <div class="text-cyan-300 text-[11px]">Pronóstico: ${p.predictionText} (@${Number(p.odds || 1.45).toFixed(2)})</div>
+          <div class="${p.outcome === "FALLO" ? "text-red-400" : "text-cyan-300"} text-[11px]">Pronóstico: ${p.predictionText} (@${Number(p.odds || 1.45).toFixed(2)})</div>
         </div>
         <div class="flex items-center gap-2">
           ${
@@ -1447,7 +1444,7 @@ export function renderFullPublicHistory() {
           <td class="py-2.5 px-3 text-slate-400 whitespace-nowrap">${p.matchDate}</td>
           <td class="py-2.5 px-3 text-slate-300 whitespace-nowrap">${p.sport} // ${p.league}</td>
           <td class="py-2.5 px-3 font-bold text-white whitespace-nowrap">${p.homeTeam} vs ${p.awayTeam}</td>
-          <td class="py-2.5 px-3 text-cyan-300 whitespace-nowrap">${p.predictionText}</td>
+          <td class="py-2.5 px-3 ${p.outcome === "FALLO" ? "text-red-400" : "text-cyan-300"} whitespace-nowrap">${p.predictionText}</td>
           <td class="py-2.5 px-3 font-bold text-white whitespace-nowrap">@${Number(p.odds || 1.45).toFixed(2)}</td>
           <td class="py-2.5 px-3 font-bold text-white whitespace-nowrap">${p.liveScore}</td>
           <td class="py-2.5 px-3 whitespace-nowrap"><span class="px-2 py-0.5 text-[9px] font-bold uppercase border ${badge}">${p.outcome}</span></td>
