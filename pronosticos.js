@@ -1,20 +1,43 @@
 // ============================================================================
-// ARCHIVO: pronosticos.js - 34 Partidos (10 Hoy + 24 Historial), Bilingüe y Sin Mantenimiento
+// ARCHIVO: pronosticos.js - Motor Autónomo Blindado (10 Hoy + 24 Historial)
 // ============================================================================
-import { CONFIG } from "./config.js";
-import { isUserVipOrAdmin } from "./auth.js";
-const DB_KEY = "optacore_master_feed_v35";
+const DB_KEY = "optacore_master_feed_v40";
 const API_SYNC_THROTTLE_MS = 10 * 60 * 1000;
 let activeQuickFilter = "ALL";
 let currentLang = localStorage.getItem("optacore_lang") || "ES";
 localStorage.removeItem("optacore_maintenance_mode");
+const SAFE_CONFIG = {
+  TIMEZONE: "America/Bogota",
+  SPORTS_API_HOST: "v3.football.api-sports.io",
+  SPORTS_API_KEY: "0d242e4cfb0ebf2bca5b089f6bfe2b92",
+  WHATSAPP_LINK: "https://wa.me/573332861551?text=Hola%20equipo%20OptaCore,%20deseo%20activar%20mi%20membres%C3%ADa%20VIP",
+  ADMIN_EMAIL: "admin@optacore.com",
+  PROMO_CODES: [
+    { code: "PROMO20", discountPct: 20, promoter: "Campaña General" },
+    { code: "VIP20", discountPct: 20, promoter: "Canal VIP" },
+    { code: "CARLOS20", discountPct: 20, promoter: "Promotor Carlos" },
+    { code: "JUAN20", discountPct: 20, promoter: "Promotor Juan" }
+  ]
+};
+function checkUserVipOrAdmin() {
+  const role = localStorage.getItem("optacore_user_role");
+  const email = (localStorage.getItem("optacore_user_email") || "").toLowerCase();
+  if (role === "ADMIN" || role === "VIP" || email === SAFE_CONFIG.ADMIN_EMAIL) return true;
+  const exp = parseInt(localStorage.getItem("optacore_vip_expires_timestamp") || "0", 10);
+  if (exp > Date.now()) return true;
+  return false;
+}
 export function getColombiaDateString(d = new Date()) {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: CONFIG?.BRAND?.TIMEZONE || "America/Bogota",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(d);
+  try {
+    return new Intl.DateTimeFormat("en-CA", {
+      timeZone: SAFE_CONFIG.TIMEZONE,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(d);
+  } catch (e) {
+    return "2026-11-01";
+  }
 }
 const STATIC_I18N = {
   "PRONÓSTICOS DE ALTA PROBABILIDAD": "HIGH PROBABILITY PREDICTIONS",
@@ -220,20 +243,6 @@ function applyStaticDomTranslation() {
   if (emailIn) emailIn.placeholder = currentLang === "EN" ? "you@email.com" : "tu@correo.com";
   const timerEl = document.getElementById("cart-closing-timer");
   if (timerEl) timerEl.textContent = currentLang === "EN" ? "⏳ Free card closes in: 02h:14m" : "⏳ Cierre cartelera libre: 02h:14m";
-  const badgeEl = document.getElementById("user-role-badge");
-  if (badgeEl) {
-    const txt = badgeEl.textContent.trim();
-    if (currentLang === "EN" && txt.includes("ACCESO LIBRE")) badgeEl.textContent = "FREE ACCESS // 4 FREE PICKS TODAY";
-    else if (currentLang === "ES" && txt.includes("FREE ACCESS")) badgeEl.textContent = "ACCESO LIBRE // 4 JUGADAS GRATIS HOY";
-    else if (currentLang === "EN" && txt.includes("MODO ADMINISTRADOR")) badgeEl.textContent = "ADMIN MODE ACTIVE";
-    else if (currentLang === "ES" && txt.includes("ADMIN MODE")) badgeEl.textContent = "MODO ADMINISTRADOR ACTIVO";
-    else if (currentLang === "EN" && txt.includes("MEMBRESÍA VIP ACTIVA")) badgeEl.textContent = "ACTIVE VIP MEMBERSHIP";
-    else if (currentLang === "ES" && txt.includes("ACTIVE VIP MEMBERSHIP")) badgeEl.textContent = "MEMBRESÍA VIP ACTIVA";
-  }
-  const liveInd = document.querySelector(".animate-pulse")?.parentElement;
-  if (liveInd && liveInd.lastChild) {
-    liveInd.lastChild.nodeValue = currentLang === "EN" ? " LIVE SYSTEM" : " SISTEMA EN VIVO";
-  }
 }
 function injectLanguageSwitcher() {
   if (document.getElementById("optacore-lang-switcher")) return;
@@ -327,4 +336,5 @@ const LOGOS = {
   "Bayern Múnich": "https://media.api-sports.io/football/teams/157.png",
   "Borussia Dortmund": "https://media.api-sports.io/football/teams/165.png",
   "FC Barcelona": "https://media.api-sports.io/football/teams/529.png",
-  "Deportivo Alavés": "https://media.ap
+  "Deportivo Alavés": "https://media.api-sports.io/football/teams/542.png",
+  "Llaneros FC": "https://media.api-sports.io/football/teams/
