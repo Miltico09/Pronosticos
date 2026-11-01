@@ -1,13 +1,14 @@
 // ============================================================================
 // ARCHIVO: pronosticos.js
-// Incluye: Win-Ticker, Racha Activa, Filtros Píldora, Calculadora COP,
-// Termómetro de Fiebre de Cancha, Generador de Tickets de Victoria y Panel Admin
+// Sincronización en Lote (1 Crédito API para HT/FT), Estadísticas en Vivo,
+// Telemetría de Cancha, Racha Activa, Calculadora y Tickets de Victoria
 // ============================================================================
 
 import { CONFIG } from "./config.js";
 import { isUserVipOrAdmin } from "./auth.js";
 
-const DB_KEY = "optacore_master_feed_v14";
+const DB_KEY = "optacore_master_feed_v16";
+const API_SYNC_THROTTLE_MS = 10 * 60 * 1000;
 let activeQuickFilter = "ALL";
 
 export function getColombiaDateString(d = new Date()) {
@@ -25,7 +26,6 @@ function getStars(prob) {
   return { stars: "⭐⭐⭐", tag: "3 ESTRELLAS", badge: "border-slate-600 bg-slate-800 text-slate-300" };
 }
 
-// MEJORA #2: Medidor visual de "Fiebre de Cancha" (Impacto físico/climático)
 function getPitchFeverBar(altitudeM, weatherDesc) {
   let stressScore = 45;
   let label = "EXIGENCIA MEDIA";
@@ -113,6 +113,7 @@ function seedMasterRecords() {
     // --- HOY (31 DE OCTUBRE) ---
     {
       id: "20261031-01",
+      apiFixtureId: 1208492,
       sport: "FÚTBOL",
       matchDate: today,
       kickoffIso: makeIso(today, "10:00"),
@@ -120,6 +121,8 @@ function seedMasterRecords() {
       league: "Premier League (Inglaterra)",
       homeTeam: "Manchester City",
       awayTeam: "Brighton",
+      marketEquivalent: "Gana Manchester City + Total Goles Más de 1.5",
+      liveOddDrop: "@1.62 ➔ @1.45 (Dinero Inteligente)",
       predictionText: "Manchester City Gana + Más de 1.5 Goles Totales",
       odds: 1.45,
       probability: 92.5,
@@ -128,6 +131,9 @@ function seedMasterRecords() {
       weatherDesc: "Frío húmedo (12°C)",
       homeAvgGoals: "2.7 por partido",
       awayAvgGoals: "0.8 por partido",
+      liveStats: { possession: "68% - 32%", shots: "18 (9 al arco) - 6 (2 al arco)", corners: "8 - 2", fouls: "7 - 12" },
+      pickProgressPct: 100,
+      pickProgressLabel: "✔ OBJETIVO CUMPLIDO: Ganó 3-1 (+1.5 Goles)",
       explanation: `¿Por qué se eligió esta jugada?: El Manchester City en su estadio es una máquina que arranca a toda velocidad desde el primer minuto. Brighton siempre intenta salir jugando con la pelota dominada y suele perder balones peligrosos muy cerca de su propio arco.\n\n¿Cómo se resolvió?: El City marcó dos goles en el primer tiempo. En el segundo tiempo Brighton descontó, pero Haaland liquidó el 3-1 definitivo asegurando la victoria con total tranquilidad.`,
       liveScore: "3 - 1",
       matchStatus: "FINALIZADO",
@@ -135,6 +141,7 @@ function seedMasterRecords() {
     },
     {
       id: "20261031-02",
+      apiFixtureId: 1208493,
       sport: "FÚTBOL",
       matchDate: today,
       kickoffIso: makeIso(today, "12:30"),
@@ -142,6 +149,8 @@ function seedMasterRecords() {
       league: "Bundesliga (Alemania)",
       homeTeam: "Bayern Múnich",
       awayTeam: "Borussia Dortmund",
+      marketEquivalent: "Línea de Goles: Más de 2.5 (3 goles o más en total)",
+      liveOddDrop: "@1.55 ➔ @1.40",
       predictionText: "Más de 2.5 Goles Totales (Mínimo 3 goles)",
       odds: 1.40,
       probability: 93.0,
@@ -150,6 +159,9 @@ function seedMasterRecords() {
       weatherDesc: "Clima fresco (10°C)",
       homeAvgGoals: "2.9 por partido",
       awayAvgGoals: "1.6 por partido",
+      liveStats: { possession: "54% - 46%", shots: "21 (11 al arco) - 14 (7 al arco)", corners: "11 - 6", fouls: "10 - 9" },
+      pickProgressPct: 100,
+      pickProgressLabel: "✔ OBJETIVO CUMPLIDO: 5 goles anotados (3-2)",
       explanation: `¿Por qué se eligió esta jugada?: El clásico alemán siempre es de ida y vuelta. Ambos clubes tienen delanteros top pero defensas que dejan espacios cuando van al ataque.\n\n¿Cómo se resolvió?: El primer tiempo terminó 1-1. Tras el minuto 60 llegaron tres goles más para un 3-2 final que superó con comodidad la línea requerida.`,
       liveScore: "3 - 2",
       matchStatus: "FINALIZADO",
@@ -157,6 +169,7 @@ function seedMasterRecords() {
     },
     {
       id: "20261031-03",
+      apiFixtureId: 1208494,
       sport: "FÚTBOL",
       matchDate: today,
       kickoffIso: makeIso(today, "15:00"),
@@ -164,6 +177,8 @@ function seedMasterRecords() {
       league: "LaLiga (España)",
       homeTeam: "FC Barcelona",
       awayTeam: "Deportivo Alavés",
+      marketEquivalent: "Hándicap -1.5 (Barcelona gana por 2 o más goles)",
+      liveOddDrop: "@1.68 ➔ @1.50",
       predictionText: "Barcelona Gana por 2 o más goles (Hándicap -1.5)",
       odds: 1.50,
       probability: 88.5,
@@ -172,6 +187,9 @@ function seedMasterRecords() {
       weatherDesc: "Agradable (19°C)",
       homeAvgGoals: "3.0 por partido",
       awayAvgGoals: "0.6 por partido",
+      liveStats: { possession: "72% - 28%", shots: "16 (8 al arco) - 3 (1 al arco)", corners: "9 - 1", fouls: "6 - 15" },
+      pickProgressPct: 100,
+      pickProgressLabel: "✔ OBJETIVO CUMPLIDO: Ganó 2-0 cumpliendo hándicap",
       explanation: `¿Por qué se eligió esta jugada?: Barcelona venía con racha perfecta de local. Alavés sufre muchísimo cuando baja al nivel del mar ante rivales que le esconden la pelota.\n\n¿Cómo se resolvió?: Dominio del 72% de posesión culé y triunfo cómodo 2-0 sin pasar apuros.`,
       liveScore: "2 - 0",
       matchStatus: "FINALIZADO",
@@ -179,6 +197,7 @@ function seedMasterRecords() {
     },
     {
       id: "20261031-04",
+      apiFixtureId: 1208495,
       sport: "FÚTBOL",
       matchDate: today,
       kickoffIso: makeIso(today, "18:05"),
@@ -186,6 +205,8 @@ function seedMasterRecords() {
       league: "Liga BetPlay (Colombia)",
       homeTeam: "Llaneros FC",
       awayTeam: "Junior de Barranquilla",
+      marketEquivalent: "Doble Oportunidad X2 (Empate o Junior) + Más de 1.5 Goles",
+      liveOddDrop: "@1.60 ➔ @1.48",
       predictionText: "Junior Gana o Empata (X2) + Más de 1.5 Goles",
       odds: 1.48,
       probability: 91.0,
@@ -194,6 +215,9 @@ function seedMasterRecords() {
       weatherDesc: "Calor húmedo (27°C)",
       homeAvgGoals: "1.2 por partido",
       awayAvgGoals: "1.7 por partido",
+      liveStats: { possession: "48% - 52%", shots: "8 (3) - 11 (6)", corners: "4 - 5", fouls: "13 - 11" },
+      pickProgressPct: 50,
+      pickProgressLabel: "⚡ EN ESPERA DE INICIO",
       explanation: `¿Por qué se eligió esta jugada?: Villavicencio tiene 27°C y humedad alta, clima donde los jugadores costeños de Junior rinden con potencia física a diferencia de la altura andina.`,
       liveScore: "vs",
       matchStatus: "PROGRAMADO",
@@ -201,6 +225,7 @@ function seedMasterRecords() {
     },
     {
       id: "20261031-05",
+      apiFixtureId: null,
       sport: "NBA",
       matchDate: today,
       kickoffIso: makeIso(today, "19:00"),
@@ -208,6 +233,8 @@ function seedMasterRecords() {
       league: "NBA (EE. UU.)",
       homeTeam: "Minnesota Timberwolves",
       awayTeam: "San Antonio Spurs",
+      marketEquivalent: "Línea Alternativa de Puntos Totales: Más de 214.5",
+      liveOddDrop: "@1.52 ➔ @1.42",
       predictionText: "Más de 214.5 Puntos Totales (Línea Protegida)",
       odds: 1.42,
       probability: 93.5,
@@ -216,6 +243,9 @@ function seedMasterRecords() {
       weatherDesc: "Coliseo Climatizado",
       homeAvgGoals: "116 pts esperados",
       awayAvgGoals: "105 pts esperados",
+      liveStats: { possession: "Ritmo rápido", shots: "48% TC", corners: "-", fouls: "-" },
+      pickProgressPct: 0,
+      pickProgressLabel: "🔒 EXCLUSIVO MIEMBROS VIP",
       explanation: `¿Por qué se eligió esta jugada?: Se compraron casi 9 puntos de protección frente a la línea de 223.0 que pusieron las casas de apuestas. Minnesota llega con descanso completo.`,
       liveScore: "vs",
       matchStatus: "PROGRAMADO",
@@ -225,6 +255,7 @@ function seedMasterRecords() {
     // --- AYER (30 DE OCTUBRE) ---
     {
       id: "20261030-01",
+      apiFixtureId: null,
       sport: "FÚTBOL",
       matchDate: "2026-10-30",
       kickoffIso: makeIso("2026-10-30", "20:05"),
@@ -232,6 +263,7 @@ function seedMasterRecords() {
       league: "Liga BetPlay (Colombia)",
       homeTeam: "Atlético Bucaramanga",
       awayTeam: "Deportivo Pasto",
+      marketEquivalent: "Apuesta Sin Empate (DNB Bucaramanga)",
       predictionText: "Bucaramanga Empate No Acción (DNB)",
       odds: 1.45,
       probability: 91.2,
@@ -247,6 +279,7 @@ function seedMasterRecords() {
     },
     {
       id: "20261030-02",
+      apiFixtureId: null,
       sport: "NBA",
       matchDate: "2026-10-30",
       kickoffIso: makeIso("2026-10-30", "19:00"),
@@ -254,6 +287,7 @@ function seedMasterRecords() {
       league: "NBA (EE. UU.)",
       homeTeam: "Miami Heat",
       awayTeam: "Indiana Pacers",
+      marketEquivalent: "Total Puntos Combinados: Más de 227.5",
       predictionText: "Más de 227.5 Puntos Totales Combinados",
       odds: 1.40,
       probability: 92.0,
@@ -269,6 +303,7 @@ function seedMasterRecords() {
     },
     {
       id: "20261030-03-FALLO",
+      apiFixtureId: null,
       sport: "FÚTBOL",
       matchDate: "2026-10-30",
       kickoffIso: makeIso("2026-10-30", "18:00"),
@@ -276,6 +311,7 @@ function seedMasterRecords() {
       league: "Liga BetPlay (Colombia)",
       homeTeam: "Jaguares de Córdoba",
       awayTeam: "Deportivo Pereira",
+      marketEquivalent: "Menos de 2.5 Goles Totales",
       predictionText: "Menos de 2.5 Goles Totales",
       odds: 1.70,
       probability: 85.5,
@@ -291,6 +327,7 @@ function seedMasterRecords() {
     },
     {
       id: "20261030-04-FALLO",
+      apiFixtureId: null,
       sport: "FÚTBOL",
       matchDate: "2026-10-30",
       kickoffIso: makeIso("2026-10-30", "14:30"),
@@ -298,6 +335,7 @@ function seedMasterRecords() {
       league: "Bundesliga (Alemania)",
       homeTeam: "Bayer Leverkusen",
       awayTeam: "VfB Stuttgart",
+      marketEquivalent: "Leverkusen Gana + Más de 2.5 Goles",
       predictionText: "Leverkusen Gana + Más de 2.5 Goles",
       odds: 1.55,
       probability: 88.0,
@@ -315,6 +353,7 @@ function seedMasterRecords() {
     // --- ANTEAYER (29 DE OCTUBRE) ---
     {
       id: "20261029-01",
+      apiFixtureId: null,
       sport: "FÚTBOL",
       matchDate: "2026-10-29",
       kickoffIso: makeIso("2026-10-29", "18:30"),
@@ -322,6 +361,7 @@ function seedMasterRecords() {
       league: "Liga BetPlay (Colombia)",
       homeTeam: "América de Cali",
       awayTeam: "Fortaleza CEIF",
+      marketEquivalent: "Doble Oportunidad 1X + Más de 1.5 Goles",
       predictionText: "América Gana o Empata (1X) + Más de 1.5 Goles",
       odds: 1.46,
       probability: 90.5,
@@ -337,6 +377,7 @@ function seedMasterRecords() {
     },
     {
       id: "20261029-02-FALLO",
+      apiFixtureId: null,
       sport: "NBA",
       matchDate: "2026-10-29",
       kickoffIso: makeIso("2026-10-29", "19:00"),
@@ -344,6 +385,7 @@ function seedMasterRecords() {
       league: "NBA (EE. UU.)",
       homeTeam: "Utah Jazz",
       awayTeam: "Sacramento Kings",
+      marketEquivalent: "Hándicap Sacramento Kings -6.5",
       predictionText: "Sacramento Kings Hándicap -6.5",
       odds: 1.90,
       probability: 87.5,
@@ -359,6 +401,7 @@ function seedMasterRecords() {
     },
     {
       id: "20261029-03-FALLO",
+      apiFixtureId: null,
       sport: "FÚTBOL",
       matchDate: "2026-10-29",
       kickoffIso: makeIso("2026-10-29", "14:00"),
@@ -366,6 +409,7 @@ function seedMasterRecords() {
       league: "Copa del Rey (España)",
       homeTeam: "SD Compostela",
       awayTeam: "Deportivo Alavés",
+      marketEquivalent: "Alavés Gana 1T / Final",
       predictionText: "Alavés Gana Descanso / Final",
       odds: 1.80,
       probability: 86.0,
@@ -383,6 +427,7 @@ function seedMasterRecords() {
     // --- MEGA-PARLEY DE 13 PARTIDOS (24 Y 25 DE OCTUBRE) ---
     {
       id: "PARLEY13-01",
+      apiFixtureId: null,
       sport: "NBA",
       matchDate: "2026-10-25",
       kickoffIso: makeIso("2026-10-25", "20:30"),
@@ -390,6 +435,7 @@ function seedMasterRecords() {
       league: "NBA",
       homeTeam: "Phoenix Suns",
       awayTeam: "Dallas Mavericks",
+      marketEquivalent: "Puntos Jugador: Kevin Durant Más de 24.5",
       predictionText: "Kevin Durant Más de 24.5 Puntos",
       odds: 1.75,
       probability: 92.5,
@@ -405,6 +451,7 @@ function seedMasterRecords() {
     },
     {
       id: "PARLEY13-02-FALLO",
+      apiFixtureId: null,
       sport: "NBA",
       matchDate: "2026-10-25",
       kickoffIso: makeIso("2026-10-25", "19:30"),
@@ -412,6 +459,7 @@ function seedMasterRecords() {
       league: "NBA",
       homeTeam: "Golden State Warriors",
       awayTeam: "LA Clippers",
+      marketEquivalent: "Hándicap Warriors -4.5",
       predictionText: "Warriors Gana -4.5 Hándicap",
       odds: 1.85,
       probability: 87.0,
@@ -427,6 +475,7 @@ function seedMasterRecords() {
     },
     {
       id: "PARLEY13-03",
+      apiFixtureId: null,
       sport: "FÚTBOL",
       matchDate: "2026-10-25",
       kickoffIso: makeIso("2026-10-25", "17:15"),
@@ -434,6 +483,7 @@ function seedMasterRecords() {
       league: "Liga BetPlay",
       homeTeam: "Junior de Barranquilla",
       awayTeam: "América de Cali",
+      marketEquivalent: "Total Goles Junior: Más de 0.5",
       predictionText: "Junior Más de 0.5 Goles en Casa",
       odds: 1.30,
       probability: 91.0,
@@ -449,6 +499,7 @@ function seedMasterRecords() {
     },
     {
       id: "PARLEY13-04",
+      apiFixtureId: null,
       sport: "FÚTBOL",
       matchDate: "2026-10-25",
       kickoffIso: makeIso("2026-10-25", "14:45"),
@@ -456,6 +507,7 @@ function seedMasterRecords() {
       league: "Ligue 1",
       homeTeam: "Olympique Marsella",
       awayTeam: "PSG",
+      marketEquivalent: "Ganador 1X2: PSG",
       predictionText: "Victoria Directa PSG",
       odds: 1.55,
       probability: 89.5,
@@ -471,6 +523,7 @@ function seedMasterRecords() {
     },
     {
       id: "PARLEY13-05",
+      apiFixtureId: null,
       sport: "FÚTBOL",
       matchDate: "2026-10-25",
       kickoffIso: makeIso("2026-10-25", "12:00"),
@@ -478,6 +531,7 @@ function seedMasterRecords() {
       league: "Serie A",
       homeTeam: "Inter de Milán",
       awayTeam: "Juventus",
+      marketEquivalent: "Más de 2.5 Goles Totales",
       predictionText: "Más de 2.5 Goles Totales",
       odds: 1.85,
       probability: 88.0,
@@ -493,6 +547,7 @@ function seedMasterRecords() {
     },
     {
       id: "PARLEY13-06",
+      apiFixtureId: null,
       sport: "FÚTBOL",
       matchDate: "2026-10-25",
       kickoffIso: makeIso("2026-10-25", "11:30"),
@@ -500,6 +555,7 @@ function seedMasterRecords() {
       league: "Premier League",
       homeTeam: "Arsenal",
       awayTeam: "Liverpool",
+      marketEquivalent: "Más de 1.5 Goles Totales",
       predictionText: "Más de 1.5 Goles Totales",
       odds: 1.35,
       probability: 91.5,
@@ -515,6 +571,7 @@ function seedMasterRecords() {
     },
     {
       id: "PARLEY13-07-FALLO",
+      apiFixtureId: null,
       sport: "FÚTBOL",
       matchDate: "2026-10-25",
       kickoffIso: makeIso("2026-10-25", "10:00"),
@@ -522,6 +579,7 @@ function seedMasterRecords() {
       league: "Premier League",
       homeTeam: "Chelsea",
       awayTeam: "Newcastle",
+      marketEquivalent: "Total Córners: Más de 9.5",
       predictionText: "Más de 9.5 Córners Totales",
       odds: 1.70,
       probability: 86.0,
@@ -537,6 +595,7 @@ function seedMasterRecords() {
     },
     {
       id: "PARLEY13-08",
+      apiFixtureId: null,
       sport: "NBA",
       matchDate: "2026-10-24",
       kickoffIso: makeIso("2026-10-24", "19:00"),
@@ -544,6 +603,7 @@ function seedMasterRecords() {
       league: "NBA",
       homeTeam: "Denver Nuggets",
       awayTeam: "LA Clippers",
+      marketEquivalent: "Puntos Nikola Jokic Más de 23.5",
       predictionText: "Nikola Jokic Más de 23.5 Puntos",
       odds: 1.80,
       probability: 92.0,
@@ -559,6 +619,7 @@ function seedMasterRecords() {
     },
     {
       id: "PARLEY13-09",
+      apiFixtureId: null,
       sport: "FÚTBOL",
       matchDate: "2026-10-24",
       kickoffIso: makeIso("2026-10-24", "18:30"),
@@ -566,6 +627,7 @@ function seedMasterRecords() {
       league: "Liga BetPlay",
       homeTeam: "Deportes Tolima",
       awayTeam: "Once Caldas",
+      marketEquivalent: "Apuesta Sin Empate DNB Tolima",
       predictionText: "Tolima Empate No Acción (DNB)",
       odds: 1.45,
       probability: 90.0,
@@ -581,6 +643,7 @@ function seedMasterRecords() {
     },
     {
       id: "PARLEY13-10",
+      apiFixtureId: null,
       sport: "FÚTBOL",
       matchDate: "2026-10-24",
       kickoffIso: makeIso("2026-10-24", "16:15"),
@@ -588,6 +651,7 @@ function seedMasterRecords() {
       league: "Liga BetPlay",
       homeTeam: "Independiente Medellín",
       awayTeam: "Jaguares de Córdoba",
+      marketEquivalent: "Más de 1.5 Goles Totales",
       predictionText: "Más de 1.5 Goles Totales",
       odds: 1.38,
       probability: 89.0,
@@ -603,6 +667,7 @@ function seedMasterRecords() {
     },
     {
       id: "PARLEY13-11-FALLO",
+      apiFixtureId: null,
       sport: "FÚTBOL",
       matchDate: "2026-10-24",
       kickoffIso: makeIso("2026-10-24", "14:00"),
@@ -610,6 +675,7 @@ function seedMasterRecords() {
       league: "LaLiga",
       homeTeam: "Real Madrid",
       awayTeam: "FC Barcelona",
+      marketEquivalent: "Ambos Equipos Anotan Gol (Sí)",
       predictionText: "Ambos Marcan Gol (Sí)",
       odds: 1.50,
       probability: 87.5,
@@ -625,6 +691,7 @@ function seedMasterRecords() {
     },
     {
       id: "PARLEY13-12",
+      apiFixtureId: null,
       sport: "FÚTBOL",
       matchDate: "2026-10-24",
       kickoffIso: makeIso("2026-10-24", "11:30"),
@@ -632,6 +699,7 @@ function seedMasterRecords() {
       league: "Bundesliga",
       homeTeam: "RB Leipzig",
       awayTeam: "SC Freiburg",
+      marketEquivalent: "Victoria Directa RB Leipzig",
       predictionText: "Victoria Directa RB Leipzig",
       odds: 1.65,
       probability: 91.0,
@@ -647,6 +715,7 @@ function seedMasterRecords() {
     },
     {
       id: "PARLEY13-13",
+      apiFixtureId: null,
       sport: "FÚTBOL",
       matchDate: "2026-10-24",
       kickoffIso: makeIso("2026-10-24", "09:00"),
@@ -654,6 +723,7 @@ function seedMasterRecords() {
       league: "Premier League",
       homeTeam: "Aston Villa",
       awayTeam: "Bournemouth",
+      marketEquivalent: "Doble Oportunidad 1X (Villa o Empate)",
       predictionText: "Aston Villa Gana o Empata (1X)",
       odds: 1.30,
       probability: 89.0,
@@ -671,6 +741,7 @@ function seedMasterRecords() {
     // --- HITO FUNDADOR ($150.000 COP EN MONTERÍA) ---
     {
       id: "FOUNDER-JAGUARES",
+      apiFixtureId: null,
       sport: "FÚTBOL",
       matchDate: "2026-10-23",
       kickoffIso: makeIso("2026-10-23", "18:00"),
@@ -678,6 +749,7 @@ function seedMasterRecords() {
       league: "Liga BetPlay (Colombia)",
       homeTeam: "Jaguares de Córdoba",
       awayTeam: "Llaneros FC",
+      marketEquivalent: "Doble Oportunidad 1X + Más de 1.5 Goles",
       predictionText: "Jaguares Gana o Empata (1X) + Más de 1.5 Goles",
       odds: 2.20,
       probability: 93.0,
@@ -710,25 +782,94 @@ function saveMasterFeed(list) {
 }
 
 // ============================================================================
-// MEJORA #3 Y #5: CINTILLO BURSÁTIL EN VIVO + RACHA ACTIVA
+// SINCRONIZACIÓN EN LOTE (1 CRÉDITO API PARA MEDIO TIEMPO Y FINAL DE TIEMPO)
 // ============================================================================
+export async function syncLiveHtFtResults(force = false) {
+  const lastSync = parseInt(localStorage.getItem("optacore_last_api_sync") || "0", 10);
+  const now = Date.now();
+
+  if (!force && (now - lastSync) < API_SYNC_THROTTLE_MS) {
+    return;
+  }
+
+  const allMatches = getAllMasterFeed();
+  const today = getColombiaDateString();
+
+  const targets = allMatches.filter((m) => {
+    return m.matchDate === today &&
+           m.apiFixtureId &&
+           m.matchStatus !== "FINALIZADO" &&
+           new Date(m.kickoffIso).getTime() <= now;
+  });
+
+  if (targets.length === 0) return;
+
+  const fixtureIds = targets.slice(0, 20).map((m) => m.apiFixtureId).join("-");
+
+  try {
+    const response = await fetch(`https://${CONFIG.KEYS.SPORTS_API_HOST}/fixtures?ids=${fixtureIds}`, {
+      method: "GET",
+      headers: {
+        "x-apisports-key": CONFIG.KEYS.SPORTS_API_KEY,
+      },
+    });
+
+    const data = await response.json();
+    if (!data.response || data.response.length === 0) return;
+
+    let updatedCount = 0;
+
+    data.response.forEach((item) => {
+      const fixId = item.fixture?.id;
+      const statusShort = item.fixture?.status?.short;
+      const homeScore = item.goals?.home ?? 0;
+      const awayScore = item.goals?.away ?? 0;
+
+      const matchIndex = allMatches.findIndex((m) => m.apiFixtureId === fixId);
+      if (matchIndex === -1) return;
+
+      if (statusShort === "HT") {
+        const htHome = item.score?.halftime?.home ?? homeScore;
+        const htAway = item.score?.halftime?.away ?? awayScore;
+        allMatches[matchIndex].liveScore = `${htHome} -${htAway} (MT)`;
+        allMatches[matchIndex].matchStatus = "EN_VIVO";
+        updatedCount++;
+      }
+
+      if (["FT", "AET", "PEN"].includes(statusShort)) {
+        allMatches[matchIndex].liveScore = `${homeScore} -${awayScore}`;
+        allMatches[matchIndex].matchStatus = "FINALIZADO";
+        updatedCount++;
+      }
+    });
+
+    if (updatedCount > 0) {
+      saveMasterFeed(allMatches);
+    }
+
+    localStorage.setItem("optacore_last_api_sync", now.toString());
+  } catch (error) {
+    console.warn("Fallo de sincronización API-Sports:", error);
+  }
+}
+
+window.syncLiveHtFtResults = syncLiveHtFtResults;
+
 function renderLiveTickerAndStreak() {
   const all = getAllMasterFeed();
   const wins = all.filter((p) => p.outcome === "ACIERTO");
 
-  // Cintillo bursátil
   const tickerEl = document.getElementById("live-win-ticker");
   if (tickerEl && wins.length > 0) {
     const itemsHtml = wins
       .map(
         (w) =>
-          `<span class="mx-4"><strong class="text-[#10b981]">✔ COBRADO:</strong> ${w.homeTeam} vs ${w.awayTeam} ► <span class="text-cyan-300">${w.predictionText}</span> (@${(w.odds || 1.45).toFixed(2)}) [${w.liveScore}]</span>`
+          `<span class="mx-4"><strong class="text-[#10b981]">✔ COBRADO:</strong> ${w.homeTeam} vs${w.awayTeam} ► <span class="text-cyan-300">${w.predictionText}</span> (@${(w.odds \vert{}\vert{} 1.45).toFixed(2)}) [${w.liveScore}]</span>`
       )
       .join(" • ");
     tickerEl.innerHTML = itemsHtml + " • " + itemsHtml;
   }
 
-  // Racha activa (contando desde el más reciente finalizado)
   const settled = all.filter((p) => p.outcome === "ACIERTO" || p.outcome === "FALLO");
   let currentStreak = 0;
   for (const game of settled) {
@@ -747,9 +888,18 @@ function renderLiveTickerAndStreak() {
   }
 }
 
-// ============================================================================
-// MEJORA #1: GENERADOR DE "TICKETS DE VICTORIA" PARA REDES (SHAREABLE CARD)
-// ============================================================================
+window.copyPickToClipboard = (matchId, ev) => {
+  if (ev) ev.stopPropagation();
+  const m = getAllMasterFeed().find((x) => x.id === matchId);
+  if (!m) return;
+
+  const text = `🎯 *OPTACORE.QUANT — PRONÓSTICO DESTACADO*\n⚽ ${m.homeTeam} vs ${m.awayTeam}\n🏆 ${m.league}\n⏰ Hora: ${m.kickoffLabel}\n🔥 Jugada: *${m.predictionText}*\n📈 Cuota: @${(m.odds \vert{}\vert{} 1.45).toFixed(2)} (Probabilidad:${m.probability}%)\n\n📲 Ver análisis completo y cartelera en:\n${window.location.origin}`;
+
+  navigator.clipboard.writeText(text).then(() => {
+    alert("¡Pronóstico copiado con formato para compartir en grupos de WhatsApp!");
+  });
+};
+
 window.openWinTicketCard = (matchId, ev) => {
   if (ev) ev.stopPropagation();
   const match = getAllMasterFeed().find((m) => m.id === matchId);
@@ -769,7 +919,6 @@ window.openWinTicketCard = (matchId, ev) => {
 
   modal.innerHTML = `
     <div class="max-w-sm w-full space-y-3">
-      <!-- Tarjeta vertical formato Historia Instagram / Estado WhatsApp -->
       <div class="p-6 bg-gradient-to-b from-[#061412] via-[#05070a] to-[#040d14] border-2 border-[#10b981] shadow-[0_0_40px_rgba(16,185,129,0.3)] space-y-5 relative overflow-hidden">
         <div class="flex items-center justify-between border-b border-[#1b2432] pb-3">
           <div>
@@ -782,29 +931,19 @@ window.openWinTicketCard = (matchId, ev) => {
         </div>
 
         <div class="text-center space-y-2 py-2">
-          <span class="text-[10px] text-cyan-400 uppercase font-bold">${match.sport} // ${match.league}</span>
+          <span class="text-[10px] text-cyan-400 uppercase font-bold">${match.sport} //${match.league}</span>
           <div class="flex items-center justify-center gap-4 py-2">
             <img src="${getLogo(match.homeTeam)}" class="w-12 h-12 object-contain" />
             <span class="text-2xl font-black text-white">${match.liveScore}</span>
             <img src="${getLogo(match.awayTeam)}" class="w-12 h-12 object-contain" />
           </div>
-          <div class="text-sm font-black text-white">${match.homeTeam} vs ${match.awayTeam}</div>
+          <div class="text-sm font-black text-white">${match.homeTeam} vs${match.awayTeam}</div>
         </div>
 
         <div class="p-3 bg-[#05070a] border border-[#10b981]/50 space-y-1 text-center">
           <span class="text-[9px] text-slate-400 uppercase block">PRONÓSTICO CUMPLIDO:</span>
           <span class="text-sm font-black text-[#10b981] block">${match.predictionText}</span>
-          <span class="text-xs text-white font-bold">Cuota: @${(match.odds || 1.45).toFixed(2)} | Confianza: ${match.probability}%</span>
-        </div>
-
-        <div class="grid grid-cols-2 gap-2 bg-[#070d14] p-2.5 border border-[#1b2432] text-center text-xs">
-          <div>
-            <span class="text-[9px] text-slate-400 block">INVERSIÓN BASE</span>
-            <span class="font-bold text-white">$${stake.toLocaleString("es-CO")}</span>
-          </div>
-          <div>
-            <span class="text-[9px] text-slate-400 block">COBRO TOTAL</span>
-            <span class="font-black text-[#10b981]">$${totalReturn.toLocaleString("es-CO")} (+${netProfit.toLocaleString("es-CO")})</span>
+          <span class="text-xs text-white font-bold">Cuota: @${(match.odds || 1.45).toFixed(2)} | Confianza: ${match.probability}\%</span> </div>          <div class="grid grid-cols-2 gap-2 bg-[#070d14] p-2.5 border border-[#1b2432] text-center text-xs"> <div> <span class="text-[9px] text-slate-400 block">INVERSIÓN BASE</span> <span class="font-bold text-white">$${stake.toLocaleString("es-CO")}</span> </div> <div> <span class="text-[9px] text-slate-400 block">COBRO TOTAL</span> <span class="font-black text-[#10b981]">$${totalReturn.toLocaleString("es-CO")} (+${netProfit.toLocaleString("es-CO")})</span>
           </div>
         </div>
 
@@ -867,7 +1006,6 @@ function injectWhatsAppFloatingButton() {
   document.body.appendChild(btn);
 }
 
-// Curva acumulada
 export function renderPerformanceChart() {
   const chartBox = document.getElementById("performance-chart-box");
   if (!chartBox) return;
@@ -924,7 +1062,6 @@ export function renderPerformanceChart() {
 
 window.renderPerformanceChart = renderPerformanceChart;
 
-// Modal Emergente
 window.openMatchModal = (matchId) => {
   const match = getAllMasterFeed().find((m) => m.id === matchId);
   if (!match) return;
@@ -949,7 +1086,7 @@ window.openMatchModal = (matchId) => {
     <div class="quant-card max-w-2xl w-full p-4 md:p-6 space-y-4 max-h-[92vh] overflow-y-auto border-cyan-500/60 shadow-[0_0_30px_rgba(6,182,212,0.2)]">
       <div class="flex items-center justify-between border-b border-[#1b2432] pb-2 text-xs">
         <span class="px-2 py-0.5 text-[10px] font-bold uppercase border ${stars.badge}">
-          ${stars.stars} ${stars.tag}
+          ${stars.stars}${stars.tag}
         </span>
         <button onclick="document.getElementById('match-telemetry-modal').classList.add('hidden')" class="px-2.5 py-1 text-slate-300 hover:text-white border border-[#1b2432] bg-[#05070a] font-bold">
           ✕ CERRAR
@@ -1004,7 +1141,6 @@ window.openMatchModal = (matchId) => {
           `
       }
 
-      <!-- MEJORA #2: MEDIDOR DE FIEBRE DE CANCHA -->
       <div class="p-3 bg-[#05070a] border border-[#1b2432] space-y-1.5 text-xs">
         <div class="flex justify-between text-[10px]">
           <span class="text-slate-400 uppercase">TERMÓMETRO DE DESGASTE FÍSICO / CLIMA:</span>
@@ -1019,6 +1155,34 @@ window.openMatchModal = (matchId) => {
         </div>
       </div>
 
+      ${
+        match.liveStats
+          ? `
+          <div class="p-3 bg-[#070b10] border border-cyan-500/30 space-y-2 text-xs">
+            <span class="text-cyan-300 font-bold block uppercase text-[10px]">📊 Telemetría y Estadísticas en Vivo:</span>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-[11px]">
+              <div class="p-2 bg-[#05070a] border border-[#1b2432]">
+                <span class="text-[9px] text-slate-400 block">POSESIÓN</span>
+                <span class="font-bold text-white">${match.liveStats.possession || "-"}</span>
+              </div>
+              <div class="p-2 bg-[#05070a] border border-[#1b2432]">
+                <span class="text-[9px] text-slate-400 block">REMATES</span>
+                <span class="font-bold text-white">${match.liveStats.shots || "-"}</span>
+              </div>
+              <div class="p-2 bg-[#05070a] border border-[#1b2432]">
+                <span class="text-[9px] text-slate-400 block">CÓRNERS</span>
+                <span class="font-bold text-white">${match.liveStats.corners || "-"}</span>
+              </div>
+              <div class="p-2 bg-[#05070a] border border-[#1b2432]">
+                <span class="text-[9px] text-slate-400 block">FALTAS</span>
+                <span class="font-bold text-white">${match.liveStats.fouls || "-"}</span>
+              </div>
+            </div>
+          </div>
+          `
+          : ""
+      }
+
       <div class="p-3.5 bg-[#070a0f] border border-[#1b2432] space-y-2 text-xs">
         <span class="text-cyan-300 font-bold block uppercase text-[11px] border-b border-[#1b2432] pb-1">
           ANÁLISIS DEL PARTIDO:
@@ -1028,23 +1192,25 @@ window.openMatchModal = (matchId) => {
         </div>
       </div>
 
-      ${
-        match.outcome === "ACIERTO"
-          ? `
-          <button onclick="window.openWinTicketCard('${match.id}', event)" class="w-full py-2.5 bg-[#10b981] hover:bg-emerald-400 text-slate-950 font-black uppercase text-xs">
-            📸 Generar Ticket de Victoria para Redes
-          </button>
-          `
-          : ""
-      }
+      <div class="flex gap-2">
+        <button onclick="window.copyPickToClipboard('${match.id}', event)" class="flex-1 py-2 bg-[#0a0e14] border border-cyan-400 text-cyan-300 font-bold uppercase text-xs">
+          📋 Copiar para Grupos
+        </button>
+        ${
+          match.outcome === "ACIERTO"
+            ? `
+            <button onclick="window.openWinTicketCard('${match.id}', event)" class="flex-1 py-2 bg-[#10b981] hover:bg-emerald-400 text-slate-950 font-black uppercase text-xs">
+              📸 Ticket Victoria
+            </button>
+            `
+            : ""
+        }
+      </div>
     </div>
   `;
   modal.classList.remove("hidden");
 };
 
-// ============================================================================
-// MEJORA #4 Y #6: FILTROS RÁPIDOS Y CALCULADORA EN PRONÓSTICOS DE HOY
-// ============================================================================
 window.setQuickFilter = (filterType) => {
   activeQuickFilter = filterType;
   document.querySelectorAll(".qfilter-btn").forEach((btn) => {
@@ -1085,7 +1251,7 @@ export function renderTodayPredictions() {
     if (activeQuickFilter === "FÚTBOL") matchQuick = p.sport === "FÚTBOL";
     else if (activeQuickFilter === "NBA") matchQuick = p.sport === "NBA";
     else if (activeQuickFilter === "FREE") matchQuick = p.isFree === true;
-    else if (activeQuickFilter === "PENDING") matchQuick = p.matchStatus === "PROGRAMADO";
+    else if (activeQuickFilter === "LIVE") matchQuick = p.matchStatus === "EN_VIVO";
 
     return matchText && matchQuick;
   });
@@ -1113,7 +1279,7 @@ export function renderTodayPredictions() {
         <div class="flex flex-wrap items-center justify-between gap-1 border-b border-[#1b2432] pb-1.5 text-xs">
           <div class="flex items-center gap-1.5">
             <span class="px-1.5 py-0.5 font-bold uppercase text-[9px] border ${stars.badge}">
-              ${stars.stars} ${stars.tag}
+              ${stars.stars}${stars.tag}
             </span>
             <span class="text-slate-400 font-semibold text-[11px]">${item.league}</span>
           </div>
@@ -1127,368 +1293,4 @@ export function renderTodayPredictions() {
             <img src="${homeLogo}" alt="${item.homeTeam}" class="w-5 h-5 object-contain shrink-0" />
             <span class="text-xs md:text-sm font-black text-white truncate">${item.homeTeam}</span>
             <span class="text-xs text-cyan-400 shrink-0">vs</span>
-            <span class="text-xs md:text-sm font-black text-white truncate">${item.awayTeam}</span>
-            <img src="${awayLogo}" alt="${item.awayTeam}" class="w-5 h-5 object-contain shrink-0" />
-          </div>
-          <span class="text-[11px] text-slate-400 shrink-0">${item.kickoffLabel}</span>
-        </div>
-
-        ${
-          isVisible
-            ? `
-            <div class="p-2.5 bg-[#05070a] border border-[#10b981]/40 space-y-2 text-xs">
-              <div class="flex items-center justify-between gap-2">
-                <div>
-                  <span class="text-[9px] uppercase text-slate-400 block">JUGADA SUGERIDA:</span>
-                  <span class="text-xs md:text-sm font-bold text-[#10b981]">${item.predictionText}</span>
-                  <span class="text-[10px] text-slate-400 block">Cuota: @${odd.toFixed(2)}</span>
-                </div>
-                <div class="text-right">
-                  <span class="text-[9px] text-slate-400 block">PROBABILIDAD</span>
-                  <span class="text-sm md:text-base font-black text-white">${item.probability}%</span>
-                </div>
-              </div>
-              <!-- MEJORA #6: Retorno calculado según inversión -->
-              <div class="pt-1.5 border-t border-[#1b2432] flex items-center justify-between text-[11px]">
-                <span class="text-slate-400">Con $${stake.toLocaleString("es-CO")} cobras:</span>
-                <span class="text-[#10b981] font-black">$${totalReturn.toLocaleString("es-CO")} (+$${netProfit.toLocaleString("es-CO")})</span>
-              </div>
-            </div>
-            `
-            : `
-            <div class="p-2.5 bg-[#05070a] border border-[#1b2432] flex items-center justify-between text-xs">
-              <div>
-                <span class="text-slate-400 text-[11px] block">🔒 Jugada VIP Protegida (Cuota @${odd.toFixed(2)})</span>
-                <span class="text-[10px] text-[#10b981]">Con $${stake.toLocaleString("es-CO")} cobras $${totalReturn.toLocaleString("es-CO")}</span>
-              </div>
-              <button onclick="window.switchTab('tab-planes')" class="px-2.5 py-1 bg-[#10b981] text-slate-950 text-[10px] font-bold uppercase">
-                Hazte VIP
-              </button>
-            </div>
-            `
-        }
-
-        <!-- MEJORA #2: Barra de Fiebre de Cancha en tarjeta -->
-        <div class="space-y-1">
-          <div class="flex justify-between text-[10px]">
-            <span class="text-slate-400">${item.weatherDesc} (${item.altitudeM}m)</span>
-            <span class="text-amber-300 font-bold">${fever.label}</span>
-          </div>
-          <div class="w-full h-1.5 bg-[#161f2c]">
-            <div class="${fever.color} h-full" style="width: ${fever.stressScore}%"></div>
-          </div>
-        </div>
-
-        <div class="flex items-center justify-between text-[11px] pt-1 border-t border-[#1b2432]">
-          <button onclick="window.openMatchModal('${item.id}')" class="px-2.5 py-1 text-[10px] font-bold uppercase bg-cyan-500/20 border border-cyan-400 text-cyan-300 hover:bg-cyan-400 hover:text-black">
-            🔍 Ver Análisis Completo
-          </button>
-          ${
-            item.outcome === "ACIERTO"
-              ? `<button onclick="window.openWinTicketCard('${item.id}', event)" class="px-2.5 py-1 text-[10px] font-bold uppercase bg-[#10b981]/20 border border-[#10b981] text-[#10b981] hover:bg-[#10b981] hover:text-black">
-                  📸 Ticket Victoria
-                </button>`
-              : ""
-          }
-        </div>
-      </article>
-    `;
-  }).join("");
-}
-
-// Resultados de Hoy
-export function renderTodayResults() {
-  const box = document.getElementById("today-results-container");
-  const summaryBox = document.getElementById("today-financial-summary");
-  if (!box) return;
-
-  const today = getColombiaDateString();
-  const todayList = getAllMasterFeed().filter((p) => p.matchDate === today);
-
-  let totalOddsWon = 0;
-  let countWon = 0;
-  let countLost = 0;
-
-  todayList.forEach((p) => {
-    const o = p.odds || 1.45;
-    if (p.outcome === "ACIERTO") {
-      totalOddsWon += o;
-      countWon++;
-    } else if (p.outcome === "FALLO") {
-      countLost++;
-    }
-  });
-
-  const totalOddsLost = countLost * 1.0;
-  const netDiff = totalOddsWon - totalOddsLost;
-
-  if (summaryBox) {
-    summaryBox.innerHTML = `
-      <div class="quant-card p-3 border-emerald-500/40 font-mono">
-        <span class="text-[10px] text-slate-400 block uppercase font-bold">MULTIPLICADOR COBRADO</span>
-        <span class="text-lg font-black text-[#10b981]">+${totalOddsWon.toFixed(2)}x</span>
-        <span class="text-[10px] text-slate-400 block">${countWon} jugada(s) ganada(s)</span>
-      </div>
-      <div class="quant-card p-3 border-red-500/40 font-mono">
-        <span class="text-[10px] text-slate-400 block uppercase font-bold">PÉRDIDA REAL</span>
-        <span class="text-lg font-black text-red-400">-${totalOddsLost.toFixed(2)}x</span>
-        <span class="text-[10px] text-slate-400 block">${countLost} jugada(s) caída(s)</span>
-      </div>
-      <div class="quant-card p-3 font-mono ${netDiff >= 0 ? "border-cyan-500/40" : "border-amber-500/40"}">
-        <span class="text-[10px] text-slate-400 block uppercase font-bold">BALANCE DEL DÍA</span>
-        <span class="text-lg font-black ${netDiff >= 0 ? "text-cyan-400" : "text-amber-400"}">${netDiff >= 0 ? "+" : ""}${netDiff.toFixed(2)}x</span>
-        <span class="text-[10px] text-slate-400 block">Rendimiento neto</span>
-      </div>
-    `;
-  }
-
-  box.innerHTML = todayList.map((p) => {
-    const badge = p.outcome === "ACIERTO"
-      ? "border-emerald-500 bg-emerald-500/20 text-emerald-300"
-      : p.outcome === "FALLO"
-      ? "border-red-500 bg-red-500/20 text-red-300"
-      : "border-cyan-500 bg-cyan-500/20 text-cyan-300";
-
-    return `
-      <div class="quant-card p-3 flex flex-wrap items-center justify-between gap-2 font-mono text-xs cursor-pointer hover:border-cyan-400/50" onclick="window.openMatchModal('${p.id}')">
-        <div class="space-y-0.5">
-          <span class="text-[10px] text-slate-400">${p.kickoffLabel} • ${p.league}</span>
-          <div class="text-xs md:text-sm font-bold text-white">${p.homeTeam} vs ${p.awayTeam}</div>
-          <div class="text-cyan-300 text-[11px]">Pronóstico: ${p.predictionText} (@${(p.odds || 1.45).toFixed(2)})</div>
-        </div>
-        <div class="flex items-center gap-2">
-          ${
-            p.outcome === "ACIERTO"
-              ? `<button onclick="window.openWinTicketCard('${p.id}', event)" class="px-2 py-1 bg-[#10b981]/20 border border-[#10b981] text-[#10b981] text-[10px] font-bold uppercase">
-                  📸 Ticket
-                </button>`
-              : ""
-          }
-          <div class="text-right">
-            <span class="text-[9px] text-slate-400 block">${p.matchStatus}</span>
-            <span class="text-sm md:text-base font-black text-white">${p.liveScore}</span>
-          </div>
-          <span class="px-2 py-0.5 text-[10px] font-bold uppercase border ${badge}">${p.outcome}</span>
-        </div>
-      </div>
-    `;
-  }).join("");
-}
-
-// Historial Completo
-export function renderFullPublicHistory() {
-  const all = getAllMasterFeed();
-  const settled = all.filter((p) => p.outcome === "ACIERTO" || p.outcome === "FALLO");
-
-  let totalOddsWon = 0;
-  let countWins = 0;
-  let countLosses = 0;
-
-  settled.forEach((p) => {
-    const o = p.odds || 1.45;
-    if (p.outcome === "ACIERTO") {
-      totalOddsWon += o;
-      countWins++;
-    } else if (p.outcome === "FALLO") {
-      countLosses++;
-    }
-  });
-
-  const totalOddsLost = countLosses * 1.0;
-  const netBalance = totalOddsWon - totalOddsLost;
-
-  const financialSummaryBox = document.getElementById("history-financial-summary");
-  if (financialSummaryBox) {
-    financialSummaryBox.innerHTML = `
-      <div class="quant-card p-4 border-emerald-500/50 font-mono">
-        <span class="text-[10px] text-slate-400 uppercase block font-bold">MULTIPLICADOR TOTAL COBRADO</span>
-        <span class="text-2xl font-black text-[#10b981]">+${totalOddsWon.toFixed(2)}x</span>
-        <span class="text-[11px] text-slate-400 block">${countWins} cuotas acertadas acumuladas</span>
-      </div>
-      <div class="quant-card p-4 border-red-500/50 font-mono">
-        <span class="text-[10px] text-slate-400 uppercase block font-bold">PÉRDIDA REGISTRADA</span>
-        <span class="text-2xl font-black text-red-400">-${totalOddsLost.toFixed(2)}x</span>
-        <span class="text-[11px] text-slate-400 block">${countLosses} partidos no completados (1x c/u)</span>
-      </div>
-      <div class="quant-card p-4 border-cyan-500/50 font-mono">
-        <span class="text-[10px] text-cyan-300 uppercase block font-bold">BALANCE NETO AUDITADO</span>
-        <span class="text-2xl font-black ${netBalance >= 0 ? "text-white" : "text-amber-400"}">${netBalance >= 0 ? "+" : ""}${netBalance.toFixed(2)}x</span>
-        <span class="text-[11px] text-[#10b981] block font-bold">Rendimiento positivo real</span>
-      </div>
-    `;
-  }
-
-  const calc = (arr) => {
-    const valids = arr.filter((x) => x.outcome === "ACIERTO" || x.outcome === "FALLO");
-    if (valids.length === 0) return { pct: "0.0", w: 0, tot: 0 };
-    const w = valids.filter((x) => x.outcome === "ACIERTO").length;
-    return { pct: ((w / valids.length) * 100).toFixed(1), w, tot: valids.length };
-  };
-
-  const totalStats = calc(settled);
-  const fbStats = calc(settled.filter((p) => p.sport === "FÚTBOL"));
-  const nbaStats = calc(settled.filter((p) => p.sport === "NBA"));
-  const fiveStars = calc(settled.filter((p) => p.probability >= 90));
-
-  const kpiEl = document.getElementById("history-kpi-cards");
-  if (kpiEl) {
-    kpiEl.innerHTML = `
-      <div class="quant-card p-3 font-mono">
-        <span class="text-[9px] text-slate-400 block">EFECTIVIDAD REAL</span>
-        <span class="text-xl font-black text-[#10b981]">${totalStats.pct}%</span>
-        <span class="text-[10px] text-slate-400 block">${totalStats.w} de ${totalStats.tot} aciertos</span>
-      </div>
-      <div class="quant-card p-3 font-mono">
-        <span class="text-[9px] text-slate-400 block">FÚTBOL</span>
-        <span class="text-xl font-black text-cyan-400">${fbStats.pct}%</span>
-        <span class="text-[10px] text-slate-400 block">${fbStats.w}/${fbStats.tot} acertados</span>
-      </div>
-      <div class="quant-card p-3 font-mono">
-        <span class="text-[9px] text-slate-400 block">NBA</span>
-        <span class="text-xl font-black text-white">${nbaStats.pct}%</span>
-        <span class="text-[10px] text-slate-400 block">${nbaStats.w}/${nbaStats.tot} acertados</span>
-      </div>
-      <div class="quant-card p-3 font-mono">
-        <span class="text-[9px] text-slate-400 block">⭐⭐⭐⭐⭐ (5★)</span>
-        <span class="text-xl font-black text-cyan-300">${fiveStars.pct}%</span>
-        <span class="text-[10px] text-slate-400 block">${fiveStars.w} de ${fiveStars.tot} acertados</span>
-      </div>
-    `;
-  }
-
-  renderPerformanceChart();
-
-  const tbody = document.getElementById("history-table-body");
-  if (tbody) {
-    tbody.innerHTML = all.map((p) => {
-      const badge = p.outcome === "ACIERTO"
-        ? "border-emerald-500 bg-emerald-500/20 text-emerald-300"
-        : p.outcome === "FALLO"
-        ? "border-red-500 bg-red-500/20 text-red-300"
-        : "border-cyan-500 bg-cyan-500/20 text-cyan-300";
-
-      return `
-        <tr class="hover:bg-[#0f151f] text-xs font-mono cursor-pointer" onclick="window.openMatchModal('${p.id}')">
-          <td class="py-2.5 px-3 text-slate-400 whitespace-nowrap">${p.matchDate}</td>
-          <td class="py-2.5 px-3 text-slate-300 whitespace-nowrap">${p.sport} // ${p.league}</td>
-          <td class="py-2.5 px-3 font-bold text-white whitespace-nowrap">${p.homeTeam} vs ${p.awayTeam}</td>
-          <td class="py-2.5 px-3 text-cyan-300 whitespace-nowrap">${p.predictionText}</td>
-          <td class="py-2.5 px-3 font-bold text-white whitespace-nowrap">@${(p.odds || 1.45).toFixed(2)}</td>
-          <td class="py-2.5 px-3 font-bold text-white whitespace-nowrap">${p.liveScore}</td>
-          <td class="py-2.5 px-3 whitespace-nowrap"><span class="px-2 py-0.5 text-[9px] font-bold uppercase border ${badge}">${p.outcome}</span></td>
-          <td class="py-2.5 px-3 text-right whitespace-nowrap space-x-2">
-            ${
-              p.outcome === "ACIERTO"
-                ? `<button onclick="window.openWinTicketCard('${p.id}', event)" class="text-[#10b981] underline text-[10px]">📸 Ticket</button>`
-                : ""
-            }
-            <span class="text-cyan-400 underline text-[10px]">Análisis →</span>
-          </td>
-        </tr>
-      `;
-    }).join("");
-  }
-}
-
-// ============================================================================
-// MEJORA #9: PANEL DE CONTROL SECRETO PARA EL ADMINISTRADOR
-// ============================================================================
-window.renderAdminPanel = () => {
-  const listEl = document.getElementById("admin-matches-list");
-  if (!listEl) return;
-
-  const all = getAllMasterFeed();
-  listEl.innerHTML = all.slice(0, 12).map((p) => `
-    <div class="p-2.5 bg-[#05070a] border border-[#1b2432] flex flex-wrap items-center justify-between gap-2 text-xs">
-      <div>
-        <span class="text-[10px] text-slate-400">${p.matchDate} • ${p.league}</span>
-        <div class="font-bold text-white">${p.homeTeam} vs ${p.awayTeam}</div>
-        <span class="text-[11px] text-cyan-300">${p.predictionText}</span>
-      </div>
-      <div class="flex items-center gap-2">
-        <input id="score-${p.id}" type="text" value="${p.liveScore}" class="w-20 bg-[#0a0e14] border border-[#1b2432] px-2 py-1 text-white text-center font-bold" />
-        <select id="outcome-${p.id}" class="bg-[#0a0e14] border border-[#1b2432] px-2 py-1 text-white">
-          <option value="PENDIENTE" ${p.outcome === "PENDIENTE" ? "selected" : ""}>PENDIENTE</option>
-          <option value="ACIERTO" ${p.outcome === "ACIERTO" ? "selected" : ""}>ACIERTO</option>
-          <option value="FALLO" ${p.outcome === "FALLO" ? "selected" : ""}>FALLO</option>
-        </select>
-        <button onclick="window.adminUpdateMatch('${p.id}')" class="px-2.5 py-1 bg-[#10b981] text-slate-950 font-black uppercase text-[10px]">
-          Guardar
-        </button>
-      </div>
-    </div>
-  `).join("");
-};
-
-window.adminUpdateMatch = (id) => {
-  const all = getAllMasterFeed();
-  const idx = all.findIndex((m) => m.id === id);
-  if (idx === -1) return;
-
-  const newScore = document.getElementById(`score-${id}`)?.value || "vs";
-  const newOutcome = document.getElementById(`outcome-${id}`)?.value || "PENDIENTE";
-
-  all[idx].liveScore = newScore;
-  all[idx].outcome = newOutcome;
-  all[idx].matchStatus = newOutcome === "PENDIENTE" ? "PROGRAMADO" : "FINALIZADO";
-
-  saveMasterFeed(all);
-  window.renderAdminPanel();
-  alert(`Partido actualizado: ${all[idx].homeTeam} (${newScore}) -> ${newOutcome}`);
-};
-
-window.resetLocalDatabase = () => {
-  if (confirm("¿Seguro que deseas restaurar los pronósticos base?")) {
-    localStorage.removeItem(DB_KEY);
-    window.location.reload();
-  }
-};
-
-document.addEventListener("DOMContentLoaded", () => {
-  startColombiaClock();
-  injectWhatsAppFloatingButton();
-  renderLiveTickerAndStreak();
-  renderTodayPredictions();
-  renderTodayResults();
-  renderFullPublicHistory();
-
-  document.getElementById("search-input")?.addEventListener("input", renderTodayPredictions);
-  document.getElementById("stake-calculator-input")?.addEventListener("input", renderTodayPredictions);
-
-  // Formulario de Admin para agregar partido
-  document.getElementById("admin-add-match-form")?.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const today = getColombiaDateString();
-    const hhmm = document.getElementById("adm-time").value.trim() || "19:00";
-
-    const newMatch = {
-      id: "ADM-" + Date.now(),
-      sport: document.getElementById("adm-sport").value,
-      matchDate: today,
-      kickoffIso: `${today}T${hhmm}:00-05:00`,
-      kickoffLabel: `${hhmm} COL`,
-      league: document.getElementById("adm-league").value.trim(),
-      homeTeam: document.getElementById("adm-home").value.trim(),
-      awayTeam: document.getElementById("adm-away").value.trim(),
-      predictionText: document.getElementById("adm-pick").value.trim(),
-      odds: parseFloat(document.getElementById("adm-odds").value) || 1.50,
-      probability: parseFloat(document.getElementById("adm-prob").value) || 90.0,
-      isFree: document.getElementById("adm-free").value === "true",
-      altitudeM: 150,
-      weatherDesc: "Condición Estándar (20°C)",
-      homeAvgGoals: "1.9 por partido",
-      awayAvgGoals: "1.1 por partido",
-      explanation: document.getElementById("adm-exp").value.trim() || "Análisis verificado por el modelo OptaCore.",
-      liveScore: "vs",
-      matchStatus: "PROGRAMADO",
-      outcome: "PENDIENTE",
-    };
-
-    const all = getAllMasterFeed();
-    all.unshift(newMatch);
-    saveMasterFeed(all);
-    e.target.reset();
-    window.renderAdminPanel();
-    alert("¡Nuevo pronóstico publicado en la cartelera!");
-  });
-});
+            <span class="text-xs md:text-sm font-black text
