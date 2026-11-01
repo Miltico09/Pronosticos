@@ -1,8 +1,3 @@
-// ============================================================================
-// ARCHIVO: config.js
-// Configuración Maestra del Sistema, Llaves, Promotores y Live Match Tracker
-// ============================================================================
-
 export const CONFIG = {
   BRAND: {
     NAME: "OPTACORE.QUANT",
@@ -33,29 +28,12 @@ export const CONFIG = {
     POLL_INTERVAL_MS: 60000,
     AUDIO_ALERTS: true
   },
-
-  LIVE_TRACKER: {
-    POLL_INTERVAL_MS: 60000,
-    AUDIO_ALERTS: true,
-  },
-
   VIP_KEYS: [
     { code: "PRUEBA3D", days: 3, description: "Pase de cortesia 3 dias" },
     { code: "VIP7D", days: 7, description: "Semana VIP de prueba" },
     { code: "PROMO15D", days: 15, description: "Quincena especial" },
-    { code: "ACCESO30D", days: 30, description: "Mes completo cortesía" },
-    // Llaves de 6 meses (180 días)
-    { code: "OPTA6M-ALPHA9", days: 180, description: "Membresía VIP Semestral (6 meses)" },
-    { code: "OPTA6M-BRAVO8", days: 180, description: "Membresía VIP Semestral (6 meses)" },
-    { code: "OPTA6M-DELTA7", days: 180, description: "Membresía VIP Semestral (6 meses)" },
-    { code: "OPTA6M-OMEGA6", days: 180, description: "Membresía VIP Semestral (6 meses)" },
-    // Llaves de 1 año (365 días)
-    { code: "OPTA1Y-QUANT1", days: 365, description: "Membresía VIP Anual (1 año)" },
-    { code: "OPTA1Y-TITAN2", days: 365, description: "Membresía VIP Anual (1 año)" },
-    { code: "OPTA1Y-ELITE3", days: 365, description: "Membresía VIP Anual (1 año)" },
-    { code: "OPTA1Y-ROYAL4", days: 365, description: "Membresía VIP Anual (1 año)" },
+    { code: "ACCESO30D", days: 30, description: "Mes completo cortesia" }
   ],
-
   PROMO_CODES: [
     { code: "PROMO20", discountPct: 20, promoter: "Campana General" },
     { code: "VIP20", discountPct: 20, promoter: "Canal VIP" },
@@ -96,7 +74,6 @@ export const CONFIG = {
       }
     ]
   },
-
   VIP_PLANS: [
     { id: "semanal", name: "Semanal", days: 7, priceCop: 12000, priceUsdt: 3.77, discountPct: 0, savedCop: 0, badge: null },
     { id: "quincenal", name: "Quincenal", days: 15, priceCop: 20000, priceUsdt: 6.28, discountPct: 17, savedCop: 4000, badge: null },
