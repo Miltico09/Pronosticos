@@ -7,6 +7,28 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="stylesheet" href="./estilos.css" />
+  <style>
+    @keyframes tickerMove {
+      0% { transform: translateX(0%); }
+      100% { transform: translateX(-50%); }
+    }
+    .ticker-wrap {
+      overflow: hidden;
+      white-space: nowrap;
+      display: flex;
+    }
+    .ticker-move {
+      display: inline-block;
+      white-space: nowrap;
+      animation: tickerMove 28s linear infinite;
+    }
+    .ticker-move:hover {
+      animation-play-state: paused;
+    }
+    .tab-panel.hidden {
+      display: none !important;
+    }
+  </style>
   <script>
     function switchTab(tabId) {
       document.querySelectorAll('.tab-panel').forEach(function(panel) {
@@ -18,20 +40,47 @@
       }
       document.querySelectorAll('.nav-btn').forEach(function(btn) {
         if (btn.getAttribute('data-tab') === tabId) {
-          btn.className = "nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#06b6d4] bg-[#06b6d4]/15 text-white";
+          btn.className = "nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#06b6d4] bg-[#06b6d4]/15 text-white shrink-0";
         } else {
-          btn.className = "nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#1b2432] bg-[#0a0e14] text-[#8b9bb4] hover:text-white";
+          btn.className = "nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#1b2432] bg-[#0a0e14] text-[#8b9bb4] hover:text-white shrink-0";
+        }
+      });
+      document.querySelectorAll('.bottom-nav-btn').forEach(function(btn) {
+        if (btn.getAttribute('data-tab') === tabId) {
+          btn.className = "bottom-nav-btn flex flex-col items-center justify-center text-cyan-400 font-bold text-[10px]";
+        } else {
+          btn.className = "bottom-nav-btn flex flex-col items-center justify-center text-slate-400 font-bold text-[10px]";
         }
       });
       if (tabId === 'tab-historial' && window.renderPerformanceChart) {
         setTimeout(window.renderPerformanceChart, 50);
       }
+      if (tabId === 'tab-admin' && window.renderAdminPanel) {
+        window.renderAdminPanel();
+      }
     }
   </script>
 </head>
-<body class="min-h-screen flex flex-col justify-between bg-[#05070a] text-slate-100 font-sans">
+<body class="min-h-screen flex flex-col justify-between bg-[#05070a] text-slate-100 font-sans pb-16 md:pb-0">
 
-  <!-- BARRA SUPERIOR -->
+  <!-- PANTALLA DE MODO MANTENIMIENTO -->
+  <div id="maintenance-overlay" class="hidden fixed inset-0 z-50 bg-[#05070a] flex flex-col items-center justify-center p-6 text-center font-mono space-y-4">
+    <div class="w-16 h-16 border-4 border-cyan-400 border-t-transparent animate-spin rounded-full"></div>
+    <h1 class="text-xl font-black text-white uppercase tracking-wider">Calibrando Algoritmos Cuantitativos</h1>
+    <p class="text-xs text-slate-400 max-w-md">Estamos cargando la cartelera oficial y procesando métricas en vivo. Disponible en unos minutos.</p>
+    <span class="text-[10px] text-[#10b981] font-bold">OPTACORE.QUANT — ACTUALIZACIÓN EN CURSO</span>
+  </div>
+
+  <!-- CINTILLO BURSÁTIL SUPERIOR (LIVE WIN-TICKER) -->
+  <div class="bg-[#020406] border-b border-[#1b2432] py-1 text-[10px] font-mono">
+    <div class="ticker-wrap">
+      <div id="live-win-ticker" class="ticker-move text-slate-300">
+        <!-- Generado dinámicamente -->
+      </div>
+    </div>
+  </div>
+
+  <!-- BARRA DE ESTADO Y RELOJ -->
   <div class="border-b border-[#1b2432] bg-[#030508] px-3 py-1.5 text-[11px] font-mono text-[#8b9bb4]">
     <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
       <div class="flex items-center gap-3">
@@ -41,7 +90,11 @@
         </span>
         <span id="colombia-live-clock" class="text-cyan-400 font-bold">HORA COLOMBIA: --:--:--</span>
       </div>
-      <div>
+      <div class="flex items-center gap-2">
+        <span id="cart-closing-timer" class="text-[10px] text-amber-300 font-bold hidden sm:inline-block">⏳ Cierre cartelera libre: 02h:14m</span>
+        <span id="hot-streak-badge" class="px-2 py-0.5 bg-amber-500/15 border border-amber-400/50 text-amber-300 font-black text-[10px]">
+          🔥 RACHA ACTIVA
+        </span>
         <span id="user-role-badge" class="px-2 py-0.5 border border-[#1b2432] bg-[#0a0e14] text-slate-300 font-bold">
           ACCESO LIBRE // 4 JUGADAS GRATIS HOY
         </span>
@@ -49,7 +102,7 @@
     </div>
   </div>
 
-  <!-- ENCABEZADO -->
+  <!-- ENCABEZADO PRINCIPAL -->
   <header class="sticky top-0 z-30 border-b border-[#1b2432] bg-[#05070a]/95 backdrop-blur-md px-4 py-3">
     <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
       <div class="flex items-center gap-2.5">
@@ -69,43 +122,42 @@
         </div>
       </div>
 
-      <!-- BOTONES DE NAVEGACIÓN -->
-      <nav class="flex items-center gap-1 overflow-x-auto py-1">
-        <button onclick="switchTab('tab-pronosticos')" data-tab="tab-pronosticos" class="nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#06b6d4] bg-[#06b6d4]/15 text-white">
+      <!-- BOTONES DE NAVEGACIÓN SUPERIOR (DESKTOP) -->
+      <nav class="hidden md:flex items-center gap-1 overflow-x-auto py-1">
+        <button onclick="switchTab('tab-pronosticos')" data-tab="tab-pronosticos" class="nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#06b6d4] bg-[#06b6d4]/15 text-white shrink-0">
           Pronósticos Hoy
         </button>
-        <button onclick="switchTab('tab-resultados')" data-tab="tab-resultados" class="nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#1b2432] bg-[#0a0e14] text-[#8b9bb4] hover:text-white">
+        <button onclick="switchTab('tab-resultados')" data-tab="tab-resultados" class="nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#1b2432] bg-[#0a0e14] text-[#8b9bb4] hover:text-white shrink-0">
           Resultados Hoy
         </button>
-        <button onclick="switchTab('tab-historial')" data-tab="tab-historial" class="nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#1b2432] bg-[#0a0e14] text-[#8b9bb4] hover:text-white">
+        <button onclick="switchTab('tab-historial')" data-tab="tab-historial" class="nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#1b2432] bg-[#0a0e14] text-[#8b9bb4] hover:text-white shrink-0">
           Historial & Aciertos
         </button>
-        <button onclick="switchTab('tab-planes')" data-tab="tab-planes" class="nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#10b981]/50 bg-[#10b981]/10 text-[#10b981] hover:bg-[#10b981] hover:text-black">
+        <button onclick="switchTab('tab-planes')" data-tab="tab-planes" class="nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#10b981]/50 bg-[#10b981]/10 text-[#10b981] hover:bg-[#10b981] hover:text-black shrink-0">
           Planes VIP & Cuentas
         </button>
-        <button onclick="switchTab('tab-cuenta')" data-tab="tab-cuenta" class="nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#1b2432] bg-[#0a0e14] text-[#8b9bb4] hover:text-white">
+        <button onclick="switchTab('tab-cuenta')" data-tab="tab-cuenta" class="nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#1b2432] bg-[#0a0e14] text-[#8b9bb4] hover:text-white shrink-0">
           Mi Licencia & Referidos
+        </button>
+        <button id="btn-nav-admin" onclick="switchTab('tab-admin')" data-tab="tab-admin" class="hidden nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-amber-400 bg-amber-500/20 text-amber-300 shrink-0">
+          ⚙️ Panel Admin
         </button>
       </nav>
 
-      <!-- BOTONES DE ACCESO RÁPIDO SEPARADOS -->
+      <!-- BOTONES DE ACCESO RÁPIDO -->
       <div class="flex items-center gap-1.5">
         <button id="btn-open-redeem-key" class="px-2.5 py-1.5 text-xs font-mono font-bold uppercase border border-amber-500/60 bg-amber-500/10 text-amber-300 hover:bg-amber-500 hover:text-black transition">
           🔑 Canjear Llave
         </button>
-        <!-- Botón Prueba 24h Protegido -->
         <button id="btn-trial-24h" class="px-2.5 py-1.5 text-xs font-mono font-bold uppercase bg-[#06b6d4] text-slate-950 hover:bg-cyan-300">
           Prueba 24h
         </button>
-        <!-- Botón Registro Nuevo -->
         <button id="btn-open-register" class="px-2.5 py-1.5 text-xs font-mono font-bold uppercase bg-[#10b981] text-slate-950 hover:bg-emerald-400 font-black transition">
           Registrarse
         </button>
-        <!-- Botón Iniciar Sesión -->
         <button id="btn-open-auth" class="px-2.5 py-1.5 text-xs font-mono font-bold uppercase border border-[#1b2432] bg-[#0f151f] text-white hover:border-slate-500">
           Entrar
         </button>
-        <!-- Botón Cerrar Sesión -->
         <button id="btn-logout" class="hidden px-2.5 py-1.5 text-xs font-mono font-bold uppercase border border-[#ef4444] text-[#ef4444]">
           Salir
         </button>
@@ -118,17 +170,63 @@
 
     <!-- TAB 1: PRONÓSTICOS HOY -->
     <section id="tab-pronosticos" class="tab-panel space-y-4">
-      <div class="quant-card p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+
+      <!-- CALCULADORA DE INVERSIÓN (COP) -->
+      <div class="quant-card p-3.5 border-[#10b981]/40 bg-[#06100e] flex flex-col md:flex-row md:items-center justify-between gap-3 font-mono text-xs">
         <div>
-          <h1 class="text-base font-black uppercase text-white font-mono">Cartelera Oficial del Día</h1>
-          <span id="daily-counter-badge" class="text-xs font-mono text-cyan-400">4 Pronósticos Destacados Abiertos</span>
+          <span class="text-[#10b981] font-black uppercase block">💰 Calculadora de Ganancia en Tiempo Real</span>
+          <span class="text-[11px] text-slate-400">Ingresa cuánto deseas invertir para ver el cobro exacto en cada tarjeta:</span>
         </div>
-        <input
-          id="search-input"
-          type="text"
-          placeholder="Buscar equipo o liga..."
-          class="w-full sm:w-64 bg-[#05070a] border border-[#1b2432] px-3 py-1.5 text-xs font-mono text-white focus:outline-none focus:border-cyan-400"
-        />
+        <div class="flex items-center gap-2">
+          <span class="text-slate-400 font-bold">Inversión ($ COP):</span>
+          <input
+            id="stake-calculator-input"
+            type="number"
+            step="5000"
+            min="5000"
+            value="50000"
+            class="w-32 bg-[#05070a] border border-[#10b981] px-2.5 py-1.5 text-white font-black text-sm focus:outline-none"
+          />
+          <div class="flex gap-1">
+            <button onclick="window.setQuickStake(20000)" class="px-2 py-1 bg-[#0a0e14] border border-[#1b2432] text-[10px] hover:border-cyan-400">$20k</button>
+            <button onclick="window.setQuickStake(50000)" class="px-2 py-1 bg-[#0a0e14] border border-[#1b2432] text-[10px] hover:border-cyan-400">$50k</button>
+            <button onclick="window.setQuickStake(100000)" class="px-2 py-1 bg-[#0a0e14] border border-[#1b2432] text-[10px] hover:border-cyan-400">$100k</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- FILTROS POR PÍLDORAS Y BUSCADOR -->
+      <div class="quant-card p-3.5 space-y-3">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h1 class="text-base font-black uppercase text-white font-mono">Cartelera Oficial del Día</h1>
+            <span id="daily-counter-badge" class="text-xs font-mono text-cyan-400">4 Pronósticos Destacados Abiertos</span>
+          </div>
+          <input
+            id="search-input"
+            type="text"
+            placeholder="Buscar equipo o liga..."
+            class="w-full sm:w-64 bg-[#05070a] border border-[#1b2432] px-3 py-1.5 text-xs font-mono text-white focus:outline-none focus:border-cyan-400"
+          />
+        </div>
+
+        <div class="flex items-center gap-1.5 overflow-x-auto pb-1 font-mono text-[11px]">
+          <button onclick="window.setQuickFilter('ALL')" data-qfilter="ALL" class="qfilter-btn px-3 py-1 font-bold uppercase border border-cyan-400 bg-cyan-500/20 text-white shrink-0">
+            Todos
+          </button>
+          <button onclick="window.setQuickFilter('FÚTBOL')" data-qfilter="FÚTBOL" class="qfilter-btn px-3 py-1 font-bold uppercase border border-[#1b2432] bg-[#05070a] text-slate-400 hover:text-white shrink-0">
+            ⚽ Solo Fútbol
+          </button>
+          <button onclick="window.setQuickFilter('NBA')" data-qfilter="NBA" class="qfilter-btn px-3 py-1 font-bold uppercase border border-[#1b2432] bg-[#05070a] text-slate-400 hover:text-white shrink-0">
+            🏀 Solo NBA
+          </button>
+          <button onclick="window.setQuickFilter('FREE')" data-qfilter="FREE" class="qfilter-btn px-3 py-1 font-bold uppercase border border-[#1b2432] bg-[#05070a] text-slate-400 hover:text-white shrink-0">
+            🔓 Solo Gratis
+          </button>
+          <button onclick="window.setQuickFilter('LIVE')" data-qfilter="LIVE" class="qfilter-btn px-3 py-1 font-bold uppercase border border-[#1b2432] bg-[#05070a] text-slate-400 hover:text-white shrink-0">
+            🔴 En Vivo Ahora
+          </button>
+        </div>
       </div>
 
       <div id="predictions-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
@@ -138,7 +236,7 @@
     <section id="tab-resultados" class="tab-panel hidden space-y-4">
       <div class="quant-card p-4">
         <h2 class="text-base font-black uppercase text-white font-mono">Auditoría de Resultados del Día</h2>
-        <p class="text-xs text-slate-400">Calificación transparente de los partidos finalizados.</p>
+        <p class="text-xs text-slate-400">Calificación transparente de los partidos finalizados y generador de tickets de victoria.</p>
       </div>
 
       <div id="today-financial-summary" class="grid grid-cols-3 gap-3 font-mono text-xs"></div>
@@ -161,7 +259,7 @@
       <div class="quant-card p-4 space-y-3">
         <div class="flex items-center justify-between">
           <h3 class="text-xs font-mono font-bold uppercase text-white">Historial de Partidos (Desde el Más Reciente)</h3>
-          <span class="text-[11px] font-mono text-slate-400">Toca cualquier fila para ver el análisis completo</span>
+          <span class="text-[11px] font-mono text-slate-400">Toca cualquier fila para ver el análisis completo o generar Ticket</span>
         </div>
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse font-mono text-xs">
@@ -174,7 +272,7 @@
                 <th class="py-2.5 px-3">Cuota</th>
                 <th class="py-2.5 px-3">Marcador</th>
                 <th class="py-2.5 px-3">Resultado</th>
-                <th class="py-2.5 px-3 text-right">Detalle</th>
+                <th class="py-2.5 px-3 text-right">Acción</th>
               </tr>
             </thead>
             <tbody id="history-table-body" class="divide-y divide-[#1b2432]/60"></tbody>
@@ -183,13 +281,14 @@
       </div>
     </section>
 
-    <!-- TAB 4: PLANES VIP & CUPÓN -->
+    <!-- TAB 4: PLANES VIP & CUENTAS -->
     <section id="tab-planes" class="tab-panel hidden space-y-6">
       <div class="text-center max-w-xl mx-auto space-y-1">
         <h2 class="text-xl font-black uppercase text-white font-mono">Planes de Membresía VIP</h2>
         <p class="text-xs text-slate-400">Precios en COP y USDT.</p>
       </div>
 
+      <!-- CUPÓN PROMOTOR -->
       <div class="max-w-md mx-auto quant-card p-3.5 border-cyan-500/40 bg-[#070e17] font-mono text-xs space-y-2">
         <div class="flex items-center justify-between">
           <span class="font-bold text-cyan-300 uppercase">🎟️ ¿Tienes código de promotor (-20%)?</span>
@@ -210,6 +309,7 @@
 
       <div id="vip-plans-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
 
+      <!-- MEDIOS DE PAGO -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 pt-2">
         <div class="lg:col-span-7 quant-card p-5 space-y-4">
           <div class="flex items-center justify-between border-b border-[#1b2432] pb-3">
@@ -265,7 +365,112 @@
       </div>
     </section>
 
+    <!-- TAB 6: PANEL SECRETO ADMINISTRADOR -->
+    <section id="tab-admin" class="tab-panel hidden space-y-5 font-mono text-xs">
+      <div class="quant-card p-4 border-amber-400/50 bg-[#120e05] flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 class="text-sm font-black uppercase text-amber-300">⚙️ Consola de Administración en Vivo</h2>
+          <p class="text-[11px] text-slate-300">Actualiza marcadores, agrega partidos, gestiona promotores y llaves de acceso.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="btn-toggle-maintenance" onclick="window.toggleMaintenanceMode()" class="px-2.5 py-1 bg-amber-500/20 border border-amber-400 text-amber-300 text-[10px] font-bold uppercase">
+            Modo Mantenimiento: OFF
+          </button>
+          <button onclick="window.resetLocalDatabase()" class="px-2.5 py-1 bg-red-500/20 border border-red-500 text-red-300 text-[10px] font-bold uppercase">
+            Restaurar Base
+          </button>
+        </div>
+      </div>
+
+      <!-- CREAR NUEVA LLAVE O CÓDIGO PROMOTOR DESDE EL CELULAR -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="quant-card p-4 space-y-3">
+          <h3 class="text-xs font-bold uppercase text-cyan-300 border-b border-[#1b2432] pb-2">+ Generar Llave de Acceso</h3>
+          <form id="admin-create-key-form" class="space-y-2">
+            <input id="adm-key-code" type="text" required placeholder="Código Llave (Ej: CORTESIA5D)" class="w-full bg-[#05070a] border border-[#1b2432] p-2 text-white uppercase font-bold" />
+            <input id="adm-key-days" type="number" required min="1" placeholder="Días de acceso (Ej: 5)" class="w-full bg-[#05070a] border border-[#1b2432] p-2 text-white" />
+            <button type="submit" class="w-full py-2 bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-black uppercase">
+              Guardar Llave Activa
+            </button>
+          </form>
+        </div>
+
+        <div class="quant-card p-4 space-y-3">
+          <h3 class="text-xs font-bold uppercase text-[#10b981] border-b border-[#1b2432] pb-2">+ Registrar Promotor (-20%)</h3>
+          <form id="admin-create-promo-form" class="space-y-2">
+            <input id="adm-promo-code" type="text" required placeholder="Código Cupón (Ej: MIGUEL20)" class="w-full bg-[#05070a] border border-[#1b2432] p-2 text-white uppercase font-bold" />
+            <input id="adm-promo-name" type="text" required placeholder="Nombre Promotor (Ej: Miguel Ángel)" class="w-full bg-[#05070a] border border-[#1b2432] p-2 text-white" />
+            <button type="submit" class="w-full py-2 bg-[#10b981] hover:bg-emerald-400 text-slate-950 font-black uppercase">
+              Activar Promotor
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- AUDITORÍA DE VENTAS POR PROMOTOR -->
+      <div class="quant-card p-4 space-y-3">
+        <h3 class="text-xs font-bold uppercase text-white border-b border-[#1b2432] pb-2">Auditoría de Ventas por Promotor</h3>
+        <div id="admin-promoters-audit-list" class="space-y-2"></div>
+      </div>
+
+      <!-- AGREGAR PRONÓSTICO -->
+      <div class="quant-card p-4 space-y-3">
+        <h3 class="text-xs font-bold uppercase text-[#10b981] border-b border-[#1b2432] pb-2">+ Agregar Nuevo Pronóstico</h3>
+        <form id="admin-add-match-form" class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+          <input id="adm-home" type="text" required placeholder="Equipo Local (Ej: Real Madrid)" class="bg-[#05070a] border border-[#1b2432] p-2 text-white" />
+          <input id="adm-away" type="text" required placeholder="Equipo Visitante (Ej: Milan)" class="bg-[#05070a] border border-[#1b2432] p-2 text-white" />
+          <input id="adm-league" type="text" required placeholder="Liga (Ej: Champions League)" class="bg-[#05070a] border border-[#1b2432] p-2 text-white" />
+          <input id="adm-pick" type="text" required placeholder="Pronóstico (Ej: Real Madrid Gana)" class="bg-[#05070a] border border-[#1b2432] p-2 text-white" />
+          <input id="adm-odds" type="number" step="0.01" required placeholder="Cuota (Ej: 1.55)" class="bg-[#05070a] border border-[#1b2432] p-2 text-white" />
+          <input id="adm-prob" type="number" step="0.1" required placeholder="% Probabilidad (Ej: 91.5)" class="bg-[#05070a] border border-[#1b2432] p-2 text-white" />
+          <select id="adm-sport" class="bg-[#05070a] border border-[#1b2432] p-2 text-white">
+            <option value="FÚTBOL">⚽ FÚTBOL</option>
+            <option value="NBA">🏀 NBA</option>
+          </select>
+          <select id="adm-free" class="bg-[#05070a] border border-[#1b2432] p-2 text-white">
+            <option value="true">🔓 Abierto Gratis</option>
+            <option value="false">🔒 Exclusivo VIP</option>
+          </select>
+          <input id="adm-time" type="text" required placeholder="Hora (Ej: 15:00)" class="bg-[#05070a] border border-[#1b2432] p-2 text-white" />
+          <textarea id="adm-exp" rows="2" placeholder="Explicación táctica del pronóstico..." class="sm:col-span-3 bg-[#05070a] border border-[#1b2432] p-2 text-white"></textarea>
+          <button type="submit" class="sm:col-span-3 py-2 bg-[#10b981] text-slate-950 font-black uppercase">
+            Publicar Pronóstico Ahora
+          </button>
+        </form>
+      </div>
+
+      <!-- EDITAR MARCADORES -->
+      <div class="quant-card p-4 space-y-3">
+        <h3 class="text-xs font-bold uppercase text-cyan-300 border-b border-[#1b2432] pb-2">Editar Marcadores y Estados</h3>
+        <div id="admin-matches-list" class="space-y-2"></div>
+      </div>
+    </section>
+
   </main>
+
+  <!-- BARRA DE NAVEGACIÓN INFERIOR (MODO UNA SOLA MANO MÓVIL) -->
+  <nav class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#05070a]/95 backdrop-blur-md border-t border-[#1b2432] py-2 px-3 flex items-center justify-around font-mono">
+    <button onclick="switchTab('tab-pronosticos')" data-tab="tab-pronosticos" class="bottom-nav-btn flex flex-col items-center justify-center text-cyan-400 font-bold text-[10px]">
+      <span class="text-base">📋</span>
+      <span>Cartelera</span>
+    </button>
+    <button onclick="switchTab('tab-resultados')" data-tab="tab-resultados" class="bottom-nav-btn flex flex-col items-center justify-center text-slate-400 font-bold text-[10px]">
+      <span class="text-base">📊</span>
+      <span>Resultados</span>
+    </button>
+    <button onclick="switchTab('tab-historial')" data-tab="tab-historial" class="bottom-nav-btn flex flex-col items-center justify-center text-slate-400 font-bold text-[10px]">
+      <span class="text-base">📈</span>
+      <span>Historial</span>
+    </button>
+    <button onclick="switchTab('tab-planes')" data-tab="tab-planes" class="bottom-nav-btn flex flex-col items-center justify-center text-slate-400 font-bold text-[10px]">
+      <span class="text-base">💎</span>
+      <span>Planes</span>
+    </button>
+    <button onclick="switchTab('tab-cuenta')" data-tab="tab-cuenta" class="bottom-nav-btn flex flex-col items-center justify-center text-slate-400 font-bold text-[10px]">
+      <span class="text-base">👤</span>
+      <span>Cuenta</span>
+    </button>
+  </nav>
 
   <!-- MODAL CANJEAR LLAVE TEMPORAL -->
   <div id="redeem-key-modal" class="fixed inset-0 z-50 hidden bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 font-mono text-xs">
@@ -289,7 +494,7 @@
     </div>
   </div>
 
-  <!-- MODAL DE AUTENTICACIÓN (INICIAR SESIÓN / REGISTRO) -->
+  <!-- MODAL DE AUTENTICACIÓN -->
   <div id="auth-modal" class="fixed inset-0 z-50 hidden bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 font-mono text-xs">
     <div class="quant-card max-w-sm w-full p-5 space-y-3 border-cyan-500/50 shadow-[0_0_25px_rgba(6,182,212,0.2)]">
       <div class="flex items-center justify-between border-b border-[#1b2432] pb-2">
@@ -297,11 +502,11 @@
         <button id="btn-close-auth" class="text-slate-400 hover:text-white font-bold">✕</button>
       </div>
       <p id="auth-modal-subtitle" class="text-[11px] text-slate-400 leading-relaxed">
-        Ingresa tu correo y define tu contraseña segura para crear tu cuenta.
+        Ingresa tu correo real y define tu contraseña segura para crear tu cuenta.
       </p>
       <form id="auth-form" class="space-y-3 pt-1">
         <div>
-          <label class="text-[10px] text-slate-400 block mb-1">CORREO ELECTRÓNICO</label>
+          <label class="text-[10px] text-slate-400 block mb-1">CORREO ELECTRÓNICO OFICIAL</label>
           <input id="auth-email" type="email" required placeholder="tu@correo.com" class="w-full bg-[#05070a] border border-[#1b2432] p-2 text-white text-xs focus:border-cyan-400 focus:outline-none" />
         </div>
         <div>

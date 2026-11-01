@@ -1,6 +1,6 @@
 // ============================================================================
 // ARCHIVO: auth.js
-// Bloqueador de Correos Desechables + Huella de Dispositivo + Acceso Admin
+// Autenticación Real, Huella de Dispositivo, Bloqueo de Multicuentas y Admin
 // ============================================================================
 
 import { CONFIG } from "./config.js";
@@ -9,7 +9,6 @@ const supabase = window.supabase
   ? window.supabase.createClient(CONFIG.KEYS.SUPABASE_URL, CONFIG.KEYS.SUPABASE_ANON_KEY)
   : null;
 
-// MEJORA #10: Lista negra de dominios temporales desechables
 const DISPOSABLE_DOMAINS = [
   "yopmail.com", "tempmail.com", "guerrillamail.com", "10minutemail.com",
   "mailinator.com", "throwawaymail.com", "getnada.com", "sharklasers.com",
@@ -21,7 +20,6 @@ function isDisposableEmail(email) {
   return DISPOSABLE_DOMAINS.some((d) => domain.includes(d));
 }
 
-// MEJORA #10: Huella digital única del dispositivo
 function getDeviceFingerprint() {
   let fp = localStorage.getItem("optacore_device_fp");
   if (!fp) {
@@ -103,7 +101,6 @@ export function updateHeaderStatus() {
   const remaining = getRemainingTrialTime();
   const isLoggedIn = !!email;
 
-  // Mostrar pestaña secreta si es Administrador
   if (btnAdminNav) {
     if (isUserAdmin()) btnAdminNav.classList.remove("hidden");
     else btnAdminNav.classList.add("hidden");
@@ -117,10 +114,12 @@ export function updateHeaderStatus() {
         localStorage.setItem("optacore_user_referral_code", refCode);
       }
 
+      const totalEarnedDays = Number(localStorage.getItem("optacore_referral_days_earned") || 0);
+
       referralCardContainer.innerHTML = `
         <div class="quant-card p-4 space-y-3 font-mono text-xs border-emerald-500/40">
           <div class="flex items-center justify-between border-b border-[#1b2432] pb-2">
-            <h3 class="text-xs font-bold uppercase text-[#10b981]">Tu Enlace Único de Referidos (+20% Días)</h3>
+            <h3 class="text-xs font-bold uppercase text-[#10b981]">Billetera de Referidos (+20% Días VIP)</h3>
             <span class="text-[10px] text-emerald-400 font-bold bg-[#10b981]/15 px-2 py-0.5 border border-[#10b981]/30">ACTIVO</span>
           </div>
           <p class="text-slate-300 text-[11px] leading-relaxed">
@@ -131,9 +130,13 @@ export function updateHeaderStatus() {
               <span class="text-[9px] text-slate-400 block">TU CÓDIGO ÚNICO:</span>
               <span class="text-sm font-black text-cyan-400 tracking-wider">${refCode}</span>
             </div>
-            <button onclick="navigator.clipboard.writeText('${window.location.origin}?ref=${refCode}'); alert('Enlace único copiado: ${window.location.origin}?ref=${refCode}')" class="px-3 py-1.5 bg-cyan-500/20 hover:bg-cyan-400 hover:text-black border border-cyan-400 text-cyan-300 text-[11px] font-bold uppercase transition">
+            <button onclick="navigator.clipboard.writeText('${window.location.origin}?ref=${refCode}'); alert('Enlace copiado al portapapeles')" class="px-3 py-1.5 bg-cyan-500/20 hover:bg-cyan-400 hover:text-black border border-cyan-400 text-cyan-300 text-[11px] font-bold uppercase transition">
               📋 Copiar Mi Enlace
             </button>
+          </div>
+          <div class="p-2.5 bg-[#070e17] border border-cyan-500/30 flex items-center justify-between">
+            <span class="text-slate-400 text-[11px]">Días acumulados ganados por referidos:</span>
+            <span class="text-sm font-black text-[#10b981]">+${totalEarnedDays} Días</span>
           </div>
         </div>
       `;
@@ -197,9 +200,8 @@ export function updateHeaderStatus() {
 }
 
 async function handleUserRegister(email, password) {
-  // MEJORA #10: Filtro contra correos falsos temporales
   if (isDisposableEmail(email)) {
-    alert("⛔ SEGURIDAD OPTACORE:\nNo se permiten correos temporales o desechables (Yopmail, TempMail, etc.). Por favor utiliza tu correo personal oficial (Gmail, Outlook, iCloud, etc.).");
+    alert("⛔ SEGURIDAD OPTACORE:\nNo se permiten correos temporales o desechables (Yopmail, TempMail, etc.). Por favor utiliza tu correo personal oficial.");
     return;
   }
 
@@ -212,7 +214,7 @@ async function handleUserRegister(email, password) {
 
   if (error) {
     if (error.message.includes("already registered")) {
-      alert("Este correo ya se encuentra registrado. Por favor pulsa en 'Entrar' para iniciar sesión.");
+      alert("Este correo ya se encuentra registrado. Pulsa en 'Entrar' para iniciar sesión.");
     } else {
       alert("Error al registrar: " + error.message);
     }
@@ -234,7 +236,7 @@ async function handleUserRegister(email, password) {
   localStorage.setItem("optacore_user_role", "USER");
   localStorage.setItem("optacore_user_referral_code", userRefCode);
 
-  alert(`¡Cuenta creada con éxito para ${email}! Ahora puedes pulsar en 'Prueba 24h' para activar tu acceso gratuito.`);
+  alert(`¡Cuenta creada con éxito para ${email}! Ya puedes pulsar en 'Prueba 24h' para activar tu acceso.`);
   window.location.reload();
 }
 
@@ -284,16 +286,15 @@ async function handleClaimTrial() {
   const email = localStorage.getItem("optacore_user_email");
 
   if (!email) {
-    alert("🔒 REGISTRO REQUERIDO:\nPrimero debes registrarte e iniciar sesión con tu correo antes de activar tus 24 horas de prueba VIP.");
+    alert("🔒 REGISTRO REQUERIDO:\nDebes registrarte e iniciar sesión antes de activar tus 24 horas de prueba VIP.");
     document.getElementById("btn-open-register")?.click();
     return;
   }
 
-  // MEJORA #10: Verificar huella del dispositivo para evitar multicuentas en el mismo celular
   const deviceClaimed = localStorage.getItem("optacore_device_trial_claimed");
   const fp = getDeviceFingerprint();
   if (deviceClaimed) {
-    alert(`⛔ CONTROL ANTIFRAUDE (${fp}):\nEste dispositivo ya reclamó anteriormente una prueba gratuita de 24 horas con la cuenta ${deviceClaimed}. Solo se permite una prueba por dispositivo.`);
+    alert(`⛔ CONTROL ANTIFRAUDE (${fp}):\nEste dispositivo ya reclamó una prueba de 24 horas con la cuenta ${deviceClaimed}. Solo se permite una prueba por dispositivo.`);
     return;
   }
 
@@ -306,7 +307,7 @@ async function handleClaimTrial() {
     .maybeSingle();
 
   if (profile && profile.trial_used) {
-    alert("Tu correo ya utilizó anteriormente sus 24 horas de prueba VIP gratuitas.");
+    alert("Tu correo ya utilizó sus 24 horas de prueba VIP gratuitas.");
     return;
   }
 
