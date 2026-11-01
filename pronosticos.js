@@ -1,12 +1,21 @@
 // ============================================================================
-// ARCHIVO: pronosticos.js - Corrección de Pantalla de Mantenimiento y Bilingüe
+// ARCHIVO: pronosticos.js - 34 Partidos (10 Hoy + 24 Historial), Bilingüe y Sin Mantenimiento
 // ============================================================================
 import { CONFIG } from "./config.js";
 import { isUserVipOrAdmin } from "./auth.js";
-const DB_KEY = "optacore_master_feed_v30";
+const DB_KEY = "optacore_master_feed_v35";
 const API_SYNC_THROTTLE_MS = 10 * 60 * 1000;
 let activeQuickFilter = "ALL";
 let currentLang = localStorage.getItem("optacore_lang") || "ES";
+localStorage.removeItem("optacore_maintenance_mode");
+export function getColombiaDateString(d = new Date()) {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: CONFIG?.BRAND?.TIMEZONE || "America/Bogota",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(d);
+}
 const STATIC_I18N = {
   "PRONÓSTICOS DE ALTA PROBABILIDAD": "HIGH PROBABILITY PREDICTIONS",
   "FÚTBOL & NBA": "FOOTBALL & NBA",
@@ -69,9 +78,6 @@ const STATIC_I18N = {
   "¿Ya tienes cuenta? Inicia sesión aquí": "Already have an account? Log in here",
   "¿No tienes cuenta aún? Regístrate aquí": "Don't have an account yet? Sign up here",
   "OPTACORE.QUANT © 2026 — Inteligencia Estadística para Pronósticos Deportivos (+18).": "OPTACORE.QUANT © 2026 — Statistical Intelligence for Sports Predictions (+18).",
-  "Calibrando Algoritmos Cuantitativos": "Calibrating Quantitative Algorithms",
-  "Estamos cargando la cartelera oficial y procesando métricas en vivo. Disponible en unos minutos.": "Loading the official matchday card and processing live metrics. Available in a few minutes.",
-  "OPTACORE.QUANT — ACTUALIZACIÓN EN CURSO": "OPTACORE.QUANT — UPDATE IN PROGRESS",
   "⚙️ Consola de Administración en Vivo": "⚙️ Live Admin Console",
   "Actualiza marcadores, sincroniza resultados en lote, agrega partidos y promotores.": "Update scores, batch-sync results, add matches and promoters.",
   "⚡ Sincronizar API (1 Crédito)": "⚡ Sync API (1 Credit)",
@@ -112,6 +118,27 @@ function trText(str) {
   };
   if (exactMap[s]) return exactMap[s];
   const replacements = [
+    ["Liverpool Gana o Empata (1X) + Más de 1.5 Goles Totales", "Liverpool Wins or Draws (1X) + Over 1.5 Total Goals"],
+    ["Doble Oportunidad (Liverpool o Empate) + Total Goles Más de 1.5", "Double Chance (Liverpool or Draw) + Over 1.5 Total Goals"],
+    ["Real Madrid Gana Directo + Más de 1.5 Goles Totales", "Real Madrid Direct Win + Over 1.5 Total Goals"],
+    ["Resultado del partido (Gana Real Madrid) y Más de 1.5 Goles", "Match Winner (Real Madrid) & Over 1.5 Goals"],
+    ["Total de Goles: Menos de 2.5 (Máximo 2 goles en el partido)", "Total Goals: Under 2.5 (Max 2 goals in match)"],
+    ["Boston Celtics Gana Directo (Moneyline)", "Boston Celtics Direct Win (Moneyline)"],
+    ["Ganador del Partido (Incluye Prórroga): Boston Celtics", "Match Winner (Incl. OT): Boston Celtics"],
+    ["Independiente Medellín Gana Directo (1X2)", "Independiente Medellin Direct Win (1X2)"],
+    ["Tiempo Reglamentario: Gana Independiente Medellín", "Regular Time: Independiente Medellin Wins"],
+    ["Lazio Gana o Empata (1X) + Más de 1.5 Goles Totales", "Lazio Wins or Draws (1X) + Over 1.5 Total Goals"],
+    ["Doble Oportunidad Lazio/Empate y Total de Goles Más de 1.5", "Double Chance Lazio/Draw & Over 1.5 Total Goals"],
+    ["Athletic Club Gana o Empata (1X) + Menos de 3.5 Goles", "Athletic Club Wins or Draws (1X) + Under 3.5 Goals"],
+    ["Doble Oportunidad (Athletic o Empate) y Menos de 3.5 Goles", "Double Chance (Athletic or Draw) & Under 3.5 Goals"],
+    ["Menos de 232.5 Puntos Totales (Línea Protegida)", "Under 232.5 Total Points (Protected Line)"],
+    ["Total de Puntos (Incluye Prórroga): Menos de 232.5", "Total Points (Incl. OT): Under 232.5"],
+    ["Golden State Warriors Hándicap -2.5 (Línea Corta)", "Golden State Warriors Handicap -2.5 (Short Line)"],
+    ["Hándicap del Partido (Incluye Prórroga): Warriors -2.5", "Match Handicap (Incl. OT): Warriors -2.5"],
+    ["Los Angeles Lakers Gana Directo + Más de 215.5 Puntos", "LA Lakers Direct Win + Over 215.5 Points"],
+    ["Gana LA Lakers y Total de Puntos Más de 215.5", "LA Lakers Win & Total Points Over 215.5"],
+    ["⚡ EN ESPERA DE INICIO", "⚡ WAITING FOR KICKOFF"],
+    ["🔒 EXCLUSIVO MIEMBROS VIP", "🔒 VIP MEMBERS EXCLUSIVE"],
     ["Gana Manchester City + Total Goles Más de 1.5", "Man City Wins + Over 1.5 Total Goals"],
     ["Manchester City Gana + Más de 1.5 Goles Totales", "Manchester City Wins + Over 1.5 Total Goals"],
     ["Línea de Goles: Más de 2.5 (3 goles o más en total)", "Goal Line: Over 2.5 (3 or more total goals)"],
@@ -161,59 +188,12 @@ function trText(str) {
     ["✔ OBJETIVO CUMPLIDO: Ganó 2-0", "✔ TARGET HIT: Won 2-0"],
     ["✖ NO SE COMPLETÓ (Llaneros ganó 3-2)", "✖ MISSED (Llaneros won 3-2)"],
     ["✔ OBJETIVO CUMPLIDO: 232 puntos anotados", "✔ TARGET HIT: 232 points scored"],
-    ["Frío húmedo (12°C)", "Cold & humid (12°C)"],
-    ["Clima fresco (10°C)", "Cool weather (10°C)"],
-    ["Agradable (19°C)", "Pleasant (19°C)"],
-    ["Calor húmedo (27°C)", "Humid heat (27°C)"],
-    ["Coliseo Climatizado", "Climate-Controlled Arena"],
-    ["Coliseo Cerrado", "Indoor Arena"],
-    ["Calor pesado (24°C)", "Heavy heat (24°C)"],
-    ["Calor sofocante (31°C)", "Sweltering heat (31°C)"],
-    ["Calor sofocante (33°C y 86% de humedad)", "Sweltering heat (33°C & 86% humidity)"],
-    ["Cielo nublado (12°C)", "Cloudy sky (12°C)"],
-    ["Cálido (26°C)", "Warm (26°C)"],
-    ["Lluvia (15°C)", "Rain (15°C)"],
-    ["Calor de Barranquilla (30°C)", "Barranquilla heat (30°C)"],
-    ["Templado", "Mild"],
-    ["Despejado", "Clear"],
-    ["Lluvia", "Rain"],
-    ["Frío", "Cold"],
-    ["Agradable", "Pleasant"],
-    ["Fresco", "Cool"],
-    ["Nublado", "Cloudy"],
-    ["Condición Estándar", "Standard Condition"],
     ["por partido", "per match"],
     ["pts esperados", "expected pts"],
     ["al arco", "on target"],
     ["Ritmo rápido", "Fast pace"],
     ["Puntos", "Points"],
-    ["Córners", "Corners"],
-    ["El City dominó el trámite con 68% de posesión y cerró la victoria 3-1 en casa asegurando la cuota.", "City dominated with 68% possession and sealed a 3-1 home victory, locking in the odds."],
-    ["Duelo de ida y vuelta con 35 remates totales; tras el 1-1 inicial, tres tantos sellaron el 3-2.", "Back-and-forth clash with 35 total shots; after an initial 1-1, three goals sealed the 3-2 win."],
-    ["Control absoluto de posesión culé (72%) sin permitir remates peligrosos de Alavés para sellar el 2-0.", "Absolute possession control by Barca (72%) allowing no dangerous shots from Alaves to seal a 2-0 win."],
-    ["Llaneros aprovechó desatenciones defensivas en Villavicencio para adelantarse. Pese al descuento de Junior, el penal al 80' sentenció el 3-2.", "Llaneros capitalized on defensive lapses in Villavicencio. Despite Junior's goals, an 80th-minute penalty sealed the 3-2 result."],
-    ["Ritmo frenético de posesiones que derivó en un 121-111 (232 puntos totales), superando con holgura los 214.5 puntos requeridos.", "Frenetic pace of possessions leading to a 121-111 score (232 total points), comfortably clearing the 214.5 required line."],
-    ["Pasto perdió su ventaja de altitud y Bucaramanga resolvió 2-0.", "Pasto lost its altitude advantage and Bucaramanga won 2-0."],
-    ["Indiana impuso posesiones de menos de 12 segundos y selló 242 puntos combinados.", "Indiana enforced sub-12-second possessions and sealed 242 combined points."],
-    ["Estaba 1-1 en el minuto 93, pero un penal sancionado al 94' quebró la línea.", "It was 1-1 in the 93rd minute, but a 94th-minute penalty broke the under line."],
-    ["Cinco remates a los postes derivaron en un atípico 0-0.", "Five shots hitting the posts resulted in an unusual 0-0 draw."],
-    ["América remontó en el segundo tiempo con dos goles seguidos (2-1).", "America came back in the second half with two consecutive goals (2-1)."],
-    ["Kings sentó titulares ganando por 14 y Utah descontó hasta el 110-113.", "Kings benched starters while up by 14 and Utah cut the lead to 110-113."],
-    ["Cancha anegada que derivó en un 0-0 al descanso.", "Waterlogged pitch that led to a 0-0 halftime score."],
-    ["Durant estuvo intratable y anotó 31 puntos atacando constantemente el aro.", "Durant was unstoppable and scored 31 points constantly attacking the rim."],
-    ["Stephen Curry se lesionó el tobillo en el 3Q y Clippers remontó el partido.", "Stephen Curry injured his ankle in the 3Q and the Clippers came back to win."],
-    ["Junior fue una aplanadora en el Metropolitano ganando 3-1.", "Junior was a powerhouse at the Metropolitano winning 3-1."],
-    ["Superioridad total parisina con goleada 0-3 en el clásico francés.", "Total Parisian superiority with a 0-3 rout in the French derby."],
-    ["Partidazo en Milán con 8 goles en total para un empate 4-4.", "Thriller in Milan with 8 total goals for a 4-4 draw."],
-    ["Duelo con llegadas en ambas áreas que finalizó 2-2.", "End-to-end clash with chances in both boxes finishing 2-2."],
-    ["Se quedó en 9 tiros de esquina en el minuto 75 y no hubo más llegadas.", "Stuck at 9 corners in the 75th minute with no further corner kicks."],
-    ["Jokic anotó 41 puntos en la altura de Denver destrozando la línea.", "Jokic scored 41 points in Denver's altitude, smashing the line."],
-    ["Tolima empató 1-1 y la selección se protegió sin pérdidas.", "Tolima drew 1-1 and the DNB selection was protected with no loss."],
-    ["Jaguares acusó la subida a Medellín y el DIM goleó 4-1.", "Jaguares suffered from the altitude in Medellin and DIM won 4-1."],
-    ["Madrid cayó 8 veces en fuera de juego y Barcelona ganó 0-4 sin encajar.", "Madrid was caught offside 8 times and Barcelona won 0-4 with a clean sheet."],
-    ["Remontada de Leipzig en el segundo tiempo con tres goles seguidos.", "Second-half comeback by Leipzig with three unanswered goals."],
-    ["El equipo del 'Dibu' sostuvo el invicto en casa con empate 1-1.", "Aston Villa held their home unbeaten run with a 1-1 draw."],
-    ["En el Jaraguay de Montería, Llaneros acusó el calor y Jaguares se impuso 2-1.", "At the Jaraguay in Monteria, Llaneros suffered from the heat and Jaguares won 2-1."]
+    ["Córners", "Corners"]
   ];
   for (const [es, en] of replacements) {
     if (s.includes(es)) s = s.replaceAll(es, en);
@@ -298,10 +278,53 @@ window.setAppLanguage = (lang) => {
     waBtn.innerHTML = `<span>💬 ${currentLang === "EN" ? "VIP WhatsApp (+57 333 286 1551)" : "WhatsApp VIP (+57 333 286 1551)"}</span>`;
   }
 };
-export function getColombiaDateString(d = new Date()) {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: CONFIG?.BRAND?.TIMEZONE || "America/Bogota",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).f
+function getStars(prob = 90) {
+  const tag5 = currentLang === "EN" ? "5 STARS" : "5 ESTRELLAS";
+  const tag4 = currentLang === "EN" ? "4 STARS" : "4 ESTRELLAS";
+  const tag3 = currentLang === "EN" ? "3 STARS" : "3 ESTRELLAS";
+  if (prob >= 90) return { stars: "⭐⭐⭐⭐⭐", tag: tag5, badge: "border-cyan-400 bg-cyan-500/15 text-cyan-300" };
+  if (prob >= 85) return { stars: "⭐⭐⭐⭐", tag: tag4, badge: "border-emerald-400 bg-emerald-500/15 text-emerald-300" };
+  return { stars: "⭐⭐⭐", tag: tag3, badge: "border-slate-600 bg-slate-800 text-slate-300" };
+}
+function getPitchFeverBar(altitudeM = 100, weatherDesc = "") {
+  const w = String(weatherDesc || "").toLowerCase();
+  let stressScore = 45;
+  let label = currentLang === "EN" ? "MEDIUM STRAIN" : "EXIGENCIA MEDIA";
+  let color = "bg-cyan-400";
+  if (w.includes("31°c") || w.includes("33°c") || w.includes("30°c") || w.includes("27°c") || w.includes("calor") || w.includes("humed")) {
+    stressScore = 92;
+    label = currentLang === "EN" ? "🔥 EXTREME HEAT / RIVAL FATIGUE" : "🔥 CALOR EXTREMO / DESGASTE RIVAL";
+    color = "bg-amber-500";
+  } else if (Number(altitudeM) >= 1400) {
+    stressScore = 88;
+    label = currentLang === "EN" ? "⛰️ HIGH ALTITUDE HYPOXIA (+1,400m)" : "⛰️ AHOGO POR ALTURA (+1.400m)";
+    color = "bg-emerald-400";
+  } else if (w.includes("10°c") || w.includes("11°c") || w.includes("12°c") || w.includes("frío") || w.includes("frio") || w.includes("fresco")) {
+    stressScore = 65;
+    label = currentLang === "EN" ? "⚡ FAST PITCH / HIGH PACE" : "⚡ CÉSPED RÁPIDO / ALTA VELOCIDAD";
+    color = "bg-[#06b6d4]";
+  }
+  return { stressScore, label, color };
+}
+const LOGOS = {
+  "Liverpool FC": "https://media.api-sports.io/football/teams/40.png",
+  "Arsenal FC": "https://media.api-sports.io/football/teams/42.png",
+  "Racing de Santander": "https://media.api-sports.io/football/teams/726.png",
+  "Getafe CF": "https://media.api-sports.io/football/teams/546.png",
+  "Sevilla FC": "https://media.api-sports.io/football/teams/536.png",
+  "Orlando Magic": "https://cdn.nba.com/logos/nba/1610612753/primary/L/logo.svg",
+  "Boston Celtics": "https://cdn.nba.com/logos/nba/1610612738/primary/L/logo.svg",
+  "Alianza FC": "https://media.api-sports.io/football/teams/1128.png",
+  "SS Lazio": "https://media.api-sports.io/football/teams/487.png",
+  "Cagliari Calcio": "https://media.api-sports.io/football/teams/490.png",
+  "Athletic Club": "https://media.api-sports.io/football/teams/531.png",
+  "Real Sociedad": "https://media.api-sports.io/football/teams/548.png",
+  "Brooklyn Nets": "https://cdn.nba.com/logos/nba/1610612751/primary/L/logo.svg",
+  "Los Angeles Lakers": "https://cdn.nba.com/logos/nba/1610612747/primary/L/logo.svg",
+  "Toronto Raptors": "https://cdn.nba.com/logos/nba/1610612761/primary/L/logo.svg",
+  "Manchester City": "https://media.api-sports.io/football/teams/50.png",
+  "Brighton": "https://media.api-sports.io/football/teams/51.png",
+  "Bayern Múnich": "https://media.api-sports.io/football/teams/157.png",
+  "Borussia Dortmund": "https://media.api-sports.io/football/teams/165.png",
+  "FC Barcelona": "https://media.api-sports.io/football/teams/529.png",
+  "Deportivo Alavés": "https://media.ap
