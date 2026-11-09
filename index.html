@@ -1,1 +1,471 @@
-<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>OPTACORE — Pronósticos Diamante de Alta Probabilidad</title><style>:root{--bg:#05070a;--b:rgba(255,255,255,.10);--g:#10b981;--cy:#06b6d4;--am:#f59e0b;--rd:#f87171;--t:#e5edf6;--m:#8b9bb4;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:var(--t);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding-bottom:84px;background:radial-gradient(900px 520px at 8% -8%,rgba(6,182,212,.22),transparent 60%),radial-gradient(800px 520px at 100% 6%,rgba(16,185,129,.18),transparent 60%),radial-gradient(700px 500px at 50% 110%,rgba(6,182,212,.12),transparent 60%),var(--bg);background-attachment:fixed}button,input{font:inherit;color:inherit}button{cursor:pointer}:focus-visible{outline:2px solid var(--cy);outline-offset:2px}.wrap{max-width:1100px;margin:0 auto;padding:0 16px}.mut{color:var(--m)}.num{font-family:var(--mono);font-variant-numeric:tabular-nums}.glass,.card,.btn,.chips button,.tabs button,.srch,.pick{-webkit-backdrop-filter:blur(14px) saturate(150%);backdrop-filter:blur(14px) saturate(150%)}.tick{overflow:hidden;background:rgba(2,4,6,.7);border-bottom:1px solid var(--b);padding:8px 0;font:12px var(--mono)}.tick div{display:inline-flex;white-space:nowrap;animation:mv 90s linear infinite}.tick span{padding:0 26px}.tick b{color:var(--g)}@keyframes mv{to{transform:translateX(-50%)}}@media(prefers-reduced-motion:reduce){.tick div{animation:none}}.bar{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 16px;font-size:13px;color:var(--m)}.live{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--g);margin-right:6px;box-shadow:0 0 8px var(--g)}header.top{position:sticky;top:0;z-index:30;background:rgba(5,7,10,.55);-webkit-backdrop-filter:blur(18px) saturate(160%);backdrop-filter:blur(18px) saturate(180%);border-bottom:1px solid var(--b)}.hrow{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0}.logo{display:flex;align-items:center;gap:10px;font:800 18px var(--mono);letter-spacing:.4px;white-space:nowrap}.logo:before{content:"";width:5px;height:28px;border-radius:3px;background:var(--g);box-shadow:0 0 12px var(--g)}.logo small{font:700 10px var(--mono);color:var(--g);border:1px solid rgba(16,185,129,.4);background:rgba(16,185,129,.12);border-radius:6px;padding:2px 6px}.acts{display:flex;gap:8px}.btn{border:1px solid var(--b);background:rgba(255,255,255,.06);border-radius:10px;padding:8px 14px;font-size:14px;font-weight:600;white-space:nowrap;box-shadow:inset 0 1px 0 rgba(255,255,255,.08);transition:background .2s,border-color .2s}.btn:hover{background:rgba(255,255,255,.12)}.btn.p{background:rgba(16,185,129,.22);border-color:rgba(16,185,129,.55);color:#d1fae5}.btn.s{background:rgba(6,182,212,.22);border-color:rgba(6,182,212,.55);color:#cffafe}.btn.a{background:rgba(245,158,11,.16);border-color:rgba(245,158,11,.55);color:#fde68a}.btn.no{background:rgba(248,113,113,.16);border-color:rgba(248,113,113,.55);color:#fecaca}.tabs{display:none;gap:8px;padding:0 0 12px;overflow-x:auto}.tabs button{border:1px solid var(--b);background:rgba(255,255,255,.04);color:var(--m);border-radius:10px;padding:8px 16px;font-size:14px;font-weight:600;white-space:nowrap}.tabs button[aria-selected=true]{color:#fff;border-color:rgba(6,182,212,.7);background:rgba(6,182,212,.18)}main{padding:20px 0}.panel{display:none}.panel.on{display:block}.card{background:linear-gradient(145deg,rgba(255,255,255,.07),rgba(255,255,255,.02));border:1px solid var(--b);border-radius:14px;padding:16px;box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 10px 30px rgba(0,0,0,.35)}.stack>*+*{margin-top:16px}h1,h2,h3{margin:0;line-height:1.25}h1{font-size:20px}h2{font-size:18px}h3{font-size:16px}.row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.row2{display:flex;gap:8px;margin-top:auto}.row2 .btn{flex:1}.calc{display:grid;gap:12px}.calc input,.srch,.mdl input,.pi{width:100%;background:rgba(5,7,10,.55);border:1px solid var(--b);border-radius:10px;padding:10px 12px}.calc input{border-color:rgba(16,185,129,.7);font:700 15px var(--mono)}.chips{display:flex;gap:8px;overflow-x:auto;padding:2px 0}.chips button{border:1px solid var(--b);background:rgba(255,255,255,.05);color:var(--m);border-radius:999px;padding:6px 14px;font-size:13px;font-weight:600;white-space:nowrap}.chips button[aria-pressed=true]{border-color:rgba(6,182,212,.7);color:#fff;background:rgba(6,182,212,.2)}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,310px),1fr));gap:16px}.m{display:flex;flex-direction:column;gap:12px}.m h3 span{font-weight:400;color:var(--m);margin:0 6px}.sc{font-size:22px;font-weight:800}.pick{background:rgba(255,255,255,.05);border:1px solid var(--b);border-radius:10px;padding:10px 12px;font-weight:600}.pick.lock{color:var(--m);border-style:dashed}.ctx{background:rgba(6,182,212,.06);border:1px solid rgba(6,182,212,.22);border-radius:10px;padding:10px 12px;font-size:13px;line-height:1.5;color:var(--t)}.gain{background:rgba(16,185,129,.10);border:1px solid rgba(16,185,129,.25);border-radius:10px;padding:8px 12px;font-size:14px}.gain b{color:var(--g)}.bd{font-size:12px;font-weight:700;padding:2px 10px;border-radius:999px;border:1px solid var(--b);color:var(--m);background:rgba(255,255,255,.04)}.bd.ok{color:var(--g);border-color:rgba(16,185,129,.6);background:rgba(16,185,129,.12)}.bd.no{color:var(--rd);border-color:rgba(248,113,113,.6);background:rgba(248,113,113,.1)}.bd.lv{color:var(--am);border-color:rgba(245,158,11,.6);background:rgba(245,158,11,.1)}.bd.dm{color:#cffafe;border-color:rgba(6,182,212,.6);background:rgba(6,182,212,.16)}.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}.kpi b{display:block;font:700 22px var(--mono)}.kpi span{font-size:13px;color:var(--m)}.tw{overflow-x:auto;margin-top:12px}table{width:100%;border-collapse:collapse;font-size:14px;min-width:640px}th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--b)}th{font-size:12px;color:var(--m);font-weight:600}.plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:16px}.plan{display:flex;flex-direction:column;gap:8px}.plan .pr{font:800 24px var(--mono)}.plan s{color:var(--m);font-size:14px;margin-left:6px;font-weight:400}.tag{align-self:flex-start;font-size:12px;font-weight:700;color:var(--g);background:rgba(16,185,129,.14);border:1px solid rgba(16,185,129,.35);border-radius:999px;padding:2px 10px}.mdl{position:fixed;inset:0;z-index:60;background:rgba(2,4,8,.55);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:16px}.mdl.on{display:flex}.mdl .card{width:100%;max-width:520px;max-height:85vh;overflow:auto;background:linear-gradient(145deg,rgba(20,28,40,.92),rgba(10,14,20,.9))}.mdl input{margin:8px 0}.mdl p{margin:8px 0}.fab{position:fixed;right:16px;bottom:88px;z-index:40;display:flex;align-items:center;gap:8px;padding:11px 18px;border-radius:999px;text-decoration:none;font-weight:700;font-size:14px;color:#d1fae5;background:linear-gradient(135deg,rgba(16,185,129,.34),rgba(16,185,129,.12));border:1px solid rgba(110,231,183,.5);-webkit-backdrop-filter:blur(16px) saturate(170%);backdrop-filter:blur(16px) saturate(170%);box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 8px 28px rgba(16,185,129,.28)}.fab:hover{background:linear-gradient(135deg,rgba(16,185,129,.5),rgba(16,185,129,.2))}.nav{position:fixed;left:0;right:0;bottom:0;z-index:50;display:grid;grid-template-columns:repeat(5,1fr);background:rgba(5,7,10,.6);-webkit-backdrop-filter:blur(18px) saturate(160%);backdrop-filter:blur(18px) saturate(160%);border-top:1px solid var(--b);padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px))}.nav button{background:none;border:0;color:var(--m);font-size:11px;font-weight:600;padding:4px 0;display:flex;flex-direction:column;align-items:center;gap:2px}.nav button span{font-size:18px}.nav button[aria-selected=true]{color:var(--cy)}.pay p{margin:6px 0}.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:rgba(16,185,129,.95);color:#04120c;font-weight:700;padding:10px 18px;border-radius:10px;z-index:80;display:none;box-shadow:0 8px 24px rgba(0,0,0,.4)}@media(max-width:480px){.logo small{display:none}.acts .btn{padding:7px 10px;font-size:13px}}@media(min-width:768px){.tabs{display:flex}.nav{display:none}body{padding-bottom:24px}.fab{bottom:24px}.calc{grid-template-columns:1fr auto auto;align-items:center}}</style></head><body><div class="tick" aria-hidden="true"><div><span><b>💎 DIAMANTE COBRADO:</b> Sassuolo 2-4 Fiorentina ► Fiorentina X2 + Más 1.5 (@1.55)</span><span><b>💎 DIAMANTE COBRADO:</b> Águilas Doradas 1-0 Fortaleza ► Águilas 1X + Menos 3.5 (@1.48)</span><span><b>💎 DIAMANTE COBRADO:</b> Bucaramanga 1-1 Atl. Nacional ► Nacional X2 (@1.53)</span><span><b>💎 DIAMANTE COBRADO:</b> Knicks 103-90 Nets ► Knicks -4.5 (@1.54)</span><span><b>💎 DIAMANTE COBRADO:</b> Cavaliers 112-117 Thunder ► Más de 218.5 Pts (@1.56)</span><span><b>💎 DIAMANTE COBRADO:</b> Lakers 138-117 Heat ► Lakers ML (@1.60)</span><span><b>💎 DIAMANTE COBRADO:</b> Sassuolo 2-4 Fiorentina ► Fiorentina X2 + Más 1.5 (@1.55)</span><span><b>💎 DIAMANTE COBRADO:</b> Águilas Doradas 1-0 Fortaleza ► Águilas 1X + Menos 3.5 (@1.48)</span></div></div><div class="wrap bar"><span><i class="live"></i><b style="color:var(--g)">Sistema en vivo</b> <b id="clk" class="num" style="color:var(--cy)">--:--:--</b> <small id="apist" class="mut" style="margin-left:6px">(API Conectada)</small></span><span id="role" class="bd">Acceso libre · 4 gratis</span></div><header class="top"><div class="wrap"><div class="hrow"><div class="logo">OPTACORE<small>FÚTBOL & NBA</small></div><div class="acts"><button class="btn" onclick="syncLiveAPI(true)" title="Sincronizar marcadores">🔄 API</button><button class="btn a" onclick="openM('m-key')">🔑 Llave</button><button class="btn s" onclick="trial()">Prueba</button><button class="btn p" id="top-auth-btn" onclick="openM('m-auth')">Entrar</button></div></div><nav class="tabs" role="tablist" aria-label="Secciones"><button role="tab" data-t="pron" aria-selected="true" onclick="goTab('pron')">Pronósticos Hoy</button><button role="tab" data-t="res" aria-selected="false" onclick="goTab('res')">Resultados Hoy</button><button role="tab" data-t="his" aria-selected="false" onclick="goTab('his')">Historial & Aciertos</button><button role="tab" data-t="pla" aria-selected="false" onclick="goTab('pla')">Planes VIP</button><button role="tab" data-t="cue" aria-selected="false" onclick="goTab('cue')">Licencia</button></nav></div></header><main class="wrap"><section id="p-pron" class="panel on stack"><div class="card calc"><div><h2 style="color:var(--g)">💰 Calculadora de ganancia</h2><span class="mut">Ingresa cuánto quieres invertir para ver el cobro exacto.</span></div><input id="stake" type="number" min="5000" step="5000" value="50000" aria-label="Inversión en pesos" oninput="renderPron()"><div class="chips"><button onclick="qs(20000)">$20k</button><button onclick="qs(50000)">$50k</button><button onclick="qs(100000)">$100k</button></div></div><div class="card stack"><div class="row"><div><h1>Cartelera Diamante 💎 — Martes 3 de Noviembre 2026</h1><span class="mut" style="color:var(--cy)">10 Pronósticos Diamante (4 Gratis Abiertos + 6 Exclusivos VIP) · Contexto Táctico Completo</span></div><button class="btn s" onclick="syncLiveAPI(true)">📡 Actualizar Marcadores API</button></div><input id="q" class="srch" type="search" placeholder="🔍 Buscar equipo o liga (ej. Barcelona, Bayern, Tolima, Celtics)" aria-label="Buscar equipo o liga" oninput="renderPron()"><div class="chips" id="flt"><button data-f="ALL" aria-pressed="true" onclick="setFlt('ALL',this)">💎 Todos Diamante (10)</button><button data-f="FUTBOL" aria-pressed="false" onclick="setFlt('FUTBOL',this)">⚽ Fútbol (6)</button><button data-f="NBA" aria-pressed="false" onclick="setFlt('NBA',this)">🏀 NBA (4)</button><button data-f="FREE" aria-pressed="false" onclick="setFlt('FREE',this)">🔓 Gratis (4)</button></div></div><div id="grid" class="grid"></div></section><section id="p-res" class="panel stack"><div class="card"><div class="row"><div><h2>Auditoría automática en vivo</h2><p class="mut" style="margin:4px 0 0">Seguimiento en tiempo real de los 10 Pronósticos Diamante de hoy martes 3 de noviembre.</p></div><button class="btn p" onclick="syncLiveAPI(true)">🔄 Actualizar API</button></div></div><div id="rk" class="kpis"></div><div id="rl" class="grid"></div></section><section id="p-his" class="panel stack"><div id="hf" class="kpis"></div><div id="hk" class="kpis"></div><div class="card"><div class="row"><h2>Curva de rendimiento acumulado</h2><span class="bd ok">Zona de beneficio</span></div><svg id="ch" viewBox="0 0 300 100" preserveAspectRatio="none" style="width:100%;height:170px;margin-top:12px" role="img" aria-label="Curva de rendimiento acumulado"></svg></div><div class="card"><h2>Bitácora oficial completa</h2><p id="hn" class="mut" style="margin:4px 0 0;font-size:13px"></p><div class="tw"><table><thead><tr><th>Fecha</th><th>Liga</th><th>Partido</th><th>Pronóstico</th><th>Cuota</th><th>Marcador</th><th>Estado</th><th>Análisis Técnico Auditado</th></tr></thead><tbody id="hb"></tbody></table></div></div></section><section id="p-pla" class="panel stack"><div class="card" style="max-width:460px;margin:0 auto;width:100%"><div class="row"><h3 style="color:var(--cy)">🎟️ Cupón de descuento (-20%)</h3><span id="ps" class="mut">Sin aplicar</span></div><div class="row" style="flex-wrap:nowrap;margin-top:12px"><input id="pi" class="pi" placeholder="Ej: PROMO20" aria-label="Código de cupón"><button class="btn s" onclick="promo()">Aplicar</button></div></div><div style="text-align:center"><h2>Planes oficiales de membresía VIP</h2><p class="mut" style="margin:4px 0 0">Desbloquea los 10 Pronósticos Diamante diarios con telemetría y contexto completo.</p></div><div id="pl" class="plans"></div><div class="card pay"><h3 style="color:var(--g)">Cuentas oficiales de pago</h3><p><b>Nequi:</b> <span class="num">3332861551</span></p><p><b>Bancolombia:</b> <span class="num">912-417-09219</span></p><p><b>Binance UID:</b> <span class="num">204199989</span></p><p class="mut">Envía tu comprobante al WhatsApp oficial +57 333 286 1551 para activación inmediata.</p><a class="btn p" style="display:block;text-align:center;text-decoration:none;margin-top:12px" target="_blank" rel="noopener" href="https://wa.me/573332861551?text=Hola%20equipo%20OptaCore,%20deseo%20activar%20mi%20VIP">Enviar comprobante por WhatsApp</a></div></section><section id="p-cue" class="panel stack"><div class="card stack"><h2>Estado de tu licencia y seguridad de cuenta</h2><p style="margin:0">Correo vinculado: <b id="ae">No registrado</b></p><p style="margin:0">Membresía actual: <b id="ar" style="color:var(--cy)">Acceso libre (4 jugadas Diamante gratis hoy)</b></p><p class="mut" style="margin:0;font-size:13px">Protección activa: Cada cuenta requiere contraseña única. La prueba gratuita y cada llave VIP solo pueden activarse una única vez por usuario registrado.</p><div class="row2"><button class="btn p" onclick="openM('m-auth')">Cambiar / Iniciar Cuenta</button><button class="btn no" id="btn-logout" onclick="logout()" style="display:none">Cerrar sesión segura</button></div></div></section></main><div id="m-ana" class="mdl" role="dialog" aria-modal="true" aria-labelledby="mt"><div class="card"><div class="row"><h3 id="mt"></h3><button class="btn" onclick="closeM('m-ana')">✕ Cerrar</button></div><div id="mb"></div></div></div><div id="m-key" class="mdl" role="dialog" aria-modal="true" aria-label="Canjear llave"><div class="card"><div class="row"><h3 style="color:var(--am)">🔑 Canjear llave VIP</h3><button class="btn" onclick="closeM('m-key')" aria-label="Cerrar">✕</button></div><p class="mut" style="font-size:13px">Debes tener sesión iniciada. Cada llave se bloquea tras su primer uso en tu cuenta.</p><input id="ki" placeholder="Ingresa tu llave (Ej: VIP2026)" aria-label="Llave"><button class="btn a" style="width:100%;margin-top:8px" onclick="redeem()">Canjear y activar VIP</button></div></div><div id="m-auth" class="mdl" role="dialog" aria-modal="true" aria-label="Acceso de usuario"><div class="card"><div class="row"><h3>Acceso y Registro Seguro</h3><button class="btn" onclick="closeM('m-auth')" aria-label="Cerrar">✕</button></div><p class="mut" style="font-size:13px">Si tu correo ya está registrado, ingresa con la misma contraseña con la que creaste la cuenta.</p><input id="ei" type="email" placeholder="tu@correo.com" aria-label="Correo"><input id="pw" type="password" placeholder="Contraseña (mín. 4 caracteres)" aria-label="Contraseña"><div class="row2" style="margin-top:10px"><button class="btn p" onclick="login('login')">Iniciar Sesión</button><button class="btn s" onclick="login('reg')">Crear Cuenta Nueva</button></div></div></div><a class="fab" target="_blank" rel="noopener" href="https://wa.me/573332861551?text=Hola%20equipo%20OptaCore,%20deseo%20informacion%20VIP"><span aria-hidden="true">💬</span>WhatsApp VIP</a><nav class="nav" aria-label="Navegación"><button data-t="pron" aria-selected="true" onclick="goTab('pron')"><span>📋</span>Cartelera</button><button data-t="res" aria-selected="false" onclick="goTab('res')"><span>📊</span>Resultados</button><button data-t="his" aria-selected="false" onclick="goTab('his')"><span>📈</span>Historial</button><button data-t="pla" aria-selected="false" onclick="goTab('pla')"><span>💎</span>VIP</button><button data-t="cue" aria-selected="false" onclick="goTab('cue')"><span>👤</span>Cuenta</button></nav><div id="toast" class="toast" role="status"></div><script>var $=function(s){return document.querySelector(s)},$$=function(s){return document.querySelectorAll(s)};var fl="ALL",disc=0,vipUntil=0,mail="",usersDB={},deviceTrialUsed=false;try{mail=localStorage.getItem("oc_mail")||"";deviceTrialUsed=localStorage.getItem("oc_dev_trial")==="1";var rawU=localStorage.getItem("oc_users_v2");if(rawU)usersDB=JSON.parse(rawU);if(mail&&usersDB[mail]){vipUntil=Number(usersDB[mail].vipUntil||0)}else{mail="";vipUntil=0}}catch(e){}var VALID_KEYS={"VIP2026":30,"OPTACORE30":30,"QUANTVIP":30,"SEMANAL7":7,"QUINCENA15":15};var PL=[["Semanal",7,12000,3.77,null],["Quincenal",15,20000,6.28,"AHORRAS 17%"],["⭐ Mensual",30,36000,11.31,"MÁS POPULAR (-25%)"],["Trimestral",90,60000,18.85,"AHORRAS 44%"],["Semestral",180,100000,31.42,"AHORRAS 54%"],["👑 Anual",365,150000,47.12,"MEJOR VALOR (-65%)"]];var M=[["FUTBOL","Champions League","FC Barcelona","Aston Villa","15:00 COL","Barcelona Gana + Más de 1.5 Goles","Resultado Final: Gana Barcelona y Total Más de 1.5 Goles",1.52,94.4,1,"vs","PROGRAMADO","PENDIENTE","⚡ Césped Rápido · Spotify Camp Nou (12m)","PICK DIAMANTE 💎 #1 (GRATIS) — Jornada 4 de la UEFA Champions League en el Spotify Camp Nou (15:00 COL). Contexto Táctico y Biométrico: El Barcelona de Hansi Flick promedia 2.85 xG como local en Europa con presión alta tras pérdida y línea defensiva adelantada liderada por Lewandowski, Lamine Yamal y Raphinha. Aston Villa concede 1.72 xGA en salidas europeas y sufre ante cambios de orientación rápidos, proyectando triunfo azulgrana en un partido de al menos 2 goles.","uefa.champions","Barcelona","Aston Villa","HOME_O15"],["FUTBOL","Champions League","Galatasaray SK","VfB Stuttgart","12:45 COL","Galatasaray 1X + Más de 1.5 Goles","Doble Oportunidad Galatasaray/Empate y Más de 1.5 Goles",1.54,93.6,1,"vs","PROGRAMADO","PENDIENTE","🔥 Atmósfera Alta · RAMS Park Estambul (40m)","PICK DIAMANTE 💎 #2 (GRATIS) — Turno preliminar de Champions League en Estambul (12:45 COL). Contexto Táctico y Biométrico: Galatasaray registra 86% de invicto local europeo con Osimhen e Icardi generando 
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OPTACORE.QUANT — Pronósticos de Alta Probabilidad</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="./estilos.css?v=99" />
+  <style>
+    @keyframes tickerMove {
+      0% { transform: translateX(0%); }
+      100% { transform: translateX(-50%); }
+    }
+    .ticker-wrap {
+      overflow: hidden;
+      white-space: nowrap;
+      display: flex;
+    }
+    .ticker-move {
+      display: inline-block;
+      white-space: nowrap;
+      animation: tickerMove 28s linear infinite;
+    }
+    .ticker-move:hover {
+      animation-play-state: paused;
+    }
+    .tab-panel.hidden {
+      display: none !important;
+    }
+  </style>
+  <script>
+    localStorage.removeItem('optacore_maintenance_mode');
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-panel').forEach(function(panel) {
+        panel.classList.add('hidden');
+      });
+      var target = document.getElementById(tabId);
+      if (target) {
+        target.classList.remove('hidden');
+      }
+      document.querySelectorAll('.nav-btn').forEach(function(btn) {
+        if (btn.getAttribute('data-tab') === tabId) {
+          btn.className = "nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#06b6d4] bg-[#06b6d4]/15 text-white shrink-0";
+        } else {
+          btn.className = "nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#1b2432] bg-[#0a0e14] text-[#8b9bb4] hover:text-white shrink-0";
+        }
+      });
+      document.querySelectorAll('.bottom-nav-btn').forEach(function(btn) {
+        if (btn.getAttribute('data-tab') === tabId) {
+          btn.className = "bottom-nav-btn flex flex-col items-center justify-center text-cyan-400 font-bold text-[10px]";
+        } else {
+          btn.className = "bottom-nav-btn flex flex-col items-center justify-center text-slate-400 font-bold text-[10px]";
+        }
+      });
+      if (tabId === 'tab-pronosticos' && window.renderTodayPredictions) {
+        window.renderTodayPredictions();
+      }
+      if (tabId === 'tab-resultados' && window.renderTodayResults) {
+        window.renderTodayResults();
+      }
+      if (tabId === 'tab-historial') {
+        if (window.renderFullPublicHistory) window.renderFullPublicHistory();
+        if (window.renderPerformanceChart) setTimeout(window.renderPerformanceChart, 50);
+      }
+      if (tabId === 'tab-admin' && window.renderAdminPanel) {
+        window.renderAdminPanel();
+      }
+    }
+  </script>
+</head>
+<body class="min-h-screen flex flex-col justify-between bg-[#05070a] text-slate-100 font-sans pb-16 md:pb-0">
+  <div class="bg-[#020406] border-b border-[#1b2432] py-1 text-[10px] font-mono">
+    <div class="ticker-wrap">
+      <div id="live-win-ticker" class="ticker-move text-slate-300"></div>
+    </div>
+  </div>
+  <div class="border-b border-[#1b2432] bg-[#030508] px-3 py-1.5 text-[11px] font-mono text-[#8b9bb4]">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
+      <div class="flex items-center gap-3">
+        <span class="flex items-center gap-1.5 text-[#10b981] font-bold">
+          <span class="w-2 h-2 bg-[#10b981] inline-block animate-pulse"></span>
+          SISTEMA EN VIVO
+        </span>
+        <span id="colombia-live-clock" class="text-cyan-400 font-bold">HORA COLOMBIA: --:--:--</span>
+      </div>
+      <div class="flex items-center gap-2 pr-20 sm:pr-24">
+        <span id="cart-closing-timer" class="text-[10px] text-amber-300 font-bold hidden sm:inline-block">⏳ Cierre cartelera libre: 02h:14m</span>
+        <span id="hot-streak-badge" class="px-2 py-0.5 bg-amber-500/15 border border-amber-400/50 text-amber-300 font-black text-[10px]">
+          🔥 RACHA ACTIVA
+        </span>
+        <span id="user-role-badge" class="px-2 py-0.5 border border-[#1b2432] bg-[#0a0e14] text-slate-300 font-bold">
+          ACCESO LIBRE // 4 JUGADAS GRATIS HOY
+        </span>
+      </div>
+    </div>
+  </div>
+  <header class="sticky top-0 z-30 border-b border-[#1b2432] bg-[#05070a]/95 backdrop-blur-md px-4 py-3">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-2.5">
+        <div class="w-1.5 h-8 bg-[#10b981]"></div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-lg md:text-xl font-black text-white font-mono tracking-wide">
+              OPTACORE<span class="text-[#06b6d4]">.QUANT</span>
+            </span>
+            <span class="text-[9px] font-mono uppercase px-1.5 py-0.5 bg-[#10b981]/15 text-[#10b981] border border-[#10b981]/30 font-bold">
+              FÚTBOL & NBA
+            </span>
+          </div>
+          <p class="text-[11px] font-mono text-slate-400">
+            PRONÓSTICOS DE ALTA PROBABILIDAD
+          </p>
+        </div>
+      </div>
+      <nav class="hidden md:flex items-center gap-1 overflow-x-auto py-1">
+        <button onclick="switchTab('tab-pronosticos')" data-tab="tab-pronosticos" class="nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#06b6d4] bg-[#06b6d4]/15 text-white shrink-0">
+          Pronósticos Hoy
+        </button>
+        <button onclick="switchTab('tab-resultados')" data-tab="tab-resultados" class="nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#1b2432] bg-[#0a0e14] text-[#8b9bb4] hover:text-white shrink-0">
+          Resultados Hoy
+        </button>
+        <button onclick="switchTab('tab-historial')" data-tab="tab-historial" class="nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#1b2432] bg-[#0a0e14] text-[#8b9bb4] hover:text-white shrink-0">
+          Historial & Aciertos
+        </button>
+        <button onclick="switchTab('tab-planes')" data-tab="tab-planes" class="nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#10b981]/50 bg-[#10b981]/10 text-[#10b981] hover:bg-[#10b981] hover:text-black shrink-0">
+          Planes VIP & Cuentas
+        </button>
+        <button onclick="switchTab('tab-cuenta')" data-tab="tab-cuenta" class="nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-[#1b2432] bg-[#0a0e14] text-[#8b9bb4] hover:text-white shrink-0">
+          Mi Licencia & Referidos
+        </button>
+        <button id="btn-nav-admin" onclick="switchTab('tab-admin')" data-tab="tab-admin" class="hidden nav-btn px-3 py-1.5 text-xs font-mono font-bold uppercase border border-amber-400 bg-amber-500/20 text-amber-300 shrink-0">
+          ⚙️ Panel Admin
+        </button>
+      </nav>
+      <div class="flex items-center gap-1.5">
+        <button id="btn-open-redeem-key" class="px-2.5 py-1.5 text-xs font-mono font-bold uppercase border border-amber-500/60 bg-amber-500/10 text-amber-300 hover:bg-amber-500 hover:text-black transition">
+          🔑 Canjear Llave
+        </button>
+        <button id="btn-trial-24h" class="px-2.5 py-1.5 text-xs font-mono font-bold uppercase bg-[#06b6d4] text-slate-950 hover:bg-cyan-300">
+          Prueba 24h
+        </button>
+        <button id="btn-open-register" class="px-2.5 py-1.5 text-xs font-mono font-bold uppercase bg-[#10b981] text-slate-950 hover:bg-emerald-400 font-black transition">
+          Registrarse
+        </button>
+        <button id="btn-open-auth" class="px-2.5 py-1.5 text-xs font-mono font-bold uppercase border border-[#1b2432] bg-[#0f151f] text-white hover:border-slate-500">
+          Entrar
+        </button>
+        <button id="btn-logout" class="hidden px-2.5 py-1.5 text-xs font-mono font-bold uppercase border border-[#ef4444] text-[#ef4444]">
+          Salir
+        </button>
+      </div>
+    </div>
+  </header>
+  <main class="max-w-7xl w-full mx-auto px-4 py-6 flex-1 space-y-6">
+    <section id="tab-pronosticos" class="tab-panel space-y-4">
+      <div class="quant-card p-3.5 border-[#10b981]/40 bg-[#06100e] flex flex-col md:flex-row md:items-center justify-between gap-3 font-mono text-xs">
+        <div>
+          <span class="text-[#10b981] font-black uppercase block">💰 Calculadora de Ganancia en Tiempo Real</span>
+          <span class="text-[11px] text-slate-400">Ingresa cuánto deseas invertir para ver el cobro exacto en cada tarjeta:</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-slate-400 font-bold">Inversión ($ COP):</span>
+          <input id="stake-calculator-input" type="number" step="5000" min="5000" value="50000" class="w-32 bg-[#05070a] border border-[#10b981] px-2.5 py-1.5 text-white font-black text-sm focus:outline-none" />
+          <div class="flex gap-1">
+            <button onclick="window.setQuickStake(20000)" class="px-2 py-1 bg-[#0a0e14] border border-[#1b2432] text-[10px] hover:border-cyan-400">$20k</button>
+            <button onclick="window.setQuickStake(50000)" class="px-2 py-1 bg-[#0a0e14] border border-[#1b2432] text-[10px] hover:border-cyan-400">$50k</button>
+            <button onclick="window.setQuickStake(100000)" class="px-2 py-1 bg-[#0a0e14] border border-[#1b2432] text-[10px] hover:border-cyan-400">$100k</button>
+          </div>
+        </div>
+      </div>
+      <div class="quant-card p-3.5 space-y-3">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h1 class="text-base font-black uppercase text-white font-mono">Cartelera Oficial del Día</h1>
+            <span id="daily-counter-badge" class="text-xs font-mono text-cyan-400">4 Pronósticos Destacados Abiertos</span>
+          </div>
+          <input id="search-input" type="text" placeholder="Buscar equipo o liga..." class="w-full sm:w-64 bg-[#05070a] border border-[#1b2432] px-3 py-1.5 text-xs font-mono text-white focus:outline-none focus:border-cyan-400" />
+        </div>
+        <div class="flex items-center gap-1.5 overflow-x-auto pb-1 font-mono text-[11px]">
+          <button onclick="window.setQuickFilter('ALL')" data-qfilter="ALL" class="qfilter-btn px-3 py-1 font-bold uppercase border border-cyan-400 bg-cyan-500/20 text-white shrink-0">
+            Todos
+          </button>
+          <button onclick="window.setQuickFilter('FÚTBOL')" data-qfilter="FÚTBOL" class="qfilter-btn px-3 py-1 font-bold uppercase border border-[#1b2432] bg-[#05070a] text-slate-400 hover:text-white shrink-0">
+            ⚽ Solo Fútbol
+          </button>
+          <button onclick="window.setQuickFilter('NBA')" data-qfilter="NBA" class="qfilter-btn px-3 py-1 font-bold uppercase border border-[#1b2432] bg-[#05070a] text-slate-400 hover:text-white shrink-0">
+            🏀 Solo NBA
+          </button>
+          <button onclick="window.setQuickFilter('FREE')" data-qfilter="FREE" class="qfilter-btn px-3 py-1 font-bold uppercase border border-[#1b2432] bg-[#05070a] text-slate-400 hover:text-white shrink-0">
+            🔓 Solo Gratis
+          </button>
+          <button onclick="window.setQuickFilter('LIVE')" data-qfilter="LIVE" class="qfilter-btn px-3 py-1 font-bold uppercase border border-[#1b2432] bg-[#05070a] text-slate-400 hover:text-white shrink-0">
+            🔴 En Vivo Ahora
+          </button>
+        </div>
+      </div>
+      <div id="predictions-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+    </section>
+    <section id="tab-resultados" class="tab-panel hidden space-y-4">
+      <div class="quant-card p-4">
+        <h2 class="text-base font-black uppercase text-white font-mono">Auditoría de Resultados del Día</h2>
+        <p class="text-xs text-slate-400">Calificación transparente de los partidos finalizados y generador de tickets de victoria.</p>
+      </div>
+      <div id="today-financial-summary" class="grid grid-cols-1 sm:grid-cols-3 gap-3 font-mono text-xs"></div>
+      <div id="today-results-container" class="space-y-3"></div>
+    </section>
+    <section id="tab-historial" class="tab-panel hidden space-y-5">
+      <div id="history-financial-summary" class="grid grid-cols-1 sm:grid-cols-3 gap-3 font-mono"></div>
+      <div id="history-kpi-cards" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
+      <div class="quant-card p-4 space-y-3">
+        <div class="flex items-center justify-between border-b border-[#1b2432] pb-2">
+          <h3 class="text-xs font-mono uppercase font-bold text-white">Curva de Rendimiento Acumulado</h3>
+          <span class="text-[11px] font-mono text-[#10b981]">AUDITORÍA CRONOLÓGICA</span>
+        </div>
+        <div id="performance-chart-box" class="h-44 w-full flex items-end pt-3"></div>
+      </div>
+      <div class="quant-card p-4 space-y-3">
+        <div class="flex items-center justify-between">
+          <h3 class="text-xs font-mono font-bold uppercase text-white">Historial de Partidos (Desde el Más Reciente)</h3>
+          <span class="text-[11px] font-mono text-slate-400">Toca cualquier fila para ver el análisis completo o generar Ticket</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse font-mono text-xs">
+            <thead>
+              <tr class="border-b border-[#1b2432] text-slate-400 text-[10px] uppercase">
+                <th class="py-2.5 px-3">Fecha</th>
+                <th class="py-2.5 px-3">Deporte / Liga</th>
+                <th class="py-2.5 px-3">Partido</th>
+                <th class="py-2.5 px-3">Pronóstico</th>
+                <th class="py-2.5 px-3">Cuota</th>
+                <th class="py-2.5 px-3">Marcador</th>
+                <th class="py-2.5 px-3">Resultado</th>
+                <th class="py-2.5 px-3 text-right">Acción</th>
+              </tr>
+            </thead>
+            <tbody id="history-table-body" class="divide-y divide-[#1b2432]/60"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+    <section id="tab-planes" class="tab-panel hidden space-y-6">
+      <div class="text-center max-w-xl mx-auto space-y-1">
+        <h2 class="text-xl font-black uppercase text-white font-mono">Planes de Membresía VIP</h2>
+        <p class="text-xs text-slate-400">Precios en COP y USDT.</p>
+      </div>
+      <div class="max-w-md mx-auto quant-card p-3.5 border-cyan-500/40 bg-[#070e17] font-mono text-xs space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="font-bold text-cyan-300 uppercase">🎟️ ¿Tienes código de promotor (-20%)?</span>
+          <span id="promo-status-badge" class="text-[10px] text-slate-400">Sin aplicar</span>
+        </div>
+        <div class="flex gap-2">
+          <input id="input-promo-code" type="text" placeholder="Ej: PROMO20" class="flex-1 bg-[#05070a] border border-[#1b2432] px-3 py-1.5 uppercase text-white font-bold focus:border-cyan-400 focus:outline-none" />
+          <button id="btn-apply-promo" class="px-4 py-1.5 bg-[#06b6d4] hover:bg-cyan-300 text-slate-950 font-black uppercase text-xs">
+            Aplicar
+          </button>
+        </div>
+      </div>
+      <div id="vip-plans-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 pt-2">
+        <div class="lg:col-span-7 quant-card p-5 space-y-4">
+          <div class="flex items-center justify-between border-b border-[#1b2432] pb-3">
+            <h3 class="text-xs font-mono font-bold uppercase text-white">Medios de Pago Oficiales</h3>
+            <div class="flex border border-[#1b2432] bg-[#05070a] p-0.5">
+              <button id="btn-reg-col" class="px-3 py-1 text-xs font-mono font-bold bg-[#10b981] text-slate-950">
+                🇨🇴 COLOMBIA
+              </button>
+              <button id="btn-reg-int" class="px-3 py-1 text-xs font-mono font-bold text-[#8b9bb4]">
+                🌐 BINANCE / USDT
+              </button>
+            </div>
+          </div>
+          <div id="payment-methods-list" class="space-y-3"></div>
+        </div>
+        <div class="lg:col-span-5 quant-card p-5 space-y-3 font-mono text-xs">
+          <h3 class="text-xs font-bold uppercase text-[#10b981] border-b border-[#1b2432] pb-2">
+            Activación Inmediata
+          </h3>
+          <p class="text-slate-300 text-[11px] leading-relaxed">
+            Transfiere a Nequi, Bancolombia o Binance y reporta el comprobante por WhatsApp:
+          </p>
+          <div class="p-3 bg-[#05070a] border border-[#1b2432] space-y-1">
+            <span class="text-[10px] text-slate-400 block">WHATSAPP OFICIAL:</span>
+            <span class="text-sm font-black text-white">+57 333 286 1551</span>
+          </div>
+          <a id="btn-general-whatsapp-pay" href="https://wa.me/573332861551?text=Hola%20equipo%20OptaCore,%20acabo%20de%20transferir%20para%20activar%20mi%20VIP.%20Adjunto%20el%20comprobante:" target="_blank" class="block w-full py-2.5 text-center bg-[#10b981] hover:bg-emerald-400 text-slate-950 font-black uppercase tracking-wider text-xs transition">
+            Enviar Comprobante por WhatsApp
+          </a>
+        </div>
+      </div>
+    </section>
+    <section id="tab-cuenta" class="tab-panel hidden space-y-4 font-mono text-xs">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="quant-card p-4 space-y-2">
+          <h3 class="text-xs font-bold uppercase text-white border-b border-[#1b2432] pb-2">Estado de tu Licencia</h3>
+          <div id="account-license-details" class="space-y-1.5 text-slate-300">
+            <p>Correo vinculado: <strong class="text-white" id="account-email-text">No registrado</strong></p>
+            <p>Estado de membresía: <strong class="text-cyan-400" id="account-role-text">ACCESO LIBRE</strong></p>
+            <p>Vigencia: <span class="text-slate-400" id="account-expires-text">Sin límite en jugadas gratuitas</span></p>
+          </div>
+        </div>
+        <div id="referral-card-container"></div>
+      </div>
+    </section>
+    <section id="tab-admin" class="tab-panel hidden space-y-5 font-mono text-xs">
+      <div class="quant-card p-4 border-amber-400/50 bg-[#120e05] flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 class="text-sm font-black uppercase text-amber-300">⚙️ Consola de Administración en Vivo</h2>
+          <p class="text-[11px] text-slate-300">Actualiza marcadores, sincroniza resultados en lote, agrega partidos y promotores.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="window.syncLiveHtFtResults(true); alert('Sincronizando medio tiempo y final de partidos en API-Sports...');" class="px-2.5 py-1 bg-cyan-500/20 border border-cyan-400 text-cyan-300 text-[10px] font-bold uppercase">
+            ⚡ Sincronizar API (1 Crédito)
+          </button>
+          <button onclick="window.resetLocalDatabase()" class="px-2.5 py-1 bg-red-500/20 border border-red-500 text-red-300 text-[10px] font-bold uppercase">
+            Restaurar Base
+          </button>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="quant-card p-4 space-y-3">
+          <h3 class="text-xs font-bold uppercase text-cyan-300 border-b border-[#1b2432] pb-2">+ Generar Llave de Acceso</h3>
+          <form id="admin-create-key-form" class="space-y-2">
+            <input id="adm-key-code" type="text" required placeholder="Código Llave (Ej: CORTESIA5D)" class="w-full bg-[#05070a] border border-[#1b2432] p-2 text-white uppercase font-bold" />
+            <input id="adm-key-days" type="number" required min="1" placeholder="Días de acceso (Ej: 5)" class="w-full bg-[#05070a] border border-[#1b2432] p-2 text-white" />
+            <button type="submit" class="w-full py-2 bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-black uppercase">
+              Guardar Llave Activa
+            </button>
+          </form>
+        </div>
+        <div class="quant-card p-4 space-y-3">
+        <div class="quant-card p-4 space-y-3">
+          <h3 class="text-xs font-bold uppercase text-[#10b981] border-b border-[#1b2432] pb-2">+ Registrar Promotor (-20%)</h3>
+          <form id="admin-create-promo-form" class="space-y-2">
+            <input id="adm-promo-code" type="text" required placeholder="Código Cupón (Ej: MIGUEL20)" class="w-full bg-[#05070a] border border-[#1b2432] p-2 text-white uppercase font-bold" />
+            <input id="adm-promo-name" type="text" required placeholder="Nombre Promotor (Ej: Miguel Ángel)" class="w-full bg-[#05070a] border border-[#1b2432] p-2 text-white" />
+            <button type="submit" class="w-full py-2 bg-[#10b981] hover:bg-emerald-400 text-slate-950 font-black uppercase">
+              Activar Promotor
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- AUDITORÍA DE VENTAS POR PROMOTOR -->
+      <div class="quant-card p-4 space-y-3">
+        <h3 class="text-xs font-bold uppercase text-white border-b border-[#1b2432] pb-2">Auditoría de Ventas por Promotor</h3>
+        <div id="admin-promoters-audit-list" class="space-y-2"></div>
+      </div>
+
+      <!-- AGREGAR PRONÓSTICO -->
+      <div class="quant-card p-4 space-y-3">
+        <h3 class="text-xs font-bold uppercase text-[#10b981] border-b border-[#1b2432] pb-2">+ Agregar Nuevo Pronóstico</h3>
+        <form id="admin-add-match-form" class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+          <input id="adm-home" type="text" required placeholder="Equipo Local (Ej: Real Madrid)" class="bg-[#05070a] border border-[#1b2432] p-2 text-white" />
+          <input id="adm-away" type="text" required placeholder="Equipo Visitante (Ej: Milan)" class="bg-[#05070a] border border-[#1b2432] p-2 text-white" />
+          <input id="adm-league" type="text" required placeholder="Liga (Ej: Champions League)" class="bg-[#05070a] border border-[#1b2432] p-2 text-white" />
+          <input id="adm-pick" type="text" required placeholder="Pronóstico (Ej: Real Madrid Gana)" class="bg-[#05070a] border border-[#1b2432] p-2 text-white" />
+          <input id="adm-odds" type="number" step="0.01" required placeholder="Cuota (Ej: 1.55)" class="bg-[#05070a] border border-[#1b2432] p-2 text-white" />
+          <input id="adm-prob" type="number" step="0.1" required placeholder="% Probabilidad (Ej: 91.5)" class="bg-[#05070a] border border-[#1b2432] p-2 text-white" />
+          <select id="adm-sport" class="bg-[#05070a] border border-[#1b2432] p-2 text-white">
+            <option value="FÚTBOL">⚽ FÚTBOL</option>
+            <option value="NBA">🏀 NBA</option>
+          </select>
+          <select id="adm-free" class="bg-[#05070a] border border-[#1b2432] p-2 text-white">
+            <option value="true">🔓 Abierto Gratis</option>
+            <option value="false">🔒 Exclusivo VIP</option>
+          </select>
+          <input id="adm-time" type="text" required placeholder="Hora (Ej: 15:00)" class="bg-[#05070a] border border-[#1b2432] p-2 text-white" />
+          <input id="adm-apifix" type="number" placeholder="API Fixture ID (Opcional, Ej: 1208492)" class="bg-[#05070a] border border-[#1b2432] p-2 text-white" />
+          <textarea id="adm-exp" rows="2" placeholder="Explicación táctica del pronóstico..." class="sm:col-span-3 bg-[#05070a] border border-[#1b2432] p-2 text-white"></textarea>
+          <button type="submit" class="sm:col-span-3 py-2 bg-[#10b981] text-slate-950 font-black uppercase">
+            Publicar Pronóstico Ahora
+          </button>
+        </form>
+      </div>
+
+      <!-- EDITAR MARCADORES -->
+      <div class="quant-card p-4 space-y-3">
+        <h3 class="text-xs font-bold uppercase text-cyan-300 border-b border-[#1b2432] pb-2">Editar Marcadores y Estados</h3>
+        <div id="admin-matches-list" class="space-y-2"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- BARRA DE NAVEGACIÓN INFERIOR (MODO UNA SOLA MANO MÓVIL) -->
+  <nav class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#05070a]/95 backdrop-blur-md border-t border-[#1b2432] py-2 px-3 flex items-center justify-around font-mono">
+    <button onclick="switchTab('tab-pronosticos')" data-tab="tab-pronosticos" class="bottom-nav-btn flex flex-col items-center justify-center text-cyan-400 font-bold text-[10px]">
+      <span class="text-base">📋</span>
+      <span>Cartelera</span>
+    </button>
+    <button onclick="switchTab('tab-resultados')" data-tab="tab-resultados" class="bottom-nav-btn flex flex-col items-center justify-center text-slate-400 font-bold text-[10px]">
+      <span class="text-base">📊</span>
+      <span>Resultados</span>
+    </button>
+    <button onclick="switchTab('tab-historial')" data-tab="tab-historial" class="bottom-nav-btn flex flex-col items-center justify-center text-slate-400 font-bold text-[10px]">
+      <span class="text-base">📈</span>
+      <span>Historial</span>
+    </button>
+    <button onclick="switchTab('tab-planes')" data-tab="tab-planes" class="bottom-nav-btn flex flex-col items-center justify-center text-slate-400 font-bold text-[10px]">
+      <span class="text-base">💎</span>
+      <span>Planes</span>
+    </button>
+    <button onclick="switchTab('tab-cuenta')" data-tab="tab-cuenta" class="bottom-nav-btn flex flex-col items-center justify-center text-slate-400 font-bold text-[10px]">
+      <span class="text-base">👤</span>
+      <span>Cuenta</span>
+    </button>
+  </nav>
+
+  <!-- MODAL CANJEAR LLAVE TEMPORAL -->
+  <div id="redeem-key-modal" class="fixed inset-0 z-50 hidden bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 font-mono text-xs">
+    <div class="quant-card max-w-sm w-full p-5 space-y-3 border-amber-500/60 shadow-[0_0_25px_rgba(245,158,11,0.2)]">
+      <div class="flex items-center justify-between border-b border-[#1b2432] pb-2">
+        <h3 class="text-xs font-bold uppercase text-amber-300">🔑 CANJEAR LLAVE DE ACCESO</h3>
+        <button id="btn-close-redeem" class="text-slate-400 hover:text-white font-bold">✕</button>
+      </div>
+      <p class="text-[11px] text-slate-300 leading-relaxed">
+        Ingresa tu llave de cortesía para activar tus días de acceso VIP:
+      </p>
+      <form id="redeem-key-form" class="space-y-3 pt-1">
+        <div>
+          <label class="text-[10px] text-slate-400 block mb-1">CÓDIGO DE LA LLAVE</label>
+          <input id="input-license-key" type="text" required placeholder="Ej: PRUEBA3D" class="w-full bg-[#05070a] border border-[#1b2432] p-2 text-white text-xs uppercase font-bold focus:border-amber-400 focus:outline-none" />
+        </div>
+        <button type="submit" class="w-full py-2.5 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black uppercase text-xs transition">
+          CANJEAR Y ACTIVAR DÍAS VIP
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL DE AUTENTICACIÓN -->
+  <div id="auth-modal" class="fixed inset-0 z-50 hidden bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 font-mono text-xs">
+    <div class="quant-card max-w-sm w-full p-5 space-y-3 border-cyan-500/50 shadow-[0_0_25px_rgba(6,182,212,0.2)]">
+      <div class="flex items-center justify-between border-b border-[#1b2432] pb-2">
+        <h3 id="auth-modal-title" class="text-xs font-bold uppercase text-white">REGISTRO DE USUARIO</h3>
+        <button id="btn-close-auth" class="text-slate-400 hover:text-white font-bold">✕</button>
+      </div>
+      <p id="auth-modal-subtitle" class="text-[11px] text-slate-400 leading-relaxed">
+        Ingresa tu correo real y define tu contraseña segura para crear tu cuenta.
+      </p>
+      <form id="auth-form" class="space-y-3 pt-1">
+        <div>
+          <label class="text-[10px] text-slate-400 block mb-1">CORREO ELECTRÓNICO OFICIAL</label>
+          <input id="auth-email" type="email" required placeholder="tu@correo.com" class="w-full bg-[#05070a] border border-[#1b2432] p-2 text-white text-xs focus:border-cyan-400 focus:outline-none" />
+        </div>
+        <div>
+          <label class="text-[10px] text-slate-400 block mb-1">CONTRASEÑA (MÍNIMO 6 CARACTERES)</label>
+          <input id="auth-pass" type="password" required minlength="6" placeholder="••••••••" class="w-full bg-[#05070a] border border-[#1b2432] p-2 text-white text-xs focus:border-cyan-400 focus:outline-none" />
+        </div>
+        <button id="auth-submit-btn" type="submit" class="w-full py-2.5 bg-[#10b981] hover:bg-emerald-400 text-slate-950 font-black uppercase transition text-xs">
+          CREAR CUENTA
+        </button>
+      </form>
+      <div class="pt-2 text-center border-t border-[#1b2432]">
+        <button id="btn-toggle-auth-mode" type="button" class="text-[10px] text-cyan-400 hover:underline">
+          ¿Ya tienes cuenta? Inicia sesión aquí
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="border-t border-[#1b2432] bg-[#030508] px-4 py-4 mt-8 text-[11px] font-mono text-slate-400 text-center">
+    OPTACORE.QUANT © 2026 — Inteligencia Estadística para Pronósticos Deportivos (+18).
+  </footer>
+
+  <script type="module" src="./auth.js"></script>
+  <script type="module" src="./pronosticos.js"></script>
+  <script type="module" src="./pagos.js"></script>
+</body>
+</html>
