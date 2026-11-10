@@ -1576,10 +1576,12 @@ window.openWinTicketCard = (matchId, ev) => {
   `;
   modal.classList.remove("hidden");
 };
-function formatCountdown(iso, st) {
+// ⚡ Bolt: Cache kickoff timestamp ms on element dataset / property to avoid repeated Date parsing
+function formatCountdown(iso, st, targetMs = 0) {
   if (st === "FINALIZADO") return currentLang === "EN" ? "FINISHED" : "FINALIZADO";
   if (st === "EN_VIVO") return currentLang === "EN" ? "🔴 LIVE NOW" : "🔴 EN JUEGO AHORA";
-  const diff = new Date(iso).getTime() - Date.now();
+  const target = targetMs || new Date(iso).getTime();
+  const diff = target - Date.now();
   if (diff <= 0) return currentLang === "EN" ? "🔴 STARTING..." : "🔴 INICIANDO...";
   const h = Math.floor(diff / 3600000);
   const m = Math.floor((diff % 3600000) / 60000);
@@ -1587,20 +1589,35 @@ function formatCountdown(iso, st) {
   return `${currentLang === "EN" ? "STARTS IN" : "INICIA EN"} ${String(h).padStart(2, "0")}h:${String(m).padStart(2, "0")}m:${String(s).padStart(2, "0")}s`;
 }
 function startColombiaClock() {
+  // ⚡ Bolt: Reuse a single Intl.DateTimeFormat instance across 1-second ticks instead of allocating every second.
+  // Instantiating Intl.DateTimeFormat every second triggers recurring GC overhead and V8 internal locale initialization.
+  const timeFormatter = new Intl.DateTimeFormat("es-CO", {
+    timeZone: CONFIG?.BRAND?.TIMEZONE || "America/Bogota",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  });
+  const clockEl = document.getElementById("colombia-live-clock");
+
   function tick() {
-    const now = new Date();
-    const timeStr = new Intl.DateTimeFormat("es-CO", {
-      timeZone: CONFIG?.BRAND?.TIMEZONE || "America/Bogota",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hour12: false,
-    }).format(now);
-    const clockEl = document.getElementById("colombia-live-clock");
-    if (clockEl) clockEl.textContent = `${currentLang === "EN" ? "COLOMBIA TIME" : "HORA COLOMBIA"}: ${timeStr}`;
-    document.querySelectorAll(".countdown-timer").forEach((el) => {
-      if (el.dataset.status !== "FINALIZADO") {
-        el.textContent = formatCountdown(el.dataset.kickoff, el.dataset.status);
+    const timeStr = timeFormatter.format(Date.now());
+    if (clockEl) {
+      const nextClockText = `${currentLang === "EN" ? "COLOMBIA TIME" : "HORA COLOMBIA"}: ${timeStr}`;
+      if (clockEl.textContent !== nextClockText) {
+        clockEl.textContent = nextClockText;
+      }
+    }
+
+    // ⚡ Bolt: Only query active non-finalized timers and guard textContent assignment against redundant DOM mutations
+    const activeTimers = document.querySelectorAll('.countdown-timer:not([data-status="FINALIZADO"])');
+    activeTimers.forEach((el) => {
+      if (!el._kickoffMs && el.dataset.kickoff) {
+        el._kickoffMs = new Date(el.dataset.kickoff).getTime();
+      }
+      const nextText = formatCountdown(el.dataset.kickoff, el.dataset.status, el._kickoffMs);
+      if (el.textContent !== nextText) {
+        el.textContent = nextText;
       }
     });
   }
